@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:favorite_places/providers/user_palces.dart'
     show userPlacesProvider;
 import 'package:favorite_places/widgets/image_input.dart';
@@ -15,20 +17,26 @@ class AddedPlaceScreen extends ConsumerStatefulWidget {
 
 class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
   final _titleController = TextEditingController();
+  File? _selectedImage;
 
   void _savePlace() {
-    final enteredTitle = _titleController.text;
+    final enteredTitle = _titleController.text.trim();
     if (enteredTitle.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a title first.')),
+      );
       return;
     }
 
-    ref.read(userPlacesProvider.notifier).addPlace(enteredTitle);
+    ref
+        .read(userPlacesProvider.notifier)
+        .addPlace(enteredTitle, image: _selectedImage);
 
     Navigator.of(context).pop();
   }
 
   @override
-  dispose() {
+  void dispose() {
     _titleController.dispose();
     super.dispose();
   }
@@ -47,8 +55,9 @@ class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
               controller: _titleController,
             ),
             const SizedBox(height: 20),
-            //image input
-            ImageInput(),
+            ImageInput(
+              onImagePicked: (image) => setState(() => _selectedImage = image),
+            ),
             const SizedBox(height: 10),
             ElevatedButton.icon(
               onPressed: _savePlace,

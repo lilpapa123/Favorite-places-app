@@ -1,30 +1,47 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
+import 'package:favorite_places/screens/palces.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:favorite_places/main.dart';
+Widget buildTestApp() {
+  return const ProviderScope(child: MaterialApp(home: PalcesScreen()));
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('shows the empty state when no places exist', (tester) async {
+    await tester.pumpWidget(buildTestApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.text('Your Places'), findsOneWidget);
+    expect(find.text('No Places added yet.'), findsOneWidget);
+  });
 
-    // Tap the '+' icon and trigger a frame.
+  testWidgets('adds a place and shows it in the list', (tester) async {
+    await tester.pumpWidget(buildTestApp());
+
     await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('Add a New Place'), findsOneWidget);
+    expect(find.text('Take Picture'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'Florence');
+    await tester.tap(find.text('Add Place'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Florence'), findsOneWidget);
+    expect(find.text('No Places added yet.'), findsNothing);
+  });
+
+  testWidgets('does not add a place without a title', (tester) async {
+    await tester.pumpWidget(buildTestApp());
+
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Add Place'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Please enter a title first.'), findsOneWidget);
+    expect(find.text('Add a New Place'), findsOneWidget);
   });
 }

@@ -8,6 +8,7 @@ import '../providers/user_palces.dart';
 class PalcesScreen extends ConsumerWidget {
   const PalcesScreen({super.key});
 
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userPlaces = ref.watch(userPlacesProvider);
 
