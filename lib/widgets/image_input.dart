@@ -1,5 +1,9 @@
 import 'dart:io';
 
+import 'package:favorite_places/theme/app_theme.dart';
+import 'package:favorite_places/widgets/ascii_label.dart';
+import 'package:favorite_places/widgets/ascii_photo.dart';
+import 'package:favorite_places/widgets/blinking_cursor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,7 +22,8 @@ class ImageInput extends StatefulWidget {
 class _ImageInputState extends State<ImageInput> {
   static const int _maxImageWidth = 1200;
   static const int _imageQuality = 85;
-  static const double _previewHeight = 160;
+  static const double _emptyHeight = 148;
+  static const double _photoAspectRatio = 4 / 3;
 
   final ImagePicker _imagePicker = ImagePicker();
 
@@ -84,41 +89,73 @@ class _ImageInputState extends State<ImageInput> {
 
   @override
   Widget build(BuildContext context) {
-    Widget content = TextButton.icon(
-      icon: const Icon(Icons.camera_alt_outlined, color: Colors.grey, size: 40),
-      label: const Text(
-        'Take Picture',
-        style: TextStyle(color: Colors.grey, fontSize: 16),
-      ),
-      onPressed: _isPickingImage ? null : _takePicture,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const AsciiLabel('photo'),
+        const SizedBox(height: AsciiSpace.sm),
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _isPickingImage ? null : _takePicture,
+          child: _buildField(),
+        ),
+      ],
     );
+  }
 
+  Widget _buildField() {
     if (_isPickingImage) {
-      content = const CircularProgressIndicator();
-    } else if (_selectedImage != null) {
-      content = GestureDetector(
-        onTap: _takePicture,
-        child: Image.file(
-          _selectedImage!,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
+      return Container(
+        height: _emptyHeight,
+        decoration: _fieldDecoration(),
+        child: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '// capturing',
+                style: AsciiType.meta(color: AsciiPalette.accent),
+              ),
+              const SizedBox(width: AsciiSpace.xs),
+              const BlinkingCursor(width: 6, height: 12),
+            ],
+          ),
         ),
       );
     }
 
+    if (_selectedImage != null) {
+      return AspectRatio(
+        aspectRatio: _photoAspectRatio,
+        child: AsciiPhoto(image: _selectedImage!, caption: '// tap to retake'),
+      );
+    }
+
     return Container(
-      height: _selectedImage != null ? _previewHeight : 100,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        border: Border.all(
-          width: 1,
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-        ),
+      height: _emptyHeight,
+      decoration: _fieldDecoration(),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.photo_camera_outlined,
+            size: 26,
+            color: AsciiPalette.accent,
+          ),
+          const SizedBox(height: AsciiSpace.sm),
+          Text('[ take picture ]', style: AsciiType.body()),
+        ],
       ),
-      clipBehavior: Clip.hardEdge,
-      alignment: Alignment.center,
-      child: content,
+    );
+  }
+
+  BoxDecoration _fieldDecoration() {
+    return BoxDecoration(
+      color: AsciiPalette.surface,
+      border: Border.all(
+        color: AsciiPalette.line,
+        width: AsciiShape.borderWidth,
+      ),
     );
   }
 }
