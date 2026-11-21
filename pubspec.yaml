@@ -38,6 +38,14 @@ dependencies:
   uuid: ^4.6.0
   flutter_riverpod: ^3.5.0
   image_picker: ^1.2.4
+  firebase_core: ^5.2.0
+  firebase_auth: ^7.1.0
+  flutter_map: ^8.3.2
+  latlong2: ^0.10.1
+  geolocator: ^14.1.2
+  flutter_svg: ^2.5.0
+  geocoding: ^5.0.1
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   flutter_test:
@@ -61,6 +69,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/icons/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

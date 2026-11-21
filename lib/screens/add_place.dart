@@ -1,129 +1,220 @@
 import 'dart:io';
 
-import 'package:favorite_places/providers/user_palces.dart'
-    show userPlacesProvider;
+import 'package:favorite_places/models/place.dart';
+import 'package:favorite_places/providers/user_palces.dart';
 import 'package:favorite_places/theme/app_theme.dart';
-import 'package:favorite_places/widgets/ascii_button.dart';
-import 'package:favorite_places/widgets/ascii_label.dart';
-import 'package:favorite_places/widgets/ascii_text_field.dart';
-import 'package:favorite_places/widgets/blinking_cursor.dart';
+import 'package:favorite_places/widgets/app_icon.dart';
+import 'package:favorite_places/widgets/app_text_field.dart';
+import 'package:favorite_places/widgets/category_chips.dart';
 import 'package:favorite_places/widgets/image_input.dart';
+import 'package:favorite_places/widgets/location_input.dart';
+import 'package:favorite_places/widgets/page_header.dart';
+import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+/// "Add place" form — also used to edit a saved place ([existing]).
+///
+/// In the shell it lives on its own page: [onSaved] / [onCancel] let the
+/// shell switch back. Without them (pushed as a route) it pops instead.
 class AddedPlaceScreen extends ConsumerStatefulWidget {
-  const AddedPlaceScreen({super.key});
+  const AddedPlaceScreen({
+    super.key,
+    this.onSaved,
+    this.onCancel,
+    this.initialImage,
+    this.existing,
+  });
+
+  final VoidCallback? onSaved;
+  final VoidCallback? onCancel;
+
+  /// Photo taken with the tab bar's camera, pre-filled in the form.
+  final File? initialImage;
+
+  /// The place being edited, if any.
+  final Place? existing;
 
   @override
-  ConsumerState<AddedPlaceScreen> createState() {
-    return _AddedPlaceScreenState();
-  }
+  ConsumerState<AddedPlaceScreen> createState() => _AddedPlaceScreenState();
 }
 
 class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
+  static const int _noteLimit = 200;
+
   final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _noteController = TextEditingController();
+  PlaceCategory _category = PlaceCategory.cafe;
   File? _selectedImage;
+  PlaceLocation? _selectedLocation;
+
+  bool get _editing => widget.existing != null;
+  bool get _canSave => _titleController.text.trim().isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    final existing = widget.existing;
+    if (existing != null) {
+      _titleController.text = existing.title;
+      _noteController.text = existing.note;
+      _category = existing.category;
+      _selectedImage = existing.image;
+      _selectedLocation = existing.location;
+    } else {
+      _selectedImage = widget.initialImage;
+    }
+    // Rebuild so "Save place" enables as soon as there's a name.
+    _titleController.addListener(_onTitleChanged);
+  }
+
+  void _onTitleChanged() => setState(() {});
 
   void _savePlace() {
-    final String enteredTitle = _titleController.text.trim();
-    if (enteredTitle.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('title required')));
+    if (!_canSave) {
       return;
     }
-
     FocusScope.of(context).unfocus();
-    ref
-        .read(userPlacesProvider.notifier)
-        .addPlace(enteredTitle, image: _selectedImage);
+    final notifier = ref.read(userPlacesProvider.notifier);
+    final title = _titleController.text.trim();
+    final note = _noteController.text.trim();
+    final existing = widget.existing;
 
-    Navigator.of(context).pop();
+    if (existing != null) {
+      notifier.updatePlace(
+        existing.copyWith(
+          title: title,
+          category: _category,
+          note: note,
+          image: _selectedImage,
+          location: _selectedLocation,
+          clearLocation: _selectedLocation == null,
+        ),
+      );
+    } else {
+      notifier.addPlace(
+        title,
+        category: _category,
+        note: note,
+        image: _selectedImage,
+        location: _selectedLocation,
+      );
+    }
+
+    final onSaved = widget.onSaved;
+    if (onSaved != null) {
+      onSaved();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_editing ? 'Changes saved' : 'Saved to My places'),
+        ),
+      );
+      Navigator.of(context).maybePop();
+    }
+  }
+
+  void _close() {
+    final onCancel = widget.onCancel;
+    if (onCancel != null) {
+      onCancel();
+    } else {
+      Navigator.of(context).maybePop();
+    }
   }
 
   @override
   void dispose() {
+    _titleController.removeListener(_onTitleChanged);
     _titleController.dispose();
+    _noteController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('>', style: AsciiType.heading(color: AsciiPalette.accent)),
-            const SizedBox(width: AsciiSpace.sm),
-            Flexible(
-              child: Text(
-                'new place',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AsciiType.heading(),
+      body: SafeArea(
+        bottom: false,
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: CustomScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            slivers: [
+              SliverToBoxAdapter(
+                child: PageHeader(
+                  title: _editing ? 'Edit place' : 'Add place',
+                  subtitle: _editing
+                      ? 'Change anything you like.'
+                      : 'Keep a little piece of somewhere.',
+                  trailing: CircleIconButton(
+                    icon: const AppIcon('close'),
+                    semanticLabel: 'Close',
+                    onPressed: _close,
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(width: AsciiSpace.sm),
-            const BlinkingCursor(height: 18),
-          ],
-        ),
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(AsciiShape.borderWidth),
-          child: Divider(),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-          AsciiSpace.lg,
-          AsciiSpace.xl,
-          AsciiSpace.lg,
-          AsciiSpace.xl,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const AsciiLabel('title'),
-            const SizedBox(height: AsciiSpace.sm),
-            AsciiTextField(
-              controller: _titleController,
-              hintText: 'the cafe on the corner',
-              autofocus: true,
-            ),
-            const SizedBox(height: AsciiSpace.xl),
-            ImageInput(
-              onImagePicked: (image) => setState(() => _selectedImage = image),
-            ),
-            const SizedBox(height: AsciiSpace.lg),
-            Text(
-              'entries are kept on this device only.',
-              style: AsciiType.small(),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Container(
-          decoration: const BoxDecoration(
-            color: AsciiPalette.canvas,
-            border: Border(
-              top: BorderSide(
-                color: AsciiPalette.line,
-                width: AsciiShape.borderWidth,
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                  AppSpace.page,
+                  2,
+                  AppSpace.page,
+                  bottomBarClearance(context),
+                ),
+                sliver: SliverList.list(
+                  children: [
+                    ImageInput(
+                      initialImage: _selectedImage,
+                      onImagePicked: (image) =>
+                          setState(() => _selectedImage = image),
+                    ),
+                    const SizedBox(height: AppSpace.lg),
+                    AppTextField(
+                      label: 'Place name',
+                      controller: _titleController,
+                      hintText: 'A little pause by the river',
+                      textInputAction: TextInputAction.next,
+                      textCapitalization: TextCapitalization.sentences,
+                    ),
+                    const SizedBox(height: AppSpace.lg),
+                    CategoryChips(
+                      selected: _category,
+                      onSelected: (category) =>
+                          setState(() => _category = category),
+                    ),
+                    const SizedBox(height: AppSpace.lg),
+                    AppTextField(
+                      label: 'A little note',
+                      trailingLabel: 'Optional',
+                      controller: _noteController,
+                      hintText: 'Why you love it, in a line or two',
+                      maxLines: 2,
+                      maxLength: _noteLimit,
+                      textCapitalization: TextCapitalization.sentences,
+                    ),
+                    const SizedBox(height: AppSpace.lg),
+                    LocationInput(
+                      initial: _selectedLocation,
+                      onLocationPicked: (location) =>
+                          setState(() => _selectedLocation = location),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      'Only you can see your saved places.',
+                      style: AppText.meta().copyWith(fontSize: 12),
+                    ),
+                    const SizedBox(height: AppSpace.xxl),
+                    PillButton(
+                      label: _editing ? 'Save changes' : 'Save place',
+                      leading: const AppIcon('heart_white'),
+                      large: true,
+                      expanded: true,
+                      onPressed: _canSave ? _savePlace : null,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
-          padding: const EdgeInsets.fromLTRB(
-            AsciiSpace.lg,
-            AsciiSpace.md,
-            AsciiSpace.lg,
-            AsciiSpace.md,
-          ),
-          child: AsciiButton(
-            label: 'save place',
-            icon: Icons.check,
-            expanded: true,
-            onPressed: _savePlace,
+            ],
           ),
         ),
       ),

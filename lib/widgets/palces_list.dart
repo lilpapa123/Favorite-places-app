@@ -1,11 +1,11 @@
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/screens/places_detail.dart';
 import 'package:favorite_places/theme/app_theme.dart';
-import 'package:favorite_places/widgets/empty_places.dart';
+import 'package:favorite_places/widgets/page_header.dart';
 import 'package:favorite_places/widgets/place_card.dart';
 import 'package:flutter/material.dart';
 
-/// The feed of saved places.
+/// The feed of saved places, as cards.
 class PalcesList extends StatelessWidget {
   const PalcesList({super.key, required this.places});
 
@@ -13,29 +13,26 @@ class PalcesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (places.isEmpty) {
-      return const EmptyPlaces();
-    }
-
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(
-        AsciiSpace.lg,
-        AsciiSpace.md,
-        AsciiSpace.lg,
-        AsciiSpace.xl,
+      padding: EdgeInsets.fromLTRB(
+        AppSpace.page,
+        0,
+        AppSpace.page,
+        bottomBarClearance(context),
       ),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       itemCount: places.length,
       separatorBuilder: (context, index) =>
-          const SizedBox(height: AsciiSpace.sm),
+          const SizedBox(height: AppSpace.lg),
       itemBuilder: (context, index) {
         final place = places[index];
         return PlaceCard(
+          key: ValueKey(place.id),
           place: place,
-          index: index,
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (ctx) => PlacesDetailScreen(place: place),
+                builder: (ctx) => PlacesDetailScreen(placeId: place.id),
               ),
             );
           },

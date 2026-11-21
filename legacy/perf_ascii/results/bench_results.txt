@@ -1,0 +1,61 @@
+# favorite_places performance benchmarks (raw output)
+# date: 2026-11-19T10:16:19Z  host: arm64 macOS 27.2.1
+# flutter: Flutter 3.47.9 • channel stable • https://github.com/flutter/flutter.git
+# mode: debug (flutter test, --concurrency=1) — absolute ms values are upper bounds vs profile/release
+
+BENCH|frame.cold_home_first_frame|12.96|ms
+BENCH|frame.cold_home_first_frame_samples|n=7 mean=40.98 median=12.96 p90=14.99 max=208.68|ms
+BENCH|frame.cold_add_form_first_frame|21.01|ms
+BENCH|frame.cold_detail_first_frame|11.22|ms
+BENCH|idle.frames_scheduled_of_60|60|frames
+BENCH|idle.cpu_per_second_blinking|9.79|ms
+BENCH|idle.cpu_per_frame|0.123|ms
+BENCH|idle_reduced.frames_scheduled_of_60|0|frames
+BENCH|idle_reduced.cpu_per_second|2.03|ms
+BENCH|scroll.no_photos.places_10.frames|n=30 mean=1.04 median=0.75 p90=1.74 max=4.36|ms
+BENCH|scroll.no_photos.places_10.built_widgets|8|cards
+BENCH|scroll.no_photos.places_60.frames|n=30 mean=2.13 median=1.73 p90=3.45 max=5.92|ms
+BENCH|scroll.no_photos.places_60.built_widgets|9|cards
+BENCH|scroll.no_photos.places_200.frames|n=30 mean=1.49 median=1.16 p90=2.82 max=3.81|ms
+BENCH|scroll.no_photos.places_200.built_widgets|8|cards
+BENCH|scroll.photo_1200x900.frames|n=30 mean=1.92 median=1.25 p90=3.71 max=8.02|ms
+BENCH|scroll.photo_1200x900.imagecache_bytes|34560000|bytes
+BENCH|scroll.photo_1200x900.live_images|8|images
+BENCH|scroll.photo_168x126.frames|n=30 mean=2.30 median=1.40 p90=4.40 max=11.63|ms
+BENCH|scroll.photo_168x126.imagecache_bytes|677376|bytes
+BENCH|scroll.photo_168x126.live_images|8|images
+BENCH|frame.home_rebuild|0.13|ms
+BENCH|type.ascii_style_us_per_call|18.863|us
+BENCH|type.google_fonts_call_us|11.334|us
+BENCH|type.plain_new_style_us|0.4650|us
+BENCH|type.extra_us_vs_plain_style|18.40|us
+BENCH|theme.build_ms|0.07|ms
+BENCH|theme.build_samples|n=15 mean=2.00 median=0.07 p90=0.30 max=28.71|ms
+BENCH|type.frame_300_texts_app|19.41|ms
+BENCH|type.frame_300_texts_plain|15.93|ms
+BENCH|type.frame_300_extra_ms|3.48|ms
+BENCH|type.warm.ascii_style_us|24.697|us
+BENCH|type.warm.ascii_meta_us|12.060|us
+BENCH|type.warm.google_fonts_us|11.484|us
+BENCH|type.warm.per_frame_18_texts_us|444.5|us
+BENCH|type.warm.frame_300_texts_app|20.10|ms
+BENCH|type.warm.frame_300_texts_plain|15.53|ms
+BENCH|type.warm.frame_300_extra_ms|4.57|ms
+BENCH|decode.photo_capture|33850|bytes_jpeg
+BENCH|decode.full_size|1200x900|px
+BENCH|decode.full_size_bitmap|4320000|bytes
+BENCH|decode.dpr2_thumb_bitmap|37632|bytes
+BENCH|decode.dpr3_thumb_bitmap|84672|bytes
+BENCH|decode.memory_saving_dpr3|51.0|x
+BENCH|decode.time_full_size|3.19|ms
+BENCH|decode.time_dpr3_thumb|0.81|ms
+BENCH|decode.time_full_samples|n=5 mean=3.13 median=3.19 p90=3.47 max=3.47|ms
+BENCH|decode.time_thumb_samples|n=5 mean=0.85 median=0.81 p90=0.98 max=0.98|ms
+BENCH|imagecache.cards_built_of_12|8|cards
+BENCH|imagecache.live_images|11|images
+BENCH|imagecache.current_size_bytes|47520000|bytes
+BENCH|imagecache.expected_full_res_bytes|34560000|bytes
+BENCH|imagecache.max_size_bytes|104857600|bytes
+BENCH|imagecache.one_1200x900_entry|4320000|bytes
+BENCH|imagecache.8x168x126_entries|677376|bytes
+00:06 +17: All tests passed!

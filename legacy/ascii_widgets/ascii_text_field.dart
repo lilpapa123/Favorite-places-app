@@ -10,6 +10,9 @@ class AsciiTextField extends StatefulWidget {
     this.autofocus = false,
     this.textInputAction = TextInputAction.done,
     this.onSubmitted,
+    this.obscureText = false,
+    this.keyboardType,
+    this.autofillHints,
   });
 
   final TextEditingController controller;
@@ -17,6 +20,9 @@ class AsciiTextField extends StatefulWidget {
   final bool autofocus;
   final TextInputAction textInputAction;
   final ValueChanged<String>? onSubmitted;
+  final bool obscureText;
+  final TextInputType? keyboardType;
+  final Iterable<String>? autofillHints;
 
   @override
   State<AsciiTextField> createState() => _AsciiTextFieldState();
@@ -73,6 +79,11 @@ class _AsciiTextFieldState extends State<AsciiTextField> {
               autofocus: widget.autofocus,
               textInputAction: widget.textInputAction,
               onSubmitted: widget.onSubmitted,
+              obscureText: widget.obscureText,
+              autocorrect: !widget.obscureText,
+              enableSuggestions: !widget.obscureText,
+              keyboardType: widget.keyboardType,
+              autofillHints: widget.autofillHints,
               maxLines: 1,
               style: AsciiType.body(),
               cursorColor: AsciiPalette.accent,

@@ -1,21 +1,85 @@
-import 'package:favorite_places/screens/palces.dart';
+import 'package:favorite_places/screens/home_shell.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
+
+/// Pretends to be the camera: returns a fake photo path for any source.
+class _FakeCamera extends ImagePickerPlatform {
+  ImageSource? lastSource;
+
+  @override
+  Future<XFile?> getImage({
+    required ImageSource source,
+    double? maxWidth,
+    double? maxHeight,
+    int? imageQuality,
+    CameraDevice preferredCameraDevice = CameraDevice.rear,
+  }) async {
+    lastSource = source;
+    return XFile('/tmp/fake_photo.jpg');
+  }
+}
 
 Widget buildTestApp() {
   return ProviderScope(
     child: MaterialApp(
-      theme: AsciiTheme.data,
+      theme: AppTheme.data,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(disableAnimations: true),
         child: child!,
       ),
-      home: const PalcesScreen(),
+      home: const HomeShell(),
     ),
   );
+}
+
+/// A tall phone-shaped screen, so whole forms fit without scrolling.
+void useTallScreen(WidgetTester tester) {
+  tester.view.physicalSize = const Size(800, 2000);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+}
+
+Future<void> openAddForm(WidgetTester tester) async {
+  useTallScreen(tester);
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Add a place'));
+  await tester.pumpAndSettle();
+}
+
+Future<void> addPlace(
+  WidgetTester tester,
+  String name, {
+  String? type,
+  String? note,
+}) async {
+  await openAddForm(tester);
+  await tester.enterText(
+    find.widgetWithText(TextField, 'A little pause by the river'),
+    name,
+  );
+  if (type != null) {
+    await tester.tap(find.text(type));
+    await tester.pump();
+  }
+  if (note != null) {
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Why you love it, in a line or two'),
+      note,
+    );
+  }
+  await tapSave(tester);
+}
+
+Future<void> tapSave(WidgetTester tester) async {
+  final save = find.text('Save place');
+  await tester.ensureVisible(save);
+  await tester.pumpAndSettle();
+  await tester.tap(save);
+  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -26,37 +90,125 @@ void main() {
   testWidgets('shows the empty state when no places exist', (tester) async {
     await tester.pumpWidget(buildTestApp());
 
-    expect(find.text('favorite_places'), findsOneWidget);
-    expect(find.text('no places yet'), findsOneWidget);
+    expect(find.text('My places'), findsOneWidget);
+    expect(find.text('No favorite places yet'), findsOneWidget);
+    expect(find.text('0 favorite places'), findsOneWidget);
   });
 
   testWidgets('adds a place and shows it in the feed', (tester) async {
     await tester.pumpWidget(buildTestApp());
 
-    await tester.tap(find.text('add place'));
-    await tester.pumpAndSettle();
+    await openAddForm(tester);
+    expect(find.text('Add place'), findsOneWidget);
+    expect(find.text('Add a photo'), findsOneWidget);
+    expect(find.text('Add a location'), findsOneWidget);
 
-    expect(find.text('new place'), findsOneWidget);
-    expect(find.textContaining('take picture'), findsOneWidget);
+    await tester.enterText(
+      find.widgetWithText(TextField, 'A little pause by the river'),
+      'Moda seaside walk',
+    );
+    await tester.tap(find.text('Walk'));
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Why you love it, in a line or two'),
+      'Best at sunset.',
+    );
+    await tester.pump();
+    expect(find.text('15 / 200'), findsOneWidget);
+    await tapSave(tester);
 
-    await tester.enterText(find.byType(TextField), 'Florence');
-    await tester.tap(find.text('save place'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Florence'), findsOneWidget);
-    expect(find.text('no places yet'), findsNothing);
+    expect(find.text('Moda seaside walk'), findsOneWidget);
+    expect(find.text('Best at sunset.'), findsOneWidget);
+    expect(find.text('1 favorite place'), findsOneWidget);
+    expect(find.text('No favorite places yet'), findsNothing);
   });
 
-  testWidgets('refuses to save without a title', (tester) async {
+  testWidgets('does not save without a name', (tester) async {
     await tester.pumpWidget(buildTestApp());
 
-    await tester.tap(find.text('add place'));
+    await openAddForm(tester);
+    await tapSave(tester);
+
+    // Still on the form; closing it shows nothing was added.
+    expect(find.text('Add a photo'), findsOneWidget);
+    await tester.tap(find.bySemanticsLabel('Close'));
+    await tester.pumpAndSettle();
+    expect(find.text('No favorite places yet'), findsOneWidget);
+  });
+
+  testWidgets('filters places by type and search', (tester) async {
+    await tester.pumpWidget(buildTestApp());
+
+    await addPlace(tester, 'Corner café', type: 'Café');
+    expect(find.text('Corner café'), findsOneWidget);
+
+    await tester.tap(find.text('Views'));
+    await tester.pumpAndSettle();
+    expect(find.text('Corner café'), findsNothing);
+    expect(find.text('No places match'), findsOneWidget);
+
+    await tester.tap(find.text('Show all places'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Find a favorite place'),
+      'corner',
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Corner café'), findsOneWidget);
+  });
+
+  testWidgets('opens details, edits and removes with undo', (tester) async {
+    await tester.pumpWidget(buildTestApp());
+
+    await addPlace(tester, 'Galata Tower view', type: 'Viewpoint');
+    await tester.tap(find.text('Galata Tower view'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('save place'));
+    // Details open inside the tab: the glass bar is still there.
+    expect(find.text('Saved place'), findsOneWidget);
+    expect(find.bySemanticsLabel('Take a photo of a place'), findsOneWidget);
+
+    await tester.tap(find.text('Edit place'));
+    await tester.pumpAndSettle();
+    // The first field on the edit form is the place name.
+    await tester.enterText(find.byType(TextField).first, 'Galata at dusk');
+    await tester.tap(find.text('Save changes'));
+    await tester.pumpAndSettle();
+    expect(find.text('Galata at dusk'), findsOneWidget);
+
+    await tester.tap(find.bySemanticsLabel('Remove from my places'));
+    await tester.pumpAndSettle();
+    expect(find.text('Galata at dusk'), findsNothing);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+    expect(find.text('Galata at dusk'), findsOneWidget);
+  });
+
+  testWidgets('shows the glass tab bar with the camera', (tester) async {
+    await tester.pumpWidget(buildTestApp());
+
+    expect(find.bySemanticsLabel('My places'), findsOneWidget);
+    expect(find.bySemanticsLabel('Map'), findsOneWidget);
+    expect(find.bySemanticsLabel('Account'), findsOneWidget);
+    expect(find.bySemanticsLabel('Take a photo of a place'), findsOneWidget);
+  });
+
+  testWidgets('camera button opens the form with the photo', (tester) async {
+    final camera = _FakeCamera();
+    ImagePickerPlatform.instance = camera;
+    useTallScreen(tester);
+
+    await tester.pumpWidget(buildTestApp());
+    await tester.tap(find.bySemanticsLabel('Take a photo of a place'));
     await tester.pumpAndSettle();
 
-    expect(find.text('title required'), findsOneWidget);
-    expect(find.text('new place'), findsOneWidget);
+    expect(camera.lastSource, ImageSource.camera);
+    expect(find.text('Add place'), findsOneWidget);
+    expect(find.text('Change photo'), findsOneWidget);
+
+    // Closing the form goes back to My places without saving.
+    await tester.tap(find.bySemanticsLabel('Close'));
+    await tester.pumpAndSettle();
+    expect(find.text('No favorite places yet'), findsOneWidget);
   });
 }

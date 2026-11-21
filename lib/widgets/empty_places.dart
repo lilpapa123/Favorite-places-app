@@ -1,34 +1,43 @@
 import 'package:favorite_places/theme/app_theme.dart';
-import 'package:favorite_places/widgets/ascii_panel.dart';
+import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:flutter/material.dart';
 
-/// Empty state for the feed — terse, framed, no grey box.
+/// Empty state for the feed: pin icon, friendly copy, one clear action.
 class EmptyPlaces extends StatelessWidget {
-  const EmptyPlaces({super.key});
+  const EmptyPlaces({super.key, this.onAdd});
+
+  final VoidCallback? onAdd;
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AsciiSpace.lg),
-        child: AsciiPanel(
-          label: 'empty',
-          padding: const EdgeInsets.symmetric(
-            horizontal: AsciiSpace.xl,
-            vertical: AsciiSpace.xxl,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('no places yet', style: AsciiType.heading()),
-              const SizedBox(height: AsciiSpace.sm),
-              Text(
-                'add one below to start\nyour collection.',
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpace.page),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.place_outlined,
+              size: 44,
+              color: AppColors.faint,
+            ),
+            const SizedBox(height: AppSpace.md),
+            Text('No favorite places yet', style: AppText.title()),
+            const SizedBox(height: AppSpace.sm),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 260),
+              child: Text(
+                'Add a place with a photo, and it will show up here.',
                 textAlign: TextAlign.center,
-                style: AsciiType.small(),
+                style: AppText.body(color: AppColors.muted)
+                    .copyWith(fontSize: 14),
               ),
+            ),
+            if (onAdd != null) ...[
+              const SizedBox(height: AppSpace.lg),
+              PillButton(label: 'Add a place', onPressed: onAdd),
             ],
-          ),
+          ],
         ),
       ),
     );
