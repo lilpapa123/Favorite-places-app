@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Beach Bum badge: a striped umbrella on the sand by the sea at sunset">
+<defs>
+<clipPath id="c7"><circle cx="100" cy="100" r="92"></circle></clipPath>
+<linearGradient id="g7sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBC2A2"></stop><stop offset="1" stop-color="#FFF1DC"></stop></linearGradient>
+<linearGradient id="g7sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE3A3"></stop><stop offset="1" stop-color="#F7A65A"></stop></linearGradient>
+<linearGradient id="g7sea" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6FC6D9"></stop><stop offset="1" stop-color="#2B87B8"></stop></linearGradient>
+<linearGradient id="g7wave" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A6E4E8"></stop><stop offset="1" stop-color="#4FA9C9"></stop></linearGradient>
+<linearGradient id="g7sand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F8E4BC"></stop><stop offset="1" stop-color="#E6BB78"></stop></linearGradient>
+</defs>
+<g clip-path="url(#c7)">
+<rect width="200" height="200" fill="url(#g7sky)"></rect>
+<circle cx="88" cy="82" r="30" fill="url(#g7sun)"></circle>
+<g stroke="#8A6F64" stroke-width="2" fill="none" stroke-linecap="round"><path d="M136 52 Q140 48 144 52 Q148 48 152 52"></path><path d="M150 66 Q153 63 156 66 Q159 63 162 66"></path></g>
+<path d="M0 112 Q50 100 100 112 Q150 124 200 108 V200 H0 Z" fill="url(#g7sea)"></path>
+<path d="M0 134 Q40 120 80 132 Q120 144 160 128 Q180 122 200 128 V200 H0 Z" fill="url(#g7wave)"></path>
+<path d="M0 160 Q70 140 130 156 Q170 166 200 152 V200 H0 Z" fill="url(#g7sand)"></path>
+<g transform="rotate(-14 142 150)">
+<line x1="142" y1="104" x2="142" y2="164" stroke="#8A6A3A" stroke-width="3" stroke-linecap="round"></line>
+<path d="M112 110 Q142 76 172 110 Z" fill="#EE7A5A"></path>
+<path d="M132 110 Q142 80 152 110 Z" fill="#FFF3E6"></path>
+</g>
+</g>
+</svg>

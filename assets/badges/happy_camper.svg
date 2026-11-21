@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Happy Camper badge: a tent and campfire among pine trees">
+<defs>
+<clipPath id="c9"><path d="M52 34 H148 Q170 34 170 56 V110 A70 70 0 0 1 30 110 V56 Q30 34 52 34 Z"></path></clipPath>
+<linearGradient id="g9sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A4CFCB"></stop><stop offset="1" stop-color="#F4E7CE"></stop></linearGradient>
+<linearGradient id="g9pine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4A8A66"></stop><stop offset="1" stop-color="#1F4D3A"></stop></linearGradient>
+<linearGradient id="g9tent" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F8B06A"></stop><stop offset="1" stop-color="#DE6232"></stop></linearGradient>
+<linearGradient id="g9ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B2D0A2"></stop><stop offset="1" stop-color="#6E9A66"></stop></linearGradient>
+</defs>
+<path d="M40 20 H160 Q184 20 184 44 V110 A84 84 0 0 1 16 110 V44 Q16 20 40 20 Z" fill="#F7FBF5" stroke="#B9D3B0" stroke-width="5"></path>
+<g clip-path="url(#c9)">
+<rect width="200" height="200" fill="url(#g9sky)"></rect>
+<path d="M20 118 L64 74 L92 102 L126 66 L180 120 V200 H20 Z" fill="#BCD6CE"></path>
+<g fill="url(#g9pine)">
+<polygon points="40,138 52,96 64,138"></polygon><polygon points="58,140 70,106 82,140"></polygon>
+<polygon points="140,140 154,92 168,140"></polygon><polygon points="126,142 136,112 146,142"></polygon>
+</g>
+<path d="M20 136 Q100 124 180 138 V200 H20 Z" fill="url(#g9ground)"></path>
+<polygon points="72,146 100,96 128,146" fill="url(#g9tent)"></polygon>
+<polygon points="100,96 128,146 112,146" fill="#C4522A" opacity="0.6"></polygon>
+<polygon points="92,146 100,124 108,146" fill="#7E3219"></polygon>
+<g stroke="#7A5A34" stroke-width="3" stroke-linecap="round"><line x1="134" y1="156" x2="150" y2="150"></line><line x1="134" y1="150" x2="150" y2="156"></line></g>
+<path d="M142 128 Q152 140 148 150 Q142 156 136 150 Q132 140 142 128 Z" fill="#F7934A"></path>
+<path d="M142 138 Q147 144 145 150 Q142 152 139 150 Q137 144 142 138 Z" fill="#FFD98A"></path>
+</g>
+</svg>

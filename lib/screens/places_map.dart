@@ -1,3 +1,4 @@
+import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/user_palces.dart';
 import 'package:favorite_places/screens/places_detail.dart';
@@ -155,7 +156,7 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
       _selectedId = null;
     });
     if (point == null) {
-      _showMessage('Couldn\'t find "$query". Try a city or full address.');
+      _showMessage(context.l10n.couldNotFindQuery(query));
     } else {
       FocusScope.of(context).unfocus();
       _flyTo(point, 15);
@@ -171,13 +172,14 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
   }
 
   Future<void> _locateMe() async {
+    final l10n = context.l10n;
     if (_locating) {
       return;
     }
     setState(() => _locating = true);
     try {
       if (!await Geolocator.isLocationServiceEnabled()) {
-        _showMessage('Location services are off. Turn them on in Settings.');
+        _showMessage(l10n.locationServicesOff);
         return;
       }
       var permission = await Geolocator.checkPermission();
@@ -186,7 +188,7 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
       }
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        _showMessage('Allow location access to see where you are.');
+        _showMessage(l10n.allowLocationToSee);
         return;
       }
       final position = await Geolocator.getCurrentPosition(
@@ -201,7 +203,7 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
       setState(() => _me = me);
       _flyTo(me, 15);
     } catch (error) {
-      _showMessage('Could not get your location: $error');
+      _showMessage(l10n.couldNotGetLocation('$error'));
     } finally {
       if (mounted) {
         setState(() => _locating = false);
@@ -225,9 +227,9 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
         if (p.city.isNotEmpty) p.city,
     };
     if (cities.length == 1 && pinned.every((p) => p.city.isNotEmpty)) {
-      return '${cities.first} · ${pinned.length}';
+      return context.l10n.cityCount(cities.first, pinned.length);
     }
-    return '${pinned.length} pinned';
+    return context.l10n.pinnedCount(pinned.length);
   }
 
   @override
@@ -301,7 +303,7 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
                 ),
                 Padding(
                   padding: EdgeInsets.only(bottom: bottomInset),
-                  child: AppMap.attribution(),
+                  child: AppMap.attribution(context),
                 ),
               ],
             ),
@@ -342,7 +344,7 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
                           Expanded(
                             child: SearchField(
                               controller: _search,
-                              hintText: 'Search places or cities',
+                              hintText: context.l10n.searchPlacesOrCities,
                               height: 42,
                               autofocus: true,
                               onChanged: (_) => setState(() => _found = null),
@@ -353,7 +355,7 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
                           CircleIconButton(
                             size: 42,
                             icon: _finding
-                                ? const SizedBox(
+                                ? SizedBox(
                                     width: 18,
                                     height: 18,
                                     child: CircularProgressIndicator(
@@ -362,7 +364,7 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
                                     ),
                                   )
                                 : const AppIcon('close'),
-                            semanticLabel: 'Close search',
+                            semanticLabel: context.l10n.closeSearch,
                             onPressed: _closeSearch,
                           ),
                         ],
@@ -377,11 +379,11 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
                               crossAxisAlignment: CrossAxisAlignment.baseline,
                               textBaseline: TextBaseline.alphabetic,
                               children: [
-                                Text('Map', style: AppText.heading()),
+                                Text(context.l10n.tabMap, style: AppText.heading()),
                                 const SizedBox(width: AppSpace.md),
                                 Expanded(
                                   child: Text(
-                                    'Your favorites, a little closer.',
+                                    context.l10n.mapSubtitle,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: AppText.meta(),
@@ -394,7 +396,7 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
                           CircleIconButton(
                             size: 42,
                             icon: const AppIcon('search'),
-                            semanticLabel: 'Search places or cities',
+                            semanticLabel: context.l10n.searchPlacesOrCities,
                             onPressed: () =>
                                 setState(() => _searchOpen = true),
                           ),
@@ -423,7 +425,7 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
               child: Container(
                 margin: const EdgeInsets.all(AppSpace.page),
                 padding: const EdgeInsets.all(AppSpace.xxl),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: AppRadius.cardAll,
                   boxShadow: AppShadow.floating,
@@ -433,10 +435,10 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
                   children: [
                     const AppIcon('pin_location', size: 32),
                     const SizedBox(height: AppSpace.sm),
-                    Text('No pins yet', style: AppText.title()),
+                    Text(context.l10n.noPinsYet, style: AppText.title()),
                     const SizedBox(height: AppSpace.xs),
                     Text(
-                      'Add a place with a location\nand it shows up here.',
+                      context.l10n.noPinsBody,
                       textAlign: TextAlign.center,
                       style: AppText.meta(),
                     ),
@@ -453,9 +455,9 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
             child: CircleIconButton(
               size: 48,
               shadow: true,
-              semanticLabel: 'Center on my location',
+              semanticLabel: context.l10n.centerOnMyLocation,
               icon: _locating
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
@@ -506,7 +508,7 @@ class _PreviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final location = place.location!;
     final meta = [
-      place.category.label,
+      place.category.label(context.l10n),
       if (location.area.isNotEmpty) location.area
       else if (location.city.isNotEmpty) location.city,
     ].join(' · ');
@@ -514,7 +516,7 @@ class _PreviewCard extends StatelessWidget {
     return Container(
       height: 148,
       padding: const EdgeInsets.all(AppSpace.md),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: AppRadius.cardAll,
         boxShadow: [
@@ -569,7 +571,7 @@ class _PreviewCard extends StatelessWidget {
                 const Spacer(),
                 Semantics(
                   button: true,
-                  label: 'View place',
+                  label: context.l10n.viewPlace,
                   excludeSemantics: true,
                   child: Material(
                     color: AppColors.accentSoft,
@@ -580,12 +582,12 @@ class _PreviewCard extends StatelessWidget {
                       child: SizedBox(
                         height: 36,
                         child: Padding(
-                          padding: const EdgeInsets.only(left: 16, right: 20),
+                          padding: const EdgeInsetsDirectional.only(start: 16, end: 20),
                           child: Row(
                             children: [
                               Expanded(
                                 child: Text(
-                                  'View place',
+                                  context.l10n.viewPlace,
                                   style: AppText.label(color: AppColors.accent)
                                       .copyWith(fontSize: 13),
                                 ),

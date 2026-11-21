@@ -1,3 +1,4 @@
+import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
 import 'package:flutter/material.dart';
@@ -62,8 +63,8 @@ class SearchField extends StatelessWidget {
             builder: (context, value, _) => value.text.isEmpty
                 ? const SizedBox(width: 14)
                 : IconButton(
-                    tooltip: 'Clear search',
-                    icon: const Icon(
+                    tooltip: context.l10n.clearSearch,
+                    icon: Icon(
                       Icons.cancel,
                       size: 18,
                       color: AppColors.faint,

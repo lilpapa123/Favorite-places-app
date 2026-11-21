@@ -52,7 +52,7 @@ class _PillButtonState extends State<PillButton> {
         _enabled
             ? (_pressed ? AppColors.accentPressed : AppColors.accent)
             : AppColors.accentDisabled,
-        AppColors.surface,
+        AppColors.onAccent,
         null,
       ),
       PillButtonVariant.outlined => (
@@ -135,16 +135,16 @@ class RoundIconButton extends StatelessWidget {
     required this.icon,
     required this.onPressed,
     required this.semanticLabel,
-    this.background = AppColors.accentSoft,
-    this.foreground = AppColors.accent,
+    this.background,
+    this.foreground,
     this.size = 44,
   });
 
   final IconData icon;
   final VoidCallback onPressed;
   final String semanticLabel;
-  final Color background;
-  final Color foreground;
+  final Color? background;
+  final Color? foreground;
   final double size;
 
   @override
@@ -154,7 +154,7 @@ class RoundIconButton extends StatelessWidget {
       label: semanticLabel,
       excludeSemantics: true,
       child: Material(
-        color: background,
+        color: background ?? AppColors.accentSoft,
         shape: const CircleBorder(),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -162,7 +162,7 @@ class RoundIconButton extends StatelessWidget {
           child: SizedBox(
             width: size,
             height: size,
-            child: Icon(icon, size: 20, color: foreground),
+            child: Icon(icon, size: 20, color: foreground ?? AppColors.accent),
           ),
         ),
       ),
@@ -178,7 +178,7 @@ class CircleIconButton extends StatelessWidget {
     required this.onPressed,
     required this.semanticLabel,
     this.size = 44,
-    this.background = AppColors.surface,
+    this.background,
     this.shadow = false,
   });
 
@@ -186,7 +186,7 @@ class CircleIconButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String semanticLabel;
   final double size;
-  final Color background;
+  final Color? background;
   final bool shadow;
 
   @override
@@ -201,7 +201,7 @@ class CircleIconButton extends StatelessWidget {
           boxShadow: shadow ? AppShadow.soft : null,
         ),
         child: Material(
-          color: background,
+          color: background ?? AppColors.surface,
           shape: const CircleBorder(),
           clipBehavior: Clip.antiAlias,
           child: InkWell(

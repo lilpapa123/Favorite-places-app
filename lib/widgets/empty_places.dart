@@ -1,3 +1,4 @@
+import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:flutter/material.dart';
@@ -16,18 +17,18 @@ class EmptyPlaces extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.place_outlined,
               size: 44,
               color: AppColors.faint,
             ),
             const SizedBox(height: AppSpace.md),
-            Text('No favorite places yet', style: AppText.title()),
+            Text(context.l10n.noFavoritesYet, style: AppText.title()),
             const SizedBox(height: AppSpace.sm),
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 260),
               child: Text(
-                'Add a place with a photo, and it will show up here.',
+                context.l10n.noFavoritesBody,
                 textAlign: TextAlign.center,
                 style: AppText.body(color: AppColors.muted)
                     .copyWith(fontSize: 14),
@@ -35,7 +36,7 @@ class EmptyPlaces extends StatelessWidget {
             ),
             if (onAdd != null) ...[
               const SizedBox(height: AppSpace.lg),
-              PillButton(label: 'Add a place', onPressed: onAdd),
+              PillButton(label: context.l10n.addAPlace, onPressed: onAdd),
             ],
           ],
         ),

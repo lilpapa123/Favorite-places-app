@@ -1,3 +1,4 @@
+import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
@@ -78,7 +79,7 @@ class PlaceCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: AppSpace.md),
-                          TypePill(label: place.category.label),
+                          TypePill(label: place.category.label(context.l10n)),
                         ],
                       ),
                       if (place.note.isNotEmpty) ...[
@@ -155,9 +156,9 @@ class _OnMapBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 30,
-      padding: const EdgeInsets.only(left: 10, right: 12),
+      padding: const EdgeInsetsDirectional.only(start: 10, end: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.95),
+        color: AppColors.surface.withValues(alpha: 0.92),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
@@ -166,8 +167,8 @@ class _OnMapBadge extends StatelessWidget {
           const AppIcon('pin_badge'),
           const SizedBox(width: 6),
           Text(
-            'On map',
-            style: AppText.label(color: AppColors.label).copyWith(fontSize: 11),
+            context.l10n.onMap,
+            style: AppText.label(color: AppColors.ink).copyWith(fontSize: 11),
           ),
         ],
       ),

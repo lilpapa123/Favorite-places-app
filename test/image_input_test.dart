@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:favorite_places/l10n/app_localizations.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/image_input.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +30,9 @@ class _FakeImagePickerPlatform extends ImagePickerPlatform {
 
 Widget _buildHarness({ValueChanged<File?>? onImagePicked}) {
   return MaterialApp(
-    theme: AppTheme.data,
+    theme: AppTheme.data(Brightness.light),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     builder: (context, child) => MediaQuery(
       data: MediaQuery.of(context).copyWith(disableAnimations: true),
       child: child!,

@@ -1,7 +1,10 @@
 import 'dart:io';
 
+import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/screens/account.dart';
+import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/screens/add_place.dart';
+import 'package:favorite_places/screens/feed.dart';
 import 'package:favorite_places/screens/palces.dart';
 import 'package:favorite_places/screens/places_map.dart';
 import 'package:favorite_places/widgets/glass_tab_bar.dart';
@@ -27,14 +30,15 @@ class HomeShell extends StatefulWidget {
 }
 
 class _HomeShellState extends State<HomeShell> {
-  static const List<GlassTab> _tabs = [
-    GlassTab(label: 'My places', icon: 'tab_heart'),
-    GlassTab(label: 'Map', icon: 'tab_map'),
-    GlassTab(label: 'Account', icon: 'tab_person'),
+  List<GlassTab> get _tabs => [
+    GlassTab(label: context.l10n.tabMyPlaces, icon: 'tab_heart'),
+    GlassTab(label: context.l10n.tabMap, icon: 'tab_map'),
+    GlassTab(label: context.l10n.tabFeed, icon: 'tab_people'),
+    GlassTab(label: context.l10n.tabAccount, icon: 'tab_person'),
   ];
 
-  /// Pages 0-2 are the tabs; page 3 is the add form.
-  static const int _addPage = 3;
+  /// Pages 0-3 are the tabs; page 4 is the add form.
+  static const int _addPage = 4;
 
   final ImagePicker _picker = ImagePicker();
   final List<GlobalKey<NavigatorState>> _navigators = [
@@ -86,6 +90,7 @@ class _HomeShellState extends State<HomeShell> {
   }
 
   Future<void> _takePhoto() async {
+    final l10n = context.l10n;
     if (_capturing) {
       return;
     }
@@ -96,11 +101,11 @@ class _HomeShellState extends State<HomeShell> {
         photo = await _pick(ImageSource.camera);
       } on PlatformException catch (error) {
         if (error.code != 'no_available_camera') {
-          _showMessage(photoErrorMessage(error));
+          _showMessage(photoErrorMessage(l10n, error));
           return;
         }
         // Simulators have no camera: fall back to the photo library.
-        _showMessage('No camera on this device - choose a photo instead.');
+        _showMessage(l10n.noCameraChoosePhoto);
         photo = await _pick(ImageSource.gallery);
       }
       if (!mounted || photo == null) {
@@ -108,7 +113,7 @@ class _HomeShellState extends State<HomeShell> {
       }
       _openAddForm(image: File(photo.path));
     } on PlatformException catch (error) {
-      _showMessage(photoErrorMessage(error));
+      _showMessage(photoErrorMessage(l10n, error));
     } finally {
       if (mounted) {
         setState(() => _capturing = false);
@@ -126,7 +131,7 @@ class _HomeShellState extends State<HomeShell> {
       _capturedImage = null;
       _addFormKey = UniqueKey();
     });
-    _showMessage('Saved to My places');
+    _showMessage(context.l10n.savedToMyPlaces);
   }
 
   void _showMessage(String message) {
@@ -144,6 +149,8 @@ class _HomeShellState extends State<HomeShell> {
         return PalcesScreen(onAddPlace: () => _openAddForm());
       case 1:
         return const PlacesMapScreen();
+      case 2:
+        return const FeedScreen();
       default:
         return const AccountScreen();
     }
@@ -204,6 +211,8 @@ class _HomeShellState extends State<HomeShell> {
           onSelect: _openTab,
           onCamera: _takePhoto,
           cameraBusy: _capturing,
+          // Dark glass over the dark map tiles and in dark mode.
+          dark: _page == 1 || AppColors.isDark,
         ),
       ),
     );

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Backpacker badge: a hiking backpack in front of green hills and a setting sun">
+<defs>
+<clipPath id="c5"><path d="M52 34 H148 Q170 34 170 56 V110 A70 70 0 0 1 30 110 V56 Q30 34 52 34 Z"></path></clipPath>
+<linearGradient id="g5sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3EDC8"></stop><stop offset="1" stop-color="#F6D9C6"></stop></linearGradient>
+<linearGradient id="g5sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F8B48E"></stop><stop offset="1" stop-color="#EE8A62"></stop></linearGradient>
+<linearGradient id="g5hill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A9C99A"></stop><stop offset="1" stop-color="#5E8A5A"></stop></linearGradient>
+<linearGradient id="g5bag" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3E9271"></stop><stop offset="1" stop-color="#174F3B"></stop></linearGradient>
+<linearGradient id="g5flap" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2C7A5C"></stop><stop offset="1" stop-color="#123F2F"></stop></linearGradient>
+<linearGradient id="g5roll" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6CB74"></stop><stop offset="1" stop-color="#D9952E"></stop></linearGradient>
+</defs>
+<path d="M40 20 H160 Q184 20 184 44 V110 A84 84 0 0 1 16 110 V44 Q16 20 40 20 Z" fill="#FFF8EC" stroke="#E6D8B4" stroke-width="5"></path>
+<g clip-path="url(#c5)">
+<rect width="200" height="200" fill="url(#g5sky)"></rect>
+<circle cx="140" cy="66" r="16" fill="url(#g5sun)"></circle>
+<path d="M20 120 L62 72 L96 112 L130 80 L180 128 V200 H20 Z" fill="url(#g5hill)"></path>
+<path d="M62 72 L72 200 H20 V120 Z" fill="#4D7A4C" opacity="0.35"></path>
+<path d="M88 52 Q88 42 100 42 Q112 42 112 52" stroke="#123F2F" stroke-width="5" fill="none" stroke-linecap="round"></path>
+<rect x="56" y="90" width="16" height="28" rx="6" fill="#123F2F"></rect>
+<rect x="128" y="90" width="16" height="28" rx="6" fill="#123F2F"></rect>
+<rect x="66" y="50" width="68" height="80" rx="16" fill="url(#g5bag)"></rect>
+<path d="M66 76 Q66 50 84 50 H116 Q134 50 134 76 Q100 86 66 76 Z" fill="url(#g5flap)"></path>
+<rect x="79" y="64" width="6" height="24" rx="2" fill="#F3EBD8"></rect>
+<rect x="115" y="64" width="6" height="24" rx="2" fill="#F3EBD8"></rect>
+<rect x="77" y="98" width="46" height="24" rx="8" fill="#FFFFFF" opacity="0.18"></rect>
+<line x1="85" y1="106" x2="115" y2="106" stroke="#F3EBD8" stroke-width="2.5" stroke-linecap="round"></line>
+<rect x="58" y="128" width="84" height="18" rx="9" fill="url(#g5roll)"></rect>
+<path d="M72 129 V145 M128 129 V145" stroke="#B9791F" stroke-width="2"></path>
+<path d="M20 168 Q60 150 100 162 Q140 174 180 156 V200 H20 Z" fill="#9EC9C4" opacity="0.7"></path>
+</g>
+</svg>

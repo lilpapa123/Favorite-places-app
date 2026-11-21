@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/user_palces.dart';
 import 'package:favorite_places/theme/app_theme.dart';
@@ -107,7 +108,7 @@ class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_editing ? 'Changes saved' : 'Saved to My places'),
+          content: Text(_editing ? context.l10n.changesSaved : context.l10n.savedToMyPlaces),
         ),
       );
       Navigator.of(context).maybePop();
@@ -143,13 +144,13 @@ class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
             slivers: [
               SliverToBoxAdapter(
                 child: PageHeader(
-                  title: _editing ? 'Edit place' : 'Add place',
+                  title: _editing ? context.l10n.editPlace : context.l10n.addPlace,
                   subtitle: _editing
-                      ? 'Change anything you like.'
-                      : 'Keep a little piece of somewhere.',
+                      ? context.l10n.editPlaceSubtitle
+                      : context.l10n.addPlaceSubtitle,
                   trailing: CircleIconButton(
                     icon: const AppIcon('close'),
-                    semanticLabel: 'Close',
+                    semanticLabel: context.l10n.close,
                     onPressed: _close,
                   ),
                 ),
@@ -170,9 +171,9 @@ class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
                     ),
                     const SizedBox(height: AppSpace.lg),
                     AppTextField(
-                      label: 'Place name',
+                      label: context.l10n.placeName,
                       controller: _titleController,
-                      hintText: 'A little pause by the river',
+                      hintText: context.l10n.placeNameHint,
                       textInputAction: TextInputAction.next,
                       textCapitalization: TextCapitalization.sentences,
                     ),
@@ -184,10 +185,10 @@ class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
                     ),
                     const SizedBox(height: AppSpace.lg),
                     AppTextField(
-                      label: 'A little note',
-                      trailingLabel: 'Optional',
+                      label: context.l10n.littleNote,
+                      trailingLabel: context.l10n.optional,
                       controller: _noteController,
-                      hintText: 'Why you love it, in a line or two',
+                      hintText: context.l10n.littleNoteHint,
                       maxLines: 2,
                       maxLength: _noteLimit,
                       textCapitalization: TextCapitalization.sentences,
@@ -200,12 +201,12 @@ class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      'Only you can see your saved places.',
+                      context.l10n.onlyYouCanSee,
                       style: AppText.meta().copyWith(fontSize: 12),
                     ),
                     const SizedBox(height: AppSpace.xxl),
                     PillButton(
-                      label: _editing ? 'Save changes' : 'Save place',
+                      label: _editing ? context.l10n.saveChanges : context.l10n.savePlace,
                       leading: const AppIcon('heart_white'),
                       large: true,
                       expanded: true,

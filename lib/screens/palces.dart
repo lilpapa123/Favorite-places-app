@@ -1,3 +1,4 @@
+import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/user_palces.dart';
 import 'package:favorite_places/theme/app_theme.dart';
@@ -12,12 +13,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum _SortOrder {
-  newest('Newest first'),
-  oldest('Oldest first'),
-  name('Name, A to Z');
+  newest,
+  oldest,
+  name;
 
-  const _SortOrder(this.label);
-  final String label;
+  String label(AppLocalizations l10n) => switch (this) {
+    newest => l10n.sortNewest,
+    oldest => l10n.sortOldest,
+    name => l10n.sortName,
+  };
 }
 
 /// The "My places" tab: search, type filters, sort, and the feed.
@@ -89,14 +93,14 @@ class _PalcesScreenState extends ConsumerState<PalcesScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Sort places', style: AppText.title()),
+              Text(context.l10n.sortPlaces, style: AppText.title()),
               const SizedBox(height: AppSpace.sm),
               for (final order in _SortOrder.values)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(order.label, style: AppText.row()),
+                  title: Text(order.label(context.l10n), style: AppText.row()),
                   trailing: order == _sort
-                      ? const Icon(Icons.check, color: AppColors.accent)
+                      ? Icon(Icons.check, color: AppColors.accent)
                       : null,
                   onTap: () => Navigator.of(ctx).pop(order),
                 ),
@@ -115,12 +119,10 @@ class _PalcesScreenState extends ConsumerState<PalcesScreen> {
     final places = ref.watch(userPlacesProvider);
     final visible = _visible(places);
     final count = places.length;
+    // The first three types always show; the rest once a place uses them.
     final filters = [
-      PlaceCategory.cafe,
-      PlaceCategory.viewpoint,
-      PlaceCategory.walk,
-      if (places.any((p) => p.category == PlaceCategory.other))
-        PlaceCategory.other,
+      for (final c in PlaceCategory.values)
+        if (c.index < 3 || places.any((p) => p.category == c)) c,
     ];
 
     return Scaffold(
@@ -130,12 +132,12 @@ class _PalcesScreenState extends ConsumerState<PalcesScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             PageHeader(
-              title: 'My places',
+              title: context.l10n.tabMyPlaces,
               subtitle:
-                  '$count ${count == 1 ? 'favorite place' : 'favorite places'}',
+                  context.l10n.favoritePlacesCount(count),
               trailing: CircleIconButton(
                 icon: const AppIcon('sliders'),
-                semanticLabel: 'Sort places',
+                semanticLabel: context.l10n.sortPlaces,
                 onPressed: _chooseSort,
               ),
             ),
@@ -144,7 +146,7 @@ class _PalcesScreenState extends ConsumerState<PalcesScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: AppSpace.page),
                 child: SearchField(
                   controller: _search,
-                  hintText: 'Find a favorite place',
+                  hintText: context.l10n.findFavoritePlace,
                   onChanged: (_) => setState(() {}),
                 ),
               ),
@@ -158,14 +160,14 @@ class _PalcesScreenState extends ConsumerState<PalcesScreen> {
                   ),
                   children: [
                     ChoicePill(
-                      label: 'All · $count',
+                      label: context.l10n.allCount(count),
                       selected: _filter == null,
                       onTap: () => setState(() => _filter = null),
                     ),
                     for (final category in filters) ...[
                       const SizedBox(width: AppSpace.sm),
                       ChoicePill(
-                        label: category.plural,
+                        label: category.plural(context.l10n),
                         selected: _filter == category,
                         onTap: () => setState(
                           () => _filter = _filter == category ? null : category,
@@ -209,12 +211,12 @@ class _NoMatches extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('No places match', style: AppText.title()),
+            Text(context.l10n.noPlacesMatch, style: AppText.title()),
             const SizedBox(height: AppSpace.xs),
-            Text('Try another word or type.', style: AppText.meta()),
+            Text(context.l10n.tryAnotherWord, style: AppText.meta()),
             const SizedBox(height: AppSpace.lg),
             PillButton(
-              label: 'Show all places',
+              label: context.l10n.showAllPlaces,
               variant: PillButtonVariant.outlined,
               onPressed: onClear,
             ),

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="First Steps badge: a sneaker riding a swooping trail">
+<defs>
+<clipPath id="c3"><circle cx="100" cy="100" r="92"></circle></clipPath>
+<linearGradient id="g3bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FDEBDD"></stop><stop offset="1" stop-color="#F5B89E"></stop></linearGradient>
+<linearGradient id="g3trail" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F7A487"></stop><stop offset="1" stop-color="#D9573A"></stop></linearGradient>
+<linearGradient id="g3shoe" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4A5568"></stop><stop offset="1" stop-color="#1B2230"></stop></linearGradient>
+</defs>
+<g clip-path="url(#c3)">
+<rect width="200" height="200" fill="url(#g3bg)"></rect>
+<path d="M0 170 Q50 120 110 140 Q160 156 200 118 V200 H0 Z" fill="url(#g3trail)"></path>
+<path d="M0 188 Q60 152 120 166 Q170 178 200 152 V200 H0 Z" fill="#B8391F" opacity="0.55"></path>
+<g fill="#FFFFFF" opacity="0.7"><circle cx="36" cy="58" r="3"></circle><circle cx="48" cy="44" r="2"></circle></g>
+<g transform="translate(-6 -6)">
+<path d="M58 64 Q66 50 80 52 L96 60 Q104 74 120 78 L150 86 Q166 92 164 108 L164 116 Q164 124 154 124 L62 124 Q52 124 52 114 L52 92 Q52 76 58 64 Z" fill="url(#g3shoe)"></path>
+<path d="M54 110 H162" stroke="#FFFFFF" stroke-width="4"></path>
+<path d="M58 82 L72 88 L70 104 L54 104" stroke="#F7A487" stroke-width="3" fill="none" stroke-linejoin="round"></path>
+<g stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"><line x1="96" y1="68" x2="104" y2="59"></line><line x1="107" y1="74" x2="115" y2="65"></line><line x1="118" y1="78" x2="126" y2="70"></line></g>
+</g>
+<g stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.8"><line x1="18" y1="84" x2="36" y2="84"></line><line x1="14" y1="98" x2="38" y2="98"></line></g>
+</g>
+</svg>

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/providers/auth_provider.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
@@ -65,7 +66,7 @@ class _PhoneVerifyScreenState extends ConsumerState<PhoneVerifyScreen> {
   Future<void> _sendCode({bool resend = false}) async {
     final number = _e164;
     if (!RegExp(r'^\+\d{8,15}$').hasMatch(number)) {
-      _showMessage('Enter your number with the country code, e.g. +90 555 123 45 67');
+      _showMessage(context.l10n.enterNumberWithCode);
       return;
     }
     FocusScope.of(context).unfocus();
@@ -90,7 +91,7 @@ class _PhoneVerifyScreenState extends ConsumerState<PhoneVerifyScreen> {
           _resendToken = resendToken;
         });
         _startTimer();
-        _showMessage('Code sent to $number');
+        _showMessage(context.l10n.codeSentTo(number));
       },
       codeAutoRetrievalTimeout: (verificationId) {
         _verificationId ??= verificationId;
@@ -102,7 +103,7 @@ class _PhoneVerifyScreenState extends ConsumerState<PhoneVerifyScreen> {
     final code = _code.text.trim();
     final id = _verificationId;
     if (id == null || code.length != 6) {
-      _showMessage('Enter the 6-digit code from the SMS');
+      _showMessage(context.l10n.enter6DigitCode);
       return;
     }
     FocusScope.of(context).unfocus();
@@ -113,7 +114,7 @@ class _PhoneVerifyScreenState extends ConsumerState<PhoneVerifyScreen> {
   Future<void> _link(PhoneAuthCredential credential) async {
     final user = ref.read(firebaseAuthProvider).currentUser;
     if (user == null) {
-      _showMessage('Sign in first to add a phone number.');
+      _showMessage(context.l10n.signInFirstForPhone);
       return;
     }
     setState(() => _busy = true);
@@ -126,7 +127,7 @@ class _PhoneVerifyScreenState extends ConsumerState<PhoneVerifyScreen> {
       await user.reload();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Phone number verified')),
+        SnackBar(content: Text(context.l10n.phoneVerified)),
       );
       Navigator.of(context).pop();
     } on FirebaseAuthException catch (error) {
@@ -142,28 +143,27 @@ class _PhoneVerifyScreenState extends ConsumerState<PhoneVerifyScreen> {
   String _messageFor(FirebaseAuthException error) {
     switch (error.code) {
       case 'invalid-phone-number':
-        return 'That phone number doesn\'t look right. Include the country code.';
+        return context.l10n.errInvalidPhone;
       case 'invalid-verification-code':
-        return 'That code isn\'t right. Check the SMS and try again.';
+        return context.l10n.errInvalidCode;
       case 'session-expired':
       case 'code-expired':
-        return 'The code expired. Tap "Send a new code".';
+        return context.l10n.errCodeExpired;
       case 'credential-already-in-use':
       case 'account-exists-with-different-credential':
-        return 'This number is already used by another account.';
+        return context.l10n.errNumberInUse;
       case 'provider-already-linked':
-        return 'This account already has a phone number.';
+        return context.l10n.errAlreadyHasPhone;
       case 'too-many-requests':
-        return 'Too many attempts. Wait a while and try again.';
+        return context.l10n.errTooManyAttemptsLong;
       case 'quota-exceeded':
-        return 'SMS limit reached for today. Try again later.';
+        return context.l10n.errSmsQuota;
       case 'operation-not-allowed':
-        return 'Phone sign-in is not enabled in the Firebase console '
-            '(Authentication > Sign-in method > Phone).';
+        return context.l10n.errPhoneNotEnabled;
       case 'network-request-failed':
-        return 'No connection. Check your internet and try again.';
+        return context.l10n.noConnection;
       default:
-        return error.message ?? 'Verification failed (${error.code}).';
+        return error.message ?? context.l10n.errVerificationFailed(error.code);
     }
   }
 
@@ -184,13 +184,13 @@ class _PhoneVerifyScreenState extends ConsumerState<PhoneVerifyScreen> {
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           children: [
             PageHeader(
-              title: 'Phone number',
+              title: context.l10n.phoneNumber,
               subtitle: _codeSent
-                  ? 'Enter the code we sent by SMS.'
-                  : 'We\'ll text you a code to verify it.',
+                  ? context.l10n.enterCodeWeSent
+                  : context.l10n.wellTextYouCode,
               trailing: CircleIconButton(
                 icon: const AppIcon('close'),
-                semanticLabel: 'Close',
+                semanticLabel: context.l10n.close,
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),
@@ -200,7 +200,7 @@ class _PhoneVerifyScreenState extends ConsumerState<PhoneVerifyScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   AppTextField(
-                    label: 'Phone number',
+                    label: context.l10n.phoneNumber,
                     controller: _phone,
                     hintText: '+90 555 123 45 67',
                     keyboardType: TextInputType.phone,
@@ -210,7 +210,7 @@ class _PhoneVerifyScreenState extends ConsumerState<PhoneVerifyScreen> {
                   ),
                   if (_codeSent) ...[
                     const SizedBox(height: AppSpace.lg),
-                    Text('6-digit code', style: AppText.labelMedium()),
+                    Text(context.l10n.sixDigitCode, style: AppText.labelMedium()),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _code,
@@ -233,15 +233,15 @@ class _PhoneVerifyScreenState extends ConsumerState<PhoneVerifyScreen> {
                     ),
                     const SizedBox(height: AppSpace.sm),
                     Align(
-                      alignment: Alignment.centerLeft,
+                      alignment: AlignmentDirectional.centerStart,
                       child: TextButton(
                         onPressed: _busy || _secondsLeft > 0
                             ? null
                             : () => _sendCode(resend: true),
                         child: Text(
                           _secondsLeft > 0
-                              ? 'Send a new code in ${_secondsLeft}s'
-                              : 'Send a new code',
+                              ? context.l10n.sendNewCodeIn(_secondsLeft)
+                              : context.l10n.sendNewCode,
                           style: AppText.label(
                             color: _secondsLeft > 0
                                 ? AppColors.faint
@@ -254,16 +254,15 @@ class _PhoneVerifyScreenState extends ConsumerState<PhoneVerifyScreen> {
                   const SizedBox(height: AppSpace.xxl),
                   PillButton(
                     label: _busy
-                        ? 'Please wait...'
-                        : (_codeSent ? 'Verify' : 'Send code'),
+                        ? context.l10n.pleaseWait
+                        : (_codeSent ? context.l10n.verify : context.l10n.sendCode),
                     large: true,
                     expanded: true,
                     onPressed: _busy ? null : (_codeSent ? _verify : _sendCode),
                   ),
                   const SizedBox(height: AppSpace.md),
                   Text(
-                    'Standard SMS rates may apply. Your number is only used '
-                    'to secure your account.',
+                    context.l10n.smsRatesNote,
                     textAlign: TextAlign.center,
                     style: AppText.meta(color: AppColors.faint)
                         .copyWith(fontSize: 12),

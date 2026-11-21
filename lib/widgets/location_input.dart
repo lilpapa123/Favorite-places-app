@@ -1,3 +1,4 @@
+import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/screens/map_picker.dart';
 import 'package:favorite_places/services/address_lookup.dart';
@@ -53,24 +54,24 @@ class _LocationInputState extends State<LocationInput> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Where is it?', style: AppText.title()),
+              Text(context.l10n.whereIsIt, style: AppText.title()),
               const SizedBox(height: AppSpace.md),
               _SheetOption(
                 icon: Icons.my_location,
-                label: 'Use my location',
+                label: context.l10n.useMyLocation,
                 onTap: () => Navigator.of(ctx).pop('current'),
               ),
               const SizedBox(height: AppSpace.sm),
               _SheetOption(
                 icon: Icons.map_outlined,
-                label: 'Pick on the map',
+                label: context.l10n.pickOnMap,
                 onTap: () => Navigator.of(ctx).pop('map'),
               ),
               if (_location != null) ...[
                 const SizedBox(height: AppSpace.sm),
                 _SheetOption(
                   icon: Icons.location_off_outlined,
-                  label: 'Remove location',
+                  label: context.l10n.removeLocation,
                   onTap: () => Navigator.of(ctx).pop('clear'),
                 ),
               ],
@@ -93,10 +94,11 @@ class _LocationInputState extends State<LocationInput> {
   }
 
   Future<void> _useCurrentLocation() async {
+    final l10n = context.l10n;
     setState(() => _isBusy = true);
     try {
       if (!await Geolocator.isLocationServiceEnabled()) {
-        _showMessage('Location services are off. Turn them on in Settings.');
+        _showMessage(l10n.locationServicesOff);
         return;
       }
       var permission = await Geolocator.checkPermission();
@@ -104,13 +106,12 @@ class _LocationInputState extends State<LocationInput> {
         permission = await Geolocator.requestPermission();
       }
       if (permission == LocationPermission.denied) {
-        _showMessage('Location permission was denied.');
+        _showMessage(l10n.locationPermissionDenied);
         return;
       }
       if (permission == LocationPermission.deniedForever) {
         _showMessage(
-          'Location access is blocked. Allow it in Settings > Favorite Places, '
-          'or pick the spot on the map instead.',
+          l10n.locationBlocked,
         );
         return;
       }
@@ -122,7 +123,7 @@ class _LocationInputState extends State<LocationInput> {
       );
       await _describe(LatLng(position.latitude, position.longitude));
     } catch (error) {
-      _showMessage('Could not get your location: $error');
+      _showMessage(l10n.couldNotGetLocation('$error'));
     } finally {
       if (mounted) {
         setState(() => _isBusy = false);
@@ -170,11 +171,11 @@ class _LocationInputState extends State<LocationInput> {
     final String title;
     final String subtitle;
     if (_isBusy) {
-      title = 'Finding the spot…';
-      subtitle = 'This takes a second';
+      title = context.l10n.findingSpot;
+      subtitle = context.l10n.takesASecond;
     } else if (location == null) {
-      title = 'Add a location';
-      subtitle = 'Use where you are, or pick on the map';
+      title = context.l10n.addLocation;
+      subtitle = context.l10n.addLocationHint;
     } else {
       title = location.title;
       subtitle = location.cityCountry.isNotEmpty
@@ -185,11 +186,11 @@ class _LocationInputState extends State<LocationInput> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Location', style: AppText.labelMedium()),
+        Text(context.l10n.location, style: AppText.labelMedium()),
         const SizedBox(height: 6),
         Semantics(
           button: true,
-          label: 'Location: $title',
+          label: context.l10n.locationSemantic(title),
           excludeSemantics: true,
           child: Material(
             color: AppColors.surface,
@@ -212,7 +213,7 @@ class _LocationInputState extends State<LocationInput> {
                           borderRadius: AppRadius.fieldAll,
                         ),
                         child: _isBusy
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 18,
                                 height: 18,
                                 child: CircularProgressIndicator(

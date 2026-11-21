@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 
+import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/user_palces.dart';
 import 'package:favorite_places/screens/add_place.dart';
@@ -11,6 +12,7 @@ import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:favorite_places/widgets/place_card.dart';
 import 'package:favorite_places/widgets/place_photo.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -23,11 +25,6 @@ class PlacesDetailScreen extends ConsumerWidget {
   /// Looked up live, so edits show up straight away.
   final String placeId;
 
-  static const List<String> _months = [
-    'January', 'February', 'March', 'April', 'May', 'June', //
-    'July', 'August', 'September', 'October', 'November', 'December',
-  ];
-
   void _remove(BuildContext context, WidgetRef ref, Place place) {
     final notifier = ref.read(userPlacesProvider.notifier);
     final messenger = ScaffoldMessenger.of(context);
@@ -37,9 +34,9 @@ class PlacesDetailScreen extends ConsumerWidget {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: const Text('Removed from My places'),
+          content: Text(context.l10n.removedFromMyPlaces),
           action: SnackBarAction(
-            label: 'Undo',
+            label: context.l10n.undo,
             onPressed: () => notifier.restorePlace(place, index),
           ),
         ),
@@ -72,14 +69,14 @@ class PlacesDetailScreen extends ConsumerWidget {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const AppIcon('edit'),
-                title: Text('Edit place', style: AppText.row()),
+                title: Text(context.l10n.editPlace, style: AppText.row()),
                 onTap: () => Navigator.of(ctx).pop('edit'),
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const AppIcon('heart_accent'),
                 title: Text(
-                  'Remove from my places',
+                  context.l10n.removeFromMyPlaces,
                   style: AppText.row(color: AppColors.accent),
                 ),
                 onTap: () => Navigator.of(ctx).pop('remove'),
@@ -111,7 +108,7 @@ class PlacesDetailScreen extends ConsumerWidget {
     final ok = await launchUrl(url, mode: LaunchMode.externalApplication);
     if (!ok && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open Maps')),
+        SnackBar(content: Text(context.l10n.couldNotOpenMaps)),
       );
     }
   }
@@ -143,20 +140,20 @@ class PlacesDetailScreen extends ConsumerWidget {
             Row(
               children: [
                 CircleIconButton(
-                  icon: const AppIcon('back'),
-                  semanticLabel: 'Back',
+                  icon: AppIcon('back', color: AppColors.accent),
+                  semanticLabel: context.l10n.back,
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 Expanded(
                   child: Text(
-                    'Saved place',
+                    context.l10n.savedPlace,
                     textAlign: TextAlign.center,
                     style: AppText.row(color: AppColors.label),
                   ),
                 ),
                 CircleIconButton(
-                  icon: const AppIcon('more'),
-                  semanticLabel: 'More place actions',
+                  icon: AppIcon('more', color: AppColors.accent),
+                  semanticLabel: context.l10n.morePlaceActions,
                   onPressed: () => _more(context, ref, place),
                 ),
               ],
@@ -183,7 +180,7 @@ class PlacesDetailScreen extends ConsumerWidget {
                       child: CircleIconButton(
                         size: 42,
                         icon: const AppIcon('heart_accent'),
-                        semanticLabel: 'Remove from my places',
+                        semanticLabel: context.l10n.removeFromMyPlaces,
                         onPressed: () => _remove(context, ref, place),
                       ),
                     ),
@@ -196,10 +193,10 @@ class PlacesDetailScreen extends ConsumerWidget {
             const SizedBox(height: 5),
             Row(
               children: [
-                TypePill(label: place.category.label, large: true),
+                TypePill(label: place.category.label(context.l10n), large: true),
                 const SizedBox(width: AppSpace.md),
                 Text(
-                  'Saved on ${_months[saved.month - 1]} ${saved.day}',
+                  context.l10n.savedOn(DateFormat.MMMMd(context.l10n.localeName).format(saved)),
                   style: AppText.meta().copyWith(fontSize: 12),
                 ),
               ],
@@ -212,7 +209,7 @@ class PlacesDetailScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'MY LITTLE NOTE',
+                      context.l10n.myLittleNote,
                       style: AppText.overline().copyWith(fontSize: 10),
                     ),
                     const SizedBox(height: AppSpace.sm),
@@ -239,7 +236,7 @@ class PlacesDetailScreen extends ConsumerWidget {
                     const SizedBox(width: AppSpace.md),
                     Expanded(
                       child: Text(
-                        'No location yet — add one with Edit place.',
+                        context.l10n.noLocationYet,
                         style: AppText.meta(),
                       ),
                     ),
@@ -248,7 +245,7 @@ class PlacesDetailScreen extends ConsumerWidget {
               ),
             const SizedBox(height: AppSpace.lg),
             PillButton(
-              label: 'Edit place',
+              label: context.l10n.editPlace,
               leading: const AppIcon('edit'),
               variant: PillButtonVariant.outlined,
               expanded: true,
@@ -300,7 +297,7 @@ class _LocationCard extends StatelessWidget {
                           height: 36,
                           child: Container(
                             alignment: Alignment.center,
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               color: AppColors.accent,
                               shape: BoxShape.circle,
                             ),
@@ -346,7 +343,7 @@ class _LocationCard extends StatelessWidget {
                 const SizedBox(height: AppSpace.sm),
                 Semantics(
                   button: true,
-                  label: 'Open in Maps',
+                  label: context.l10n.openInMaps,
                   excludeSemantics: true,
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
@@ -357,7 +354,7 @@ class _LocationCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Open in Maps',
+                            context.l10n.openInMaps,
                             style: AppText.label(color: AppColors.accent),
                           ),
                           const SizedBox(width: AppSpace.md),
@@ -389,7 +386,7 @@ class _Card extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: padding,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: AppRadius.cardAll,
       ),

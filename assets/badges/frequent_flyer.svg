@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Frequent Flyer badge: a plane climbing past the sun above soft clouds">
+<defs>
+<clipPath id="c6"><path d="M100 4 L190 100 L100 196 L10 100 Z"></path></clipPath>
+<linearGradient id="g6sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EEF4F3"></stop><stop offset="1" stop-color="#C6D4E6"></stop></linearGradient>
+<linearGradient id="g6sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7D896"></stop><stop offset="1" stop-color="#EA9F4C"></stop></linearGradient>
+<linearGradient id="g6c1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8DBDEB"></stop><stop offset="1" stop-color="#3D6FC4"></stop></linearGradient>
+<linearGradient id="g6c2" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B9D6F2"></stop><stop offset="1" stop-color="#6E9AD8"></stop></linearGradient>
+<linearGradient id="g6plane" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5F8FD8"></stop><stop offset="1" stop-color="#1E3A7A"></stop></linearGradient>
+</defs>
+<g clip-path="url(#c6)">
+<rect width="200" height="200" fill="url(#g6sky)"></rect>
+<circle cx="112" cy="58" r="18" fill="url(#g6sun)"></circle>
+<path d="M10 120 Q40 98 70 112 Q96 124 120 104 Q150 82 190 104 V200 H10 Z" fill="url(#g6c1)"></path>
+<path d="M30 150 Q60 128 92 140 Q120 150 146 132 Q170 118 190 130 V200 H30 Z" fill="url(#g6c2)"></path>
+<path d="M70 176 Q92 158 118 166 Q134 172 130 186 Z" fill="#E4EFFA" opacity="0.85"></path>
+<g transform="translate(44 54) scale(0.8) rotate(-22 60 34)" fill="url(#g6plane)">
+<path d="M10 25 L8 6 Q8 2 12 4 L30 25 Z"></path>
+<path d="M62 25 L54 6 L64 6 L78 25 Z"></path>
+<path d="M60 38 L82 38 L60 64 L48 64 Z"></path>
+<path d="M6 31 Q4 25 12 25 L104 25 Q118 27 118 33 Q114 39 100 39 L14 39 Q6 38 6 31 Z"></path>
+<g fill="#EEF4F3"><circle cx="40" cy="31" r="2"></circle><circle cx="50" cy="31" r="2"></circle><circle cx="60" cy="31" r="2"></circle><circle cx="70" cy="31" r="2"></circle><circle cx="80" cy="31" r="2"></circle></g>
+</g>
+</g>
+<circle cx="24" cy="66" r="14" fill="url(#g6c1)"></circle>
+</svg>

@@ -8,38 +8,71 @@ import 'package:google_fonts/google_fonts.dart';
 class AppColors {
   const AppColors._();
 
-  static const Color background = Color(0xFFF3F4F6);
-  static const Color surface = Color(0xFFFFFFFF);
+  /// Set by MyApp from the resolved theme (Settings or the phone's mode).
+  /// Every token below reads it, so the whole palette flips at once.
+  static bool isDark = false;
 
-  static const Color ink = Color(0xFF15171C);
-  static const Color inkSoft = Color(0xFF2B2F37);
-  static const Color label = Color(0xFF3A3F48);
-  static const Color muted = Color(0xFF5B606B);
-  static const Color faint = Color(0xFF8A8F99);
+  /// Text and icons on accent fills: white in both modes.
+  static const Color onAccent = Color(0xFFFFFFFF);
 
-  static const Color border = Color(0xFFC9CDD4);
-  static const Color divider = Color(0xFFE2E4E8);
-  static const Color dashed = Color(0xFFA9AEB8);
+  static Color get background =>
+      isDark ? const Color(0xFF0E0F12) : const Color(0xFFF3F4F6);
+  static Color get surface =>
+      isDark ? const Color(0xFF1A1C21) : const Color(0xFFFFFFFF);
 
-  static const Color accent = Color(0xFFB8391F);
-  static const Color accentPressed = Color(0xFF8F2A15);
-  static const Color accentSoft = Color(0xFFFBE9E5);
-  static const Color accentDisabled = Color(0xFFC9A39A);
+  static Color get ink =>
+      isDark ? const Color(0xFFF2F3F5) : const Color(0xFF15171C);
+  static Color get inkSoft =>
+      isDark ? const Color(0xFFD9DCE1) : const Color(0xFF2B2F37);
+  static Color get label =>
+      isDark ? const Color(0xFFC3C7CF) : const Color(0xFF3A3F48);
+  static Color get muted =>
+      isDark ? const Color(0xFF9EA3AD) : const Color(0xFF5B606B);
+  static Color get faint =>
+      isDark ? const Color(0xFF7A808B) : const Color(0xFF8A8F99);
 
-  static const Color success = Color(0xFF1F6B4F);
-  static const Color successSoft = Color(0xFFE7F3EE);
-  static const Color navy = Color(0xFF1E3A5F);
+  static Color get border =>
+      isDark ? const Color(0xFF3A3F48) : const Color(0xFFC9CDD4);
+  static Color get divider =>
+      isDark ? const Color(0xFF2A2D34) : const Color(0xFFE2E4E8);
+  static Color get dashed =>
+      isDark ? const Color(0xFF4A505A) : const Color(0xFFA9AEB8);
+
+  static Color get accent =>
+      isDark ? const Color(0xFFE0603F) : const Color(0xFFB8391F);
+  static Color get accentPressed =>
+      isDark ? const Color(0xFFC04A2C) : const Color(0xFF8F2A15);
+  static Color get accentSoft =>
+      isDark ? const Color(0xFF3A1F19) : const Color(0xFFFBE9E5);
+  static Color get accentDisabled =>
+      isDark ? const Color(0xFF6B4A42) : const Color(0xFFC9A39A);
+
+  static Color get success =>
+      isDark ? const Color(0xFF4FB58A) : const Color(0xFF1F6B4F);
+  static Color get successSoft =>
+      isDark ? const Color(0xFF16302A) : const Color(0xFFE7F3EE);
+  static Color get navy =>
+      isDark ? const Color(0xFF6E97CC) : const Color(0xFF1E3A5F);
 
   /// Soft backgrounds for places without a photo, picked by position.
-  static const List<Color> tints = [
-    Color(0xFFDCE6F0),
-    Color(0xFFEFE3D6),
-    Color(0xFFE4DDEE),
-    Color(0xFFD8EAE3),
-    Color(0xFFF0E6D2),
-  ];
+  static List<Color> get tints => isDark
+      ? const [
+          Color(0xFF243040),
+          Color(0xFF3A3026),
+          Color(0xFF302A3C),
+          Color(0xFF20352E),
+          Color(0xFF3A3220),
+        ]
+      : const [
+          Color(0xFFDCE6F0),
+          Color(0xFFEFE3D6),
+          Color(0xFFE4DDEE),
+          Color(0xFFD8EAE3),
+          Color(0xFFF0E6D2),
+        ];
 
-  static Color tintFor(String seed) => tints[seed.hashCode.abs() % tints.length];
+  static Color tintFor(String seed) =>
+      tints[seed.hashCode.abs() % tints.length];
 }
 
 class AppSpace {
@@ -119,88 +152,141 @@ class AppText {
   );
 
   /// Big page title: "My places".
-  static TextStyle heading({Color color = AppColors.ink}) => _grotesk700
-      .copyWith(fontSize: 28, height: 1.4, letterSpacing: -0.8, color: color);
+  static TextStyle heading({Color? color}) => _grotesk700.copyWith(
+    fontSize: 28,
+    height: 1.4,
+    letterSpacing: -0.8,
+    color: color ?? AppColors.ink,
+  );
 
   /// Big numbers on the Account stats card.
-  static TextStyle stat({Color color = AppColors.navy}) => _grotesk700
-      .copyWith(fontSize: 25, height: 1.4, color: color);
+  static TextStyle stat({Color? color}) => _grotesk700.copyWith(
+    fontSize: 25,
+    height: 1.4,
+    color: color ?? AppColors.accent,
+  );
 
   /// "MY LITTLE NOTE", "YOUR SPACE" section captions.
-  static TextStyle overline({Color color = AppColors.faint}) => _inter600
-      .copyWith(fontSize: 11, height: 1.36, letterSpacing: 1, color: color);
+  static TextStyle overline({Color? color}) => _inter600.copyWith(
+    fontSize: 11,
+    height: 1.36,
+    letterSpacing: 1,
+    color: color ?? AppColors.faint,
+  );
 
   /// Medium 13 — field labels, chips, secondary actions.
-  static TextStyle labelMedium({Color color = AppColors.label}) =>
-      _inter500.copyWith(fontSize: 13, height: 1.4, color: color);
+  static TextStyle labelMedium({Color? color}) => _inter500.copyWith(
+    fontSize: 13,
+    height: 1.4,
+    color: color ?? AppColors.label,
+  );
 
   /// Medium 15 — list rows.
-  static TextStyle row({Color color = AppColors.ink}) =>
-      _inter500.copyWith(fontSize: 15, height: 1.4, color: color);
+  static TextStyle row({Color? color}) => _inter500.copyWith(
+    fontSize: 15,
+    height: 1.4,
+    color: color ?? AppColors.ink,
+  );
 
   /// Large title on the detail screen.
-  static TextStyle display({Color color = AppColors.ink}) => _grotesk700
-      .copyWith(fontSize: 26, height: 1.15, letterSpacing: -0.5, color: color);
+  static TextStyle display({Color? color}) => _grotesk700.copyWith(
+    fontSize: 26,
+    height: 1.15,
+    letterSpacing: -0.5,
+    color: color ?? AppColors.ink,
+  );
 
   /// Card and section titles.
-  static TextStyle title({Color color = AppColors.ink}) =>
-      _inter600.copyWith(fontSize: 17, height: 1.3, color: color);
+  static TextStyle title({Color? color}) => _inter600.copyWith(
+    fontSize: 17,
+    height: 1.3,
+    color: color ?? AppColors.ink,
+  );
 
-  static TextStyle body({Color color = AppColors.ink}) =>
-      _inter400.copyWith(fontSize: 15, height: 1.4, color: color);
+  static TextStyle body({Color? color}) => _inter400.copyWith(
+    fontSize: 15,
+    height: 1.4,
+    color: color ?? AppColors.ink,
+  );
 
-  static TextStyle bodyStrong({Color color = AppColors.ink}) =>
-      _inter600.copyWith(fontSize: 15, height: 1.3, color: color);
+  static TextStyle bodyStrong({Color? color}) => _inter600.copyWith(
+    fontSize: 15,
+    height: 1.3,
+    color: color ?? AppColors.ink,
+  );
 
   /// "Why you love it" notes.
-  static TextStyle note({Color color = AppColors.inkSoft}) =>
-      _inter400.copyWith(fontSize: 14, height: 1.45, color: color);
+  static TextStyle note({Color? color}) => _inter400.copyWith(
+    fontSize: 14,
+    height: 1.45,
+    color: color ?? AppColors.inkSoft,
+  );
 
   /// "Kadıköy · Walk" and other secondary lines.
-  static TextStyle meta({Color color = AppColors.muted}) =>
-      _inter400.copyWith(fontSize: 13, height: 1.35, color: color);
+  static TextStyle meta({Color? color}) => _inter400.copyWith(
+    fontSize: 13,
+    height: 1.35,
+    color: color ?? AppColors.muted,
+  );
 
   /// Form field labels.
-  static TextStyle label({Color color = AppColors.label}) =>
-      _inter600.copyWith(fontSize: 13, height: 1.3, color: color);
+  static TextStyle label({Color? color}) => _inter600.copyWith(
+    fontSize: 13,
+    height: 1.3,
+    color: color ?? AppColors.label,
+  );
 
-  static TextStyle chip({Color color = AppColors.ink}) =>
-      _inter500.copyWith(fontSize: 14, height: 1.2, color: color);
+  static TextStyle chip({Color? color}) => _inter500.copyWith(
+    fontSize: 14,
+    height: 1.2,
+    color: color ?? AppColors.ink,
+  );
 
-  static TextStyle button({Color color = AppColors.surface, double size = 15}) =>
-      _inter600.copyWith(fontSize: size, height: 1.2, color: color);
+  static TextStyle button({Color? color, double size = 15}) =>
+      _inter600.copyWith(
+        fontSize: size,
+        height: 1.2,
+        color: color ?? AppColors.onAccent,
+      );
 
-  static TextStyle tab({Color color = AppColors.muted}) =>
-      _inter600.copyWith(fontSize: 11, height: 1.1, color: color);
+  static TextStyle tab({Color? color}) => _inter600.copyWith(
+    fontSize: 11,
+    height: 1.1,
+    color: color ?? AppColors.muted,
+  );
 }
 
 class AppTheme {
   const AppTheme._();
 
-  static ThemeData get data {
-    final base = ThemeData(brightness: Brightness.light, useMaterial3: true);
+  /// Theme for [brightness]. Callers must set [AppColors.isDark] first so
+  /// the tokens resolve to the matching palette.
+  static ThemeData data(Brightness brightness) {
+    final base = ThemeData(brightness: brightness, useMaterial3: true);
     const fieldBorder = OutlineInputBorder(
       borderRadius: AppRadius.fieldAll,
       borderSide: BorderSide.none,
     );
 
     return base.copyWith(
-      colorScheme: const ColorScheme.light(
+      colorScheme: ColorScheme(
+        brightness: brightness,
         primary: AppColors.accent,
-        onPrimary: AppColors.surface,
+        onPrimary: AppColors.onAccent,
         secondary: AppColors.navy,
-        onSecondary: AppColors.surface,
+        onSecondary: AppColors.onAccent,
         surface: AppColors.surface,
         onSurface: AppColors.ink,
         onSurfaceVariant: AppColors.muted,
         outline: AppColors.border,
         outlineVariant: AppColors.divider,
         error: AppColors.accent,
+        onError: AppColors.onAccent,
       ),
       scaffoldBackgroundColor: AppColors.background,
       canvasColor: AppColors.background,
       textTheme: GoogleFonts.interTextTheme(base.textTheme),
-      dividerTheme: const DividerThemeData(
+      dividerTheme: DividerThemeData(
         color: AppColors.divider,
         thickness: 1,
         space: 1,
@@ -229,7 +315,7 @@ class AppTheme {
         ),
         border: fieldBorder,
         enabledBorder: fieldBorder,
-        focusedBorder: const OutlineInputBorder(
+        focusedBorder: OutlineInputBorder(
           borderRadius: AppRadius.fieldAll,
           borderSide: BorderSide(color: AppColors.accent, width: 2),
         ),
@@ -251,15 +337,15 @@ class AppTheme {
           borderRadius: BorderRadius.all(Radius.circular(AppRadius.toast)),
         ),
       ),
-      bottomSheetTheme: const BottomSheetThemeData(
+      bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
         showDragHandle: true,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
       ),
-      iconTheme: const IconThemeData(color: AppColors.muted, size: 22),
+      iconTheme: IconThemeData(color: AppColors.muted, size: 22),
     );
   }
 }

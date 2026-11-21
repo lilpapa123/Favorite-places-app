@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="City Hopper badge: a city skyline at dusk reflected in a river">
+<defs>
+<clipPath id="c8"><path d="M110.4 14 L169.6 48 Q180 54 180 66 L180 134 Q180 146 169.6 152 L110.4 186 Q100 192 89.6 186 L30.4 152 Q20 146 20 134 L20 66 Q20 54 30.4 48 L89.6 14 Q100 8 110.4 14 Z"></path></clipPath>
+<linearGradient id="g8sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8E7CC3"></stop><stop offset="1" stop-color="#F6B7A6"></stop></linearGradient>
+<linearGradient id="g8b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8A84C2"></stop><stop offset="1" stop-color="#5C5596"></stop></linearGradient>
+<linearGradient id="g8f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4A4588"></stop><stop offset="1" stop-color="#25224F"></stop></linearGradient>
+<linearGradient id="g8w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6A9CD0"></stop><stop offset="1" stop-color="#2E4F8A"></stop></linearGradient>
+</defs>
+<g clip-path="url(#c8)">
+<rect width="200" height="200" fill="url(#g8sky)"></rect>
+<circle cx="142" cy="60" r="12" fill="#FFE8C2"></circle>
+<g fill="url(#g8b)"><rect x="28" y="92" width="22" height="70" rx="2"></rect><rect x="54" y="72" width="18" height="90" rx="2"></rect><rect x="118" y="82" width="24" height="80" rx="2"></rect><rect x="150" y="100" width="28" height="62" rx="2"></rect></g>
+<line x1="83" y1="36" x2="83" y2="56" stroke="#4A4588" stroke-width="3" stroke-linecap="round"></line>
+<g fill="url(#g8f)"><rect x="38" y="112" width="26" height="50" rx="2"></rect><rect x="70" y="56" width="26" height="106" rx="3"></rect><rect x="100" y="98" width="22" height="64" rx="2"></rect><rect x="126" y="118" width="30" height="44" rx="2"></rect><rect x="160" y="126" width="22" height="36" rx="2"></rect></g>
+<g fill="#FFD98A"><rect x="76" y="66" width="5" height="6" rx="1"></rect><rect x="86" y="66" width="5" height="6" rx="1"></rect><rect x="76" y="82" width="5" height="6" rx="1"></rect><rect x="86" y="98" width="5" height="6" rx="1"></rect><rect x="76" y="114" width="5" height="6" rx="1"></rect><rect x="106" y="108" width="4" height="6" rx="1"></rect><rect x="113" y="124" width="4" height="6" rx="1"></rect><rect x="44" y="122" width="5" height="6" rx="1"></rect><rect x="53" y="136" width="5" height="6" rx="1"></rect><rect x="132" y="128" width="5" height="6" rx="1"></rect><rect x="144" y="140" width="5" height="6" rx="1"></rect></g>
+<rect x="0" y="160" width="200" height="40" fill="url(#g8w)"></rect>
+<g stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.45"><line x1="50" y1="170" x2="76" y2="170"></line><line x1="80" y1="178" x2="96" y2="178"></line><line x1="110" y1="172" x2="140" y2="172"></line></g>
+</g>
+</svg>

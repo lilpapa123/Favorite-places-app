@@ -1,3 +1,4 @@
+import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,7 @@ class CategoryChips extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Type of place', style: AppText.labelMedium()),
+        Text(context.l10n.typeOfPlace, style: AppText.labelMedium()),
         const SizedBox(height: 6),
         Wrap(
           spacing: AppSpace.sm,
@@ -26,7 +27,7 @@ class CategoryChips extends StatelessWidget {
           children: [
             for (final category in PlaceCategory.values)
               ChoicePill(
-                label: category.label,
+                label: category.label(context.l10n),
                 selected: category == selected,
                 onTap: () => onSelected(category),
               ),
@@ -71,7 +72,7 @@ class ChoicePill extends StatelessWidget {
           child: Text(
             label,
             style: AppText.labelMedium(
-              color: selected ? AppColors.surface : AppColors.muted,
+              color: selected ? AppColors.onAccent : AppColors.muted,
             ),
           ),
         ),

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Summit Seeker badge: a faceted mountain with a trail to a flag at the peak">
+<defs>
+<clipPath id="c4"><path d="M110.4 14 L169.6 48 Q180 54 180 66 L180 134 Q180 146 169.6 152 L110.4 186 Q100 192 89.6 186 L30.4 152 Q20 146 20 134 L20 66 Q20 54 30.4 48 L89.6 14 Q100 8 110.4 14 Z"></path></clipPath>
+<linearGradient id="g4sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9C9CD4"></stop><stop offset="1" stop-color="#E6E9F3"></stop></linearGradient>
+<linearGradient id="g4l" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4B5160"></stop><stop offset="1" stop-color="#2E323C"></stop></linearGradient>
+<linearGradient id="g4r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7B8291"></stop><stop offset="1" stop-color="#555B68"></stop></linearGradient>
+<linearGradient id="g4rock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A3A7AF"></stop><stop offset="1" stop-color="#6B707B"></stop></linearGradient>
+<linearGradient id="g4path" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7934A"></stop><stop offset="1" stop-color="#E5531E"></stop></linearGradient>
+</defs>
+<g clip-path="url(#c4)">
+<rect width="200" height="200" fill="url(#g4sky)"></rect>
+<path d="M14 136 L100 54 L186 132 V200 H14 Z" fill="url(#g4r)"></path>
+<path d="M14 136 L100 54 L96 200 H14 Z" fill="url(#g4l)"></path>
+<path d="M100 54 L84 70 L92 74 L100 66 L108 76 L116 70 Z" fill="#F1EEE8"></path>
+<path d="M14 150 L48 128 L80 146 L70 200 H14 Z" fill="url(#g4rock)"></path>
+<path d="M48 128 L80 146 L108 136 L76 122 Z" fill="#C3C6CD"></path>
+<path d="M130 140 L172 128 L186 140 V200 H120 Z" fill="url(#g4rock)" opacity="0.9"></path>
+<path d="M100 66 L94 92 L104 108 L92 130 L104 152 L96 200 H112 L120 152 L110 130 L122 108 L110 92 Z" fill="url(#g4path)"></path>
+<line x1="100" y1="54" x2="100" y2="30" stroke="#2E323C" stroke-width="2.5" stroke-linecap="round"></line>
+<path d="M100 30 L118 36 L100 42 Z" fill="#F7934A"></path>
+</g>
+</svg>

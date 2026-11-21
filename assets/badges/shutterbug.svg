@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Shutterbug badge: a camera with an instant photo behind it">
+<defs>
+<clipPath id="c12"><path d="M52 34 H148 Q170 34 170 56 V110 A70 70 0 0 1 30 110 V56 Q30 34 52 34 Z"></path></clipPath>
+<linearGradient id="g12bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FCE6D8"></stop><stop offset="1" stop-color="#F4BFAE"></stop></linearGradient>
+<linearGradient id="g12cam" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#525C70"></stop><stop offset="1" stop-color="#1B2230"></stop></linearGradient>
+<linearGradient id="g12lens" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8CC2EE"></stop><stop offset="1" stop-color="#2E5E9A"></stop></linearGradient>
+<linearGradient id="g12pic" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7C79E"></stop><stop offset="1" stop-color="#FCE6D8"></stop></linearGradient>
+</defs>
+<path d="M40 20 H160 Q184 20 184 44 V110 A84 84 0 0 1 16 110 V44 Q16 20 40 20 Z" fill="#FFF7F2" stroke="#E8C3B8" stroke-width="5"></path>
+<g clip-path="url(#c12)">
+<rect width="200" height="200" fill="url(#g12bg)"></rect>
+<g transform="rotate(14 136 76)">
+<rect x="110" y="46" width="52" height="60" rx="4" fill="#FFFFFF"></rect>
+<rect x="115" y="51" width="42" height="40" rx="2" fill="url(#g12pic)"></rect>
+<path d="M115 91 L128 72 L138 82 L146 74 L157 91 Z" fill="#6E9F86"></path>
+<circle cx="148" cy="60" r="4" fill="#F59A54"></circle>
+</g>
+<rect x="70" y="70" width="28" height="18" rx="5" fill="url(#g12cam)"></rect>
+<rect x="50" y="80" width="100" height="66" rx="14" fill="url(#g12cam)"></rect>
+<circle cx="100" cy="113" r="26" fill="#2B3240"></circle>
+<circle cx="100" cy="113" r="17" fill="url(#g12lens)"></circle>
+<circle cx="94" cy="107" r="5" fill="#FFFFFF" opacity="0.7"></circle>
+<rect x="126" y="88" width="14" height="8" rx="2" fill="#FFD98A"></rect>
+<path d="M20 166 Q60 150 100 160 Q140 170 180 154 V200 H20 Z" fill="#EE9A86" opacity="0.6"></path>
+</g>
+</svg>

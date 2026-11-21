@@ -1,0 +1,381 @@
+{
+  "@@locale": "en",
+  "appTitle": "Favorite Places",
+  "close": "Close",
+  "back": "Back",
+  "cancel": "Cancel",
+  "save": "Save",
+  "undo": "Undo",
+  "pleaseWait": "Please wait...",
+  "optional": "Optional",
+  "noConnection": "No connection. Check your internet and try again.",
+  "locationServicesOff": "Location services are off. Turn them on in Settings.",
+  "couldNotGetLocation": "Could not get your location: {error}",
+  "@couldNotGetLocation": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsTitle": "Settings",
+  "settingsSubtitle": "Make the app feel like yours.",
+  "settingsRowSubtitle": "Appearance and language",
+  "appearance": "APPEARANCE",
+  "themeSystem": "Same as phone",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "language": "LANGUAGE",
+  "languageSystem": "Same as phone",
+  "categoryCafe": "Café",
+  "categoryCafePlural": "Cafés",
+  "categoryViewpoint": "Viewpoint",
+  "categoryViewpointPlural": "Views",
+  "categoryWalk": "Walk",
+  "categoryWalkPlural": "Walks",
+  "categoryOther": "Other",
+  "categoryOtherPlural": "Other",
+  "tabMyPlaces": "My places",
+  "tabMap": "Map",
+  "tabAccount": "Account",
+  "takePhotoOfPlace": "Take a photo of a place",
+  "noCameraChoosePhoto": "No camera on this device - choose a photo instead.",
+  "savedToMyPlaces": "Saved to My places",
+  "tapMapToDropPin": "Tap the map to drop a pin",
+  "useThisSpot": "Use this spot",
+  "sortNewest": "Newest first",
+  "sortOldest": "Oldest first",
+  "sortName": "Name, A to Z",
+  "sortPlaces": "Sort places",
+  "favoritePlacesCount": "{count, plural, =1{1 favorite place} other{{count} favorite places}}",
+  "@favoritePlacesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "findFavoritePlace": "Find a favorite place",
+  "allCount": "All · {count}",
+  "@allCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noPlacesMatch": "No places match",
+  "tryAnotherWord": "Try another word or type.",
+  "showAllPlaces": "Show all places",
+  "typeOfPlace": "Type of place",
+  "noFavoritesYet": "No favorite places yet",
+  "noFavoritesBody": "Add a place with a photo, and it will show up here.",
+  "addAPlace": "Add a place",
+  "clearSearch": "Clear search",
+  "onMap": "On map",
+  "osmCredit": "© OpenStreetMap contributors",
+  "changesSaved": "Changes saved",
+  "editPlace": "Edit place",
+  "addPlace": "Add place",
+  "editPlaceSubtitle": "Change anything you like.",
+  "addPlaceSubtitle": "Keep a little piece of somewhere.",
+  "placeName": "Place name",
+  "placeNameHint": "A little pause by the river",
+  "littleNote": "A little note",
+  "littleNoteHint": "Why you love it, in a line or two",
+  "onlyYouCanSee": "People who follow you will see this place.",
+  "saveChanges": "Save changes",
+  "savePlace": "Save place",
+  "removedFromMyPlaces": "Removed from My places",
+  "removeFromMyPlaces": "Remove from my places",
+  "couldNotOpenMaps": "Could not open Maps",
+  "savedPlace": "Saved place",
+  "morePlaceActions": "More place actions",
+  "savedOn": "Saved on {date}",
+  "@savedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "myLittleNote": "MY LITTLE NOTE",
+  "noLocationYet": "No location yet — add one with Edit place.",
+  "openInMaps": "Open in Maps",
+  "couldNotFindQuery": "Couldn't find \"{query}\". Try a city or full address.",
+  "@couldNotFindQuery": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "allowLocationToSee": "Allow location access to see where you are.",
+  "cityCount": "{city} · {count}",
+  "@cityCount": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pinnedCount": "{count} pinned",
+  "@pinnedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchPlacesOrCities": "Search places or cities",
+  "closeSearch": "Close search",
+  "mapSubtitle": "Your favorites, a little closer.",
+  "noPinsYet": "No pins yet",
+  "noPinsBody": "Add a place with a location\nand it shows up here.",
+  "centerOnMyLocation": "Center on my location",
+  "viewPlace": "View place",
+  "choosePhoto": "Choose a photo",
+  "takePhoto": "Take photo",
+  "chooseFromLibrary": "Choose from library",
+  "addPhoto": "Add a photo",
+  "changePhoto": "Change photo",
+  "addPhotoHint": "Take one or choose from library",
+  "addPhotoNote": "Optional, but full of memories.",
+  "errNoCamera": "This device has no camera. Simulators have no camera - choose a photo from the library, or use a real phone.",
+  "errCameraDenied": "Camera access was denied. Allow it in Settings > Favorite Places.",
+  "errPhotosDenied": "Photo library access was denied. Allow it in Settings > Favorite Places.",
+  "errCameraRestricted": "Camera access is restricted on this device (Screen Time or an MDM profile is blocking it).",
+  "errPickerOpen": "The picker is already open. Close it and try again.",
+  "errCouldNotGetPhoto": "Could not get a photo: {details}",
+  "@errCouldNotGetPhoto": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "whereIsIt": "Where is it?",
+  "useMyLocation": "Use my location",
+  "pickOnMap": "Pick on the map",
+  "removeLocation": "Remove location",
+  "locationPermissionDenied": "Location permission was denied.",
+  "locationBlocked": "Location access is blocked. Allow it in Settings > Favorite Places, or pick the spot on the map instead.",
+  "findingSpot": "Finding the spot…",
+  "takesASecond": "This takes a second",
+  "addLocation": "Add a location",
+  "addLocationHint": "Use where you are, or pick on the map",
+  "location": "Location",
+  "locationSemantic": "Location: {title}",
+  "@locationSemantic": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "signInUnavailable": "Sign-in is unavailable right now.\n{error}",
+  "@signInUnavailable": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "enterEmailPassword": "Enter your email and password",
+  "typeEmailFirst": "Type your email first, then tap \"Forgot password\"",
+  "resetLinkSent": "Reset link sent to {email}",
+  "@resetLinkSent": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "errInvalidEmail": "That email address is not valid.",
+  "errUserDisabled": "This account has been disabled.",
+  "errWrongCredentials": "Wrong email or password.",
+  "errEmailInUse": "An account already exists for that email. Sign in instead.",
+  "errWeakPassword": "Password is too weak. Use at least 6 characters.",
+  "errTooManyAttempts": "Too many attempts. Wait a moment and try again.",
+  "errEmailNotEnabled": "Email sign-in is not enabled in the Firebase console (Authentication > Sign-in method).",
+  "errSignInFailed": "Sign-in failed ({code}).",
+  "@errSignInFailed": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "createAccount": "Create account",
+  "welcomeBack": "Welcome back",
+  "signUpSubtitle": "Sign up to keep your places with you",
+  "signInSubtitle": "Sign in to your account",
+  "email": "Email",
+  "password": "Password",
+  "atLeast6Chars": "At least 6 characters",
+  "forgotPassword": "Forgot password?",
+  "signIn": "Sign in",
+  "alreadyHaveAccount": "Already have an account?",
+  "newHere": "New here?",
+  "createAnAccount": "Create an account",
+  "placesStayOnPhone": "Sign in to share your places and follow friends.",
+  "you": "You",
+  "nameUpdated": "Name updated",
+  "couldNotUpdateName": "Could not update your name",
+  "profilePhoto": "Profile photo",
+  "removePhoto": "Remove photo",
+  "accountSubtitle": "A small collection, all yours.",
+  "changeProfilePhoto": "Change profile photo",
+  "statPlaces": "{count, plural, =1{Place} other{Places}}",
+  "@statPlaces": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "yourSpace": "YOUR SPACE",
+  "phoneNumber": "Phone number",
+  "verifyWithSms": "Verify it with an SMS code",
+  "verifiedTapToChange": "Verified · tap to change",
+  "profilePreferences": "Profile & preferences",
+  "makeYourselfAtHome": "Make yourself at home",
+  "privateByDefault": "Who sees your places",
+  "placesJustForYou": "Anyone signed in can see them",
+  "privateBody": "Your places are saved to your account. Anyone signed in can see them on your profile, and people who follow you see them in their feed. Photos stay on this phone.",
+  "backupSync": "Backup & sync",
+  "memoriesKeptSafe": "Your memories, kept safe",
+  "backupBody": "While you are signed in, your places are saved to your account and follow you to a new phone. Photos stay on this device for now.",
+  "aLittleHelpQ": "A little help?",
+  "aLittleHelp": "A little help",
+  "helpBody": "Tap the camera in the middle of the bar to snap a place and save it. Give it a name, a type and a note, and add a location to see it on the map. Open a place to edit it or find it in Maps.",
+  "signOut": "Sign out",
+  "yourName": "Your name",
+  "yourNameHint": "How should we call you?",
+  "enterNumberWithCode": "Enter your number with the country code, e.g. +90 555 123 45 67",
+  "codeSentTo": "Code sent to {number}",
+  "@codeSentTo": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "enter6DigitCode": "Enter the 6-digit code from the SMS",
+  "signInFirstForPhone": "Sign in first to add a phone number.",
+  "phoneVerified": "Phone number verified",
+  "errInvalidPhone": "That phone number doesn't look right. Include the country code.",
+  "errInvalidCode": "That code isn't right. Check the SMS and try again.",
+  "errCodeExpired": "The code expired. Tap \"Send a new code\".",
+  "errNumberInUse": "This number is already used by another account.",
+  "errAlreadyHasPhone": "This account already has a phone number.",
+  "errTooManyAttemptsLong": "Too many attempts. Wait a while and try again.",
+  "errSmsQuota": "SMS limit reached for today. Try again later.",
+  "errPhoneNotEnabled": "Phone sign-in is not enabled in the Firebase console (Authentication > Sign-in method > Phone).",
+  "errVerificationFailed": "Verification failed ({code}).",
+  "@errVerificationFailed": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "enterCodeWeSent": "Enter the code we sent by SMS.",
+  "wellTextYouCode": "We'll text you a code to verify it.",
+  "sixDigitCode": "6-digit code",
+  "sendNewCodeIn": "Send a new code in {seconds}s",
+  "@sendNewCodeIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "sendNewCode": "Send a new code",
+  "verify": "Verify",
+  "sendCode": "Send code",
+  "smsRatesNote": "Standard SMS rates may apply. Your number is only used to secure your account.",
+  "tabFeed": "Feed",
+  "feedSubtitle": "Places from people you follow.",
+  "feedEmptyTitle": "Your feed is empty",
+  "feedEmptyBody": "Follow people to see the places they save.",
+  "signInForFeed": "Sign in to follow people and see their places.",
+  "findPeople": "Find people",
+  "searchPeopleHint": "Search by @username or name",
+  "noPeopleFound": "No one found",
+  "follow": "Follow",
+  "followingButton": "Following",
+  "statFollowers": "{count, plural, =1{Follower} other{Followers}}",
+  "@statFollowers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statFollowing": "Following",
+  "followersTitle": "Followers",
+  "followingTitle": "Following",
+  "noFollowersYet": "No followers yet",
+  "notFollowingAnyone": "Not following anyone yet",
+  "noPlacesYet": "No places yet",
+  "username": "Username",
+  "chooseUsername": "Choose a username",
+  "chooseUsernameBody": "So friends can find and follow you.",
+  "usernameHint": "e.g. khalid.travels",
+  "usernameInvalid": "Use 3–20 letters, numbers, dots or underscores.",
+  "usernameTaken": "That username is taken.",
+  "usernameSaved": "Username saved",
+  "somethingWentWrong": "Something went wrong. Check your connection and try again.",
+  "categoryHike": "Hike",
+  "categoryHikePlural": "Hikes",
+  "categoryNature": "Nature",
+  "categoryNaturePlural": "Nature",
+  "categoryBeach": "Beach",
+  "categoryBeachPlural": "Beaches",
+  "categoryCamping": "Camping",
+  "categoryCampingPlural": "Camping",
+  "categoryNight": "Night",
+  "categoryNightPlural": "Night",
+  "badgesTitle": "Badges",
+  "badgesProgress": "{earned} of {total} earned",
+  "@badgesProgress": {
+    "placeholders": {
+      "earned": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "noBadgesYet": "Save places to earn badges",
+  "badgeEarned": "Earned",
+  "badgeFirstSteps": "First Steps",
+  "badgeFirstStepsHow": "Save your first place.",
+  "badgeCityHopper": "City Hopper",
+  "badgeCityHopperHow": "Save places in 5 cities.",
+  "badgeGlobetrotter": "Globetrotter",
+  "badgeGlobetrotterHow": "Save places in 5 countries.",
+  "badgeFrequentFlyer": "Frequent Flyer",
+  "badgeFrequentFlyerHow": "Save places on 3 continents.",
+  "badgeRoadTripper": "Road Tripper",
+  "badgeRoadTripperHow": "Save two places at least 500 km apart.",
+  "badgeBackpacker": "Backpacker",
+  "badgeBackpackerHow": "Save 25 places.",
+  "badgeShutterbug": "Shutterbug",
+  "badgeShutterbugHow": "Add photos to 10 places.",
+  "badgeSummitSeeker": "Summit Seeker",
+  "badgeSummitSeekerHow": "Save 3 Hike places.",
+  "badgeJungleExplorer": "Jungle Explorer",
+  "badgeJungleExplorerHow": "Save 3 Nature places.",
+  "badgeBeachBum": "Beach Bum",
+  "badgeBeachBumHow": "Save 3 Beach places.",
+  "badgeHappyCamper": "Happy Camper",
+  "badgeHappyCamperHow": "Save 3 Camping places.",
+  "badgeStargazer": "Stargazer",
+  "badgeStargazerHow": "Save 3 Night places."
+}

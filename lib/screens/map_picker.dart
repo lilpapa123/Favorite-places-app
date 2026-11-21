@@ -1,3 +1,4 @@
+import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
 import 'package:favorite_places/widgets/app_map.dart';
@@ -51,7 +52,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                 MarkerLayer(markers: [AppMap.pin(point: picked, selected: true)]),
               Padding(
                 padding: EdgeInsets.only(bottom: bottomInset + 92),
-                child: AppMap.attribution(),
+                child: AppMap.attribution(context),
               ),
             ],
           ),
@@ -63,7 +64,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
               children: [
                 CircleIconButton(
                   icon: const AppIcon('back'),
-                  semanticLabel: 'Back',
+                  semanticLabel: context.l10n.back,
                   shadow: true,
                   onPressed: () => Navigator.of(context).pop(),
                 ),
@@ -71,7 +72,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                 Expanded(
                   child: Container(
                     height: 44,
-                    alignment: Alignment.centerLeft,
+                    alignment: AlignmentDirectional.centerStart,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpace.lg,
                     ),
@@ -82,7 +83,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                     ),
                     child: Text(
                       picked == null
-                          ? 'Tap the map to drop a pin'
+                          ? context.l10n.tapMapToDropPin
                           : '${picked.latitude.toStringAsFixed(5)}, '
                                 '${picked.longitude.toStringAsFixed(5)}',
                       maxLines: 1,
@@ -104,7 +105,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                 boxShadow: AppShadow.floating,
               ),
               child: PillButton(
-                label: 'Use this spot',
+                label: context.l10n.useThisSpot,
                 icon: Icons.check,
                 large: true,
                 expanded: true,

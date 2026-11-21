@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
 import 'package:favorite_places/widgets/place_photo.dart';
@@ -56,17 +57,17 @@ class _ImageInputState extends State<ImageInput> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Choose a photo', style: AppText.title()),
+              Text(context.l10n.choosePhoto, style: AppText.title()),
               const SizedBox(height: AppSpace.md),
               _SourceTile(
                 icon: Icons.photo_camera_outlined,
-                label: 'Take photo',
+                label: context.l10n.takePhoto,
                 onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
               ),
               const SizedBox(height: AppSpace.sm),
               _SourceTile(
                 icon: Icons.photo_library_outlined,
-                label: 'Choose from library',
+                label: context.l10n.chooseFromLibrary,
                 onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
               ),
             ],
@@ -100,7 +101,7 @@ class _ImageInputState extends State<ImageInput> {
       if (!mounted) {
         return;
       }
-      _showMessage(photoErrorMessage(error));
+      _showMessage(photoErrorMessage(context.l10n, error));
     } finally {
       if (mounted) {
         setState(() => _isPickingImage = false);
@@ -119,7 +120,7 @@ class _ImageInputState extends State<ImageInput> {
 
     return Semantics(
       button: true,
-      label: image == null ? 'Add a photo' : 'Change photo',
+      label: image == null ? context.l10n.addPhoto : context.l10n.changePhoto,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: _isPickingImage ? null : _chooseSource,
@@ -135,7 +136,7 @@ class _ImageInputState extends State<ImageInput> {
       child: Container(
         height: _emptyHeight,
         padding: const EdgeInsets.symmetric(horizontal: 19),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: AppRadius.cardAll,
         ),
@@ -145,12 +146,12 @@ class _ImageInputState extends State<ImageInput> {
               width: 56,
               height: 56,
               alignment: Alignment.center,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.accentSoft,
                 shape: BoxShape.circle,
               ),
               child: _isPickingImage
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 22,
                       height: 22,
                       child: CircularProgressIndicator(
@@ -167,18 +168,18 @@ class _ImageInputState extends State<ImageInput> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Add a photo',
+                    context.l10n.addPhoto,
                     style: AppText.title(color: AppColors.accent)
                         .copyWith(height: 1.4),
                   ),
                   const SizedBox(height: AppSpace.xs),
                   Text(
-                    'Take one or choose from library',
+                    context.l10n.addPhotoHint,
                     style: AppText.meta().copyWith(height: 1.4),
                   ),
                   const SizedBox(height: AppSpace.xs),
                   Text(
-                    'Optional, but full of memories.',
+                    context.l10n.addPhotoNote,
                     style: AppText.meta(color: AppColors.faint)
                         .copyWith(fontSize: 11),
                   ),
@@ -213,7 +214,7 @@ class _ImageInputState extends State<ImageInput> {
                   borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
                 child: Text(
-                  'Change photo',
+                  context.l10n.changePhoto,
                   style: AppText.button(color: Colors.white, size: 13),
                 ),
               ),
@@ -297,23 +298,19 @@ class _DashedBorderPainter extends CustomPainter {
 
 /// A friendly message for an image_picker failure, shared by the add form
 /// and the tab bar's camera button.
-String photoErrorMessage(PlatformException error) {
+String photoErrorMessage(AppLocalizations l10n, PlatformException error) {
   switch (error.code) {
     case 'no_available_camera':
-      return 'This device has no camera. Simulators have no camera - '
-          'choose a photo from the library, or use a real phone.';
+      return l10n.errNoCamera;
     case 'camera_access_denied':
-      return 'Camera access was denied. Allow it in '
-          'Settings > Favorite Places.';
+      return l10n.errCameraDenied;
     case 'photo_access_denied':
-      return 'Photo library access was denied. Allow it in '
-          'Settings > Favorite Places.';
+      return l10n.errPhotosDenied;
     case 'camera_access_restricted':
-      return 'Camera access is restricted on this device (Screen Time or '
-          'an MDM profile is blocking it).';
+      return l10n.errCameraRestricted;
     case 'multiple_request':
-      return 'The picker is already open. Close it and try again.';
+      return l10n.errPickerOpen;
     default:
-      return 'Could not get a photo: ${error.message ?? error.code}';
+      return l10n.errCouldNotGetPhoto(error.message ?? error.code);
   }
 }

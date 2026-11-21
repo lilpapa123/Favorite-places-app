@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +32,7 @@ class GlassTabBar extends StatelessWidget {
     required this.onSelect,
     required this.onCamera,
     this.cameraBusy = false,
+    this.dark = false,
   });
 
   final List<GlassTab> tabs;
@@ -41,21 +43,42 @@ class GlassTabBar extends StatelessWidget {
   final VoidCallback onCamera;
   final bool cameraBusy;
 
+  /// Dark-tinted glass with light icons, for use over dark content.
+  final bool dark;
+
   static const double _barHeight = 68;
   static const double _bottomGap = AppSpace.md;
 
   /// Space the bar takes above the safe area, for pages that pad around it.
   static const double height = _barHeight + _bottomGap;
 
+  /// Color matrix for 1.8x saturation (Rec. 709 luma weights).
+  static const List<double> _saturate = [
+    1.6302, -0.5733, -0.0569, 0, 0, //
+    -0.1698, 1.2267, -0.0569, 0, 0, //
+    -0.1698, -0.5733, 1.7431, 0, 0, //
+    0, 0, 0, 1, 0, //
+  ];
+
   @override
   Widget build(BuildContext context) {
     final leftCount = (tabs.length + 1) ~/ 2;
     final radius = BorderRadius.circular(_barHeight / 2);
 
+    final iconColor = dark
+        ? Colors.white.withValues(alpha: 0.85)
+        : const Color(0xFF757575);
+    // Glass tint: white over light pages, smoky black over dark ones.
+    final tint = dark ? Colors.black : Colors.white;
+    final tintAlpha = dark
+        ? const [0.30, 0.38, 0.42, 0.36]
+        : const [0.55, 0.28, 0.22, 0.32];
+
     Widget tabAt(int i) => Expanded(
       child: _TabButton(
         tab: tabs[i],
         selected: i == currentIndex,
+        iconColor: iconColor,
         onTap: () => onSelect(i),
       ),
     );
@@ -79,25 +102,27 @@ class GlassTabBar extends StatelessWidget {
           child: ClipRRect(
             borderRadius: radius,
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              // Strong blur plus a saturation boost, like iOS Liquid Glass.
+              filter: ImageFilter.compose(
+                outer: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+                inner: const ColorFilter.matrix(_saturate),
+              ),
               child: Container(
                 height: _barHeight,
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 decoration: BoxDecoration(
                   borderRadius: radius,
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.95),
+                    color: Colors.white.withValues(alpha: dark ? 0.22 : 0.55),
                   ),
-                  // White 78% glass, brighter toward the bottom edge.
+                  // Mostly clear glass with a sheen on the top edge.
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.white.withValues(alpha: 0.79),
-                      Colors.white.withValues(alpha: 0.79),
-                      Colors.white.withValues(alpha: 0.92),
+                      for (final a in tintAlpha) tint.withValues(alpha: a),
                     ],
-                    stops: const [0, 0.35, 1],
+                    stops: const [0, 0.3, 0.75, 1],
                   ),
                 ),
                 child: Row(
@@ -106,6 +131,7 @@ class GlassTabBar extends StatelessWidget {
                     Expanded(
                       child: _CameraButton(
                         busy: cameraBusy,
+                        iconColor: iconColor,
                         onTap: onCamera,
                       ),
                     ),
@@ -122,9 +148,14 @@ class GlassTabBar extends StatelessWidget {
 }
 
 class _CameraButton extends StatefulWidget {
-  const _CameraButton({required this.busy, required this.onTap});
+  const _CameraButton({
+    required this.busy,
+    required this.iconColor,
+    required this.onTap,
+  });
 
   final bool busy;
+  final Color iconColor;
   final VoidCallback onTap;
 
   @override
@@ -138,7 +169,7 @@ class _CameraButtonState extends State<_CameraButton> {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Take a photo of a place',
+      label: context.l10n.takePhotoOfPlace,
       excludeSemantics: true,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -156,7 +187,7 @@ class _CameraButtonState extends State<_CameraButton> {
               height: 56,
               child: Center(
                 child: widget.busy
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 22,
                         height: 22,
                         child: CircularProgressIndicator(
@@ -164,19 +195,7 @@ class _CameraButtonState extends State<_CameraButton> {
                           color: AppColors.accent,
                         ),
                       )
-                    // Soft terracotta glow under the camera, as in the design.
-                    : DecoratedBox(
-                        decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.accent.withValues(alpha: 0.18),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: const AppIcon('tab_camera'),
-                      ),
+                    : AppIcon('tab_camera', color: widget.iconColor),
               ),
             ),
           ),
@@ -190,11 +209,13 @@ class _TabButton extends StatelessWidget {
   const _TabButton({
     required this.tab,
     required this.selected,
+    required this.iconColor,
     required this.onTap,
   });
 
   final GlassTab tab;
   final bool selected;
+  final Color iconColor;
   final VoidCallback onTap;
 
   @override
@@ -215,7 +236,9 @@ class _TabButton extends StatelessWidget {
             height: 54,
             constraints: const BoxConstraints(maxWidth: 82),
             decoration: BoxDecoration(
-              color: selected ? AppColors.accentSoft : Colors.transparent,
+              color: selected
+                  ? AppColors.accentSoft.withValues(alpha: 0.6)
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(27),
             ),
             child: Center(
@@ -225,7 +248,7 @@ class _TabButton extends StatelessWidget {
                 scale: selected ? 1.06 : 1,
                 child: AppIcon(
                   tab.icon,
-                  color: selected ? AppColors.accent : const Color(0xFF757575),
+                  color: selected ? AppColors.accent : iconColor,
                 ),
               ),
             ),

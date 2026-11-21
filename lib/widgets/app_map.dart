@@ -1,9 +1,11 @@
+import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mapcn_flutter/mapcn_flutter.dart' show MapcnThemes;
 
 /// Shared map pieces (OpenStreetMap tiles and data).
 class AppMap {
@@ -14,11 +16,15 @@ class AppMap {
   /// OSM servers aren't meant for apps with lots of users. Before a public
   /// launch, switch [urlTemplate] to a provider with a free API key (e.g.
   /// MapTiler or Stadia Maps). OSM's policy also requires a real user agent.
-  static TileLayer tiles() {
-    return TileLayer(
-      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      userAgentPackageName: 'com.khaledwaled.favoriteplaces',
-      maxNativeZoom: 19,
+  /// Tiles are tinted with the mapcn_flutter dark theme.
+  static Widget tiles() {
+    return ColorFiltered(
+      colorFilter: const ColorFilter.matrix(MapcnThemes.mapcnDark),
+      child: TileLayer(
+        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        userAgentPackageName: 'com.khaledwaled.favoriteplaces',
+        maxNativeZoom: 19,
+      ),
     );
   }
 
@@ -41,13 +47,10 @@ class AppMap {
 
   /// Map data is from OpenStreetMap (ODbL): the credit must stay visible on
   /// every map.
-  static Widget attribution() {
+  static Widget attribution(BuildContext context) {
     return SimpleAttributionWidget(
       backgroundColor: Colors.white.withValues(alpha: 0.85),
-      source: Text(
-        '© OpenStreetMap contributors',
-        style: AppText.meta(),
-      ),
+      source: Text(context.l10n.osmCredit, style: AppText.meta()),
     );
   }
 

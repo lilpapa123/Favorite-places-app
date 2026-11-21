@@ -1,3 +1,4 @@
+import 'package:favorite_places/l10n/app_localizations.dart';
 import 'package:favorite_places/screens/home_shell.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,9 @@ class _FakeCamera extends ImagePickerPlatform {
 Widget buildTestApp() {
   return ProviderScope(
     child: MaterialApp(
-      theme: AppTheme.data,
+      theme: AppTheme.data(Brightness.light),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(disableAnimations: true),
         child: child!,

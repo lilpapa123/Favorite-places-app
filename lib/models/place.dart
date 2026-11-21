@@ -5,18 +5,21 @@ import 'package:uuid/uuid.dart';
 
 const uuid = Uuid();
 
-/// The "Type of place" chips. [plural] is used by the filters on My places,
-/// [icon] by the map pins.
+/// The "Type of place" chips. [icon] is used by the map pins; the
+/// translated names live in lib/l10n/l10n.dart.
 enum PlaceCategory {
-  cafe('Café', 'Cafés', 'coffee'),
-  viewpoint('Viewpoint', 'Views', 'view'),
-  walk('Walk', 'Walks', 'tree'),
-  other('Other', 'Other', 'pin_white');
+  cafe('coffee'),
+  viewpoint('view'),
+  walk('tree'),
+  hike('view'),
+  nature('tree'),
+  beach('pin_white'),
+  camping('tree'),
+  night('pin_white'),
+  other('pin_white');
 
-  const PlaceCategory(this.label, this.plural, this.icon);
+  const PlaceCategory(this.icon);
 
-  final String label;
-  final String plural;
   final String icon;
 }
 
@@ -98,6 +101,58 @@ class Place {
   final DateTime createdAt;
 
   String get city => location?.city ?? '';
+
+  /// Firestore document for this place, owned by [ownerUid].
+  Map<String, Object?> toFirestore(String ownerUid) => {
+    'ownerUid': ownerUid,
+    'title': title,
+    'category': category.name,
+    'note': note,
+    'createdAt': createdAt.millisecondsSinceEpoch,
+    // shortcut: only the photo's path on this phone is stored, so others see
+    // no photo; upload to Firebase Storage when photos should be shared.
+    'localImagePath': image?.path,
+    'location': location == null
+        ? null
+        : {
+            'latitude': location!.latitude,
+            'longitude': location!.longitude,
+            'name': location!.name,
+            'street': location!.street,
+            'area': location!.area,
+            'city': location!.city,
+            'country': location!.country,
+          },
+  };
+
+  factory Place.fromFirestore(String id, Map<String, dynamic> data) {
+    final loc = data['location'] as Map<String, dynamic>?;
+    final path = data['localImagePath'] as String?;
+    return Place(
+      id: id,
+      title: data['title'] as String? ?? '',
+      category: PlaceCategory.values.firstWhere(
+        (c) => c.name == data['category'],
+        orElse: () => PlaceCategory.other,
+      ),
+      note: data['note'] as String? ?? '',
+      image: path != null && File(path).existsSync() ? File(path) : null,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(
+        data['createdAt'] as int? ?? 0,
+      ),
+      location: loc == null
+          ? null
+          : PlaceLocation(
+              latitude: (loc['latitude'] as num).toDouble(),
+              longitude: (loc['longitude'] as num).toDouble(),
+              name: loc['name'] as String? ?? '',
+              street: loc['street'] as String? ?? '',
+              area: loc['area'] as String? ?? '',
+              city: loc['city'] as String? ?? '',
+              country: loc['country'] as String? ?? '',
+            ),
+    );
+  }
 
   /// Same place with some fields changed (keeps id and save date).
   Place copyWith({
