@@ -40,7 +40,9 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
           FlutterMap(
             options: MapOptions(
               initialCenter: widget.initial ?? _worldCenter,
-              initialZoom: widget.initial == null ? 2 : 15,
+              initialZoom: widget.initial == null ? AppMap.minZoom : 15,
+              cameraConstraint: AppMap.worldConstraint,
+              minZoom: AppMap.minZoom,
               onTap: (tapPosition, point) => setState(() => _picked = point),
             ),
             children: [

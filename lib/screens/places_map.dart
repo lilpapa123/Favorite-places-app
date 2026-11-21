@@ -1,6 +1,7 @@
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/user_palces.dart';
 import 'package:favorite_places/screens/places_detail.dart';
+import 'package:favorite_places/services/address_lookup.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
 import 'package:favorite_places/widgets/app_map.dart';
@@ -8,6 +9,8 @@ import 'package:favorite_places/widgets/glass_tab_bar.dart';
 import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:favorite_places/widgets/place_photo.dart';
 import 'package:favorite_places/widgets/search_field.dart';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,20 +27,30 @@ class PlacesMapScreen extends ConsumerStatefulWidget {
   ConsumerState<PlacesMapScreen> createState() => _PlacesMapScreenState();
 }
 
-class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen> {
+class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
+    with SingleTickerProviderStateMixin {
   static const LatLng _worldCenter = LatLng(20, 0);
 
-  /// Height of the gray title area; the map starts just under the title.
-  static const double _headerHeight = 118;
+  /// Height of the gray title area; the map starts right under the
+  /// subtitle and the search box floats on top of the map.
+  static const double _headerHeight = 50;
+
 
   final MapController _map = MapController();
+  late final AnimationController _flight = AnimationController(vsync: this);
   final TextEditingController _search = TextEditingController();
   String? _selectedId;
   LatLng? _me;
+  bool _searchOpen = false;
+
+  /// A place found by name (not one of the user's), shown as a pin.
+  LatLng? _found;
+  bool _finding = false;
   bool _locating = false;
 
   @override
   void dispose() {
+    _flight.dispose();
     _search.dispose();
     _map.dispose();
     super.dispose();
@@ -57,9 +70,104 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen> {
     }).toList();
   }
 
+  /// Smoothly flies the camera to [target] like Apple/Google Maps: for long
+  /// trips it zooms out, glides across, then zooms back in on the spot.
+  void _flyTo(LatLng target, double zoom) {
+    final camera = _map.camera;
+    final start = camera.center;
+    final startZoom = camera.zoom;
+
+    // How far the trip is, in screen widths at the starting zoom.
+    final distance = const Distance().as(LengthUnit.Kilometer, start, target);
+    final kmPerScreen = 40075 / math.pow(2, startZoom) * 1.5;
+    final screens = distance / kmPerScreen;
+
+    // Zoom out mid-flight by up to ~4 levels on long trips, never below 2.
+    final dip = (math.log(1 + screens) / math.ln2).clamp(0.0, 4.0);
+    final midZoom = math.max(
+      AppMap.minZoom,
+      math.min(startZoom, zoom) - dip,
+    );
+
+    final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (reduceMotion) {
+      _map.move(target, zoom);
+      return;
+    }
+
+    _flight
+      ..stop()
+      ..duration = Duration(
+        milliseconds: (700 + 300 * math.min(dip, 3.0)).round(),
+      );
+
+    final curve = CurvedAnimation(parent: _flight, curve: Curves.easeInOutCubic);
+    void tick() {
+      final t = curve.value;
+      final lat = start.latitude + (target.latitude - start.latitude) * t;
+      final lng = start.longitude + (target.longitude - start.longitude) * t;
+      // Zoom follows a gentle arc: start -> mid (out) -> target (in).
+      final linear = startZoom + (zoom - startZoom) * t;
+      final arc = linear - (linear - midZoom) * math.sin(math.pi * t);
+      _map.move(LatLng(lat, lng), arc);
+    }
+
+    curve.addListener(tick);
+    _flight.forward(from: 0).whenCompleteOrCancel(() {
+      curve
+        ..removeListener(tick)
+        ..dispose();
+    });
+  }
+
+  void _closeSearch() {
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _searchOpen = false;
+      _search.clear();
+      _found = null;
+    });
+  }
+
+  /// Search button on the keyboard: jump to the user's place if exactly one
+  /// matches; otherwise look the words up as a real place or address.
+  Future<void> _submitSearch(List<Place> pinned) async {
+    final query = _search.text.trim();
+    if (query.isEmpty) {
+      return;
+    }
+    final matches = _matching(pinned);
+    if (matches.length == 1) {
+      _select(matches.first);
+      return;
+    }
+    if (matches.isNotEmpty) {
+      return; // Several of the user's places match: they're all on the map.
+    }
+    setState(() => _finding = true);
+    final point = await findPlace(query);
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _finding = false;
+      _found = point;
+      _selectedId = null;
+    });
+    if (point == null) {
+      _showMessage('Couldn\'t find "$query". Try a city or full address.');
+    } else {
+      FocusScope.of(context).unfocus();
+      _flyTo(point, 15);
+    }
+  }
+
   void _select(Place place) {
     setState(() => _selectedId = place.id);
-    _map.move(place.location!.latLng, _map.camera.zoom < 14 ? 15 : _map.camera.zoom);
+    _flyTo(
+      place.location!.latLng,
+      _map.camera.zoom < 14 ? 15 : _map.camera.zoom,
+    );
   }
 
   Future<void> _locateMe() async {
@@ -91,7 +199,7 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen> {
       }
       final me = LatLng(position.latitude, position.longitude);
       setState(() => _me = me);
-      _map.move(me, 15);
+      _flyTo(me, 15);
     } catch (error) {
       _showMessage('Could not get your location: $error');
     } finally {
@@ -146,12 +254,16 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen> {
           maxZoom: 15,
         ),
         onTap: (_, _) => setState(() => _selectedId = null),
+        cameraConstraint: AppMap.worldConstraint,
+        minZoom: AppMap.minZoom,
       );
     } else {
       options = MapOptions(
         initialCenter: points.isEmpty ? _worldCenter : points.first,
-        initialZoom: points.isEmpty ? 2 : 14,
+        initialZoom: points.isEmpty ? AppMap.minZoom : 14,
         onTap: (_, _) => setState(() => _selectedId = null),
+        cameraConstraint: AppMap.worldConstraint,
+        minZoom: AppMap.minZoom,
       );
     }
 
@@ -170,6 +282,8 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen> {
                 MarkerLayer(
                   markers: [
                     if (_me != null) AppMap.userDot(_me!),
+                    if (_found != null)
+                      AppMap.pin(point: _found!, selected: true),
                     for (final place in shown)
                       AppMap.categoryPin(
                         point: place.location!.latLng,
@@ -201,45 +315,98 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen> {
               color: AppColors.background,
               padding: EdgeInsets.fromLTRB(
                 AppSpace.page,
-                topInset + AppSpace.sm,
+                topInset + AppSpace.xs,
                 AppSpace.page,
                 0,
               ),
-              height: topInset + _headerHeight + 6,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Map', style: AppText.heading()),
-                  Text(
-                    'Your favorites, a little closer.',
-                    style: AppText.meta().copyWith(height: 1.4),
+              height: topInset + _headerHeight,
+              // One compact line: the title (with its subtitle) and a search
+              // icon; tapping the icon swaps the line for a search box.
+              child: AnimatedSwitcher(
+                duration: AppMotion.medium,
+                switchInCurve: AppMotion.ease,
+                switchOutCurve: AppMotion.ease,
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: SizeTransition(
+                    sizeFactor: animation,
+                    axis: Axis.horizontal,
+                    axisAlignment: 1,
+                    child: child,
                   ),
-                ],
+                ),
+                child: _searchOpen
+                    ? Row(
+                        key: const ValueKey('search'),
+                        children: [
+                          Expanded(
+                            child: SearchField(
+                              controller: _search,
+                              hintText: 'Search places or cities',
+                              height: 42,
+                              autofocus: true,
+                              onChanged: (_) => setState(() => _found = null),
+                              onSubmitted: (_) => _submitSearch(pinned),
+                            ),
+                          ),
+                          const SizedBox(width: AppSpace.sm),
+                          CircleIconButton(
+                            size: 42,
+                            icon: _finding
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppColors.accent,
+                                    ),
+                                  )
+                                : const AppIcon('close'),
+                            semanticLabel: 'Close search',
+                            onPressed: _closeSearch,
+                          ),
+                        ],
+                      )
+                    : Row(
+                        key: const ValueKey('title'),
+                        children: [
+                          // Title and subtitle share a baseline; the icon
+                          // is centered on the line.
+                          Expanded(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
+                              children: [
+                                Text('Map', style: AppText.heading()),
+                                const SizedBox(width: AppSpace.md),
+                                Expanded(
+                                  child: Text(
+                                    'Your favorites, a little closer.',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppText.meta(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: AppSpace.sm),
+                          CircleIconButton(
+                            size: 42,
+                            icon: const AppIcon('search'),
+                            semanticLabel: 'Search places or cities',
+                            onPressed: () =>
+                                setState(() => _searchOpen = true),
+                          ),
+                        ],
+                      ),
               ),
-            ),
-          ),
-          // Search box overlapping the top of the map.
-          Positioned(
-            left: AppSpace.page,
-            right: AppSpace.page,
-            top: topInset + 94,
-            child: SearchField(
-              controller: _search,
-              hintText: 'Search your places',
-              shadow: true,
-              onChanged: (_) => setState(() {}),
-              onSubmitted: (_) {
-                final matches = _matching(pinned);
-                if (matches.length == 1) {
-                  _select(matches.first);
-                }
-              },
             ),
           ),
           if (pinned.isNotEmpty)
             Positioned(
               left: AppSpace.page,
-              top: topInset + 156,
+              top: topInset + _headerHeight + AppSpace.md,
               child: Container(
                 height: 32,
                 padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -251,7 +418,7 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen> {
                 child: Text(_chipLabel(pinned), style: AppText.labelMedium()),
               ),
             ),
-          if (pinned.isEmpty)
+          if (pinned.isEmpty && !_searchOpen && _found == null)
             Center(
               child: Container(
                 margin: const EdgeInsets.all(AppSpace.page),

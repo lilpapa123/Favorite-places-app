@@ -1,5 +1,10 @@
 import 'package:favorite_places/providers/auth_provider.dart';
+import 'dart:io';
+
 import 'package:favorite_places/providers/user_palces.dart';
+import 'package:favorite_places/screens/phone_verify.dart';
+import 'package:favorite_places/services/profile_photo.dart';
+import 'package:favorite_places/widgets/image_input.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
 import 'package:favorite_places/widgets/app_text_field.dart';
@@ -7,6 +12,8 @@ import 'package:favorite_places/widgets/page_header.dart';
 import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// The Account tab: a sign-in form when signed out, the profile when signed in.
@@ -269,46 +276,112 @@ class _Profile extends ConsumerWidget {
   }
 
   Future<void> _editName(BuildContext context) async {
-    final controller = TextEditingController(text: user.displayName ?? '');
     final name = await showDialog<String>(
       context: context,
       useRootNavigator: true,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        surfaceTintColor: Colors.transparent,
-        title: Text('Your name', style: AppText.title()),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(
-            hintText: 'How should we call you?',
-            fillColor: AppColors.background,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Cancel', style: AppText.label(color: AppColors.muted)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
-            child: Text('Save', style: AppText.label(color: AppColors.accent)),
-          ),
-        ],
-      ),
+      builder: (ctx) => _NameDialog(initial: user.displayName ?? ''),
     );
-    controller.dispose();
     if (name == null || name.isEmpty) {
       return;
     }
-    await user.updateDisplayName(name);
-    await user.reload();
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Name updated')),
-      );
+    try {
+      await user.updateDisplayName(name);
+      // userChanges() in authStateProvider picks this up and refreshes
+      // the profile card with the new name.
+      await user.reload();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Name updated')),
+        );
+      }
+    } on FirebaseAuthException catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.message ?? 'Could not update your name')),
+        );
+      }
     }
+  }
+
+  /// Tap on the avatar: take a photo, choose one, or remove it.
+  Future<void> _changePhoto(BuildContext context, WidgetRef ref, bool hasPhoto) async {
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      useRootNavigator: true,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpace.page,
+            0,
+            AppSpace.page,
+            AppSpace.lg,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Profile photo', style: AppText.title()),
+              const SizedBox(height: AppSpace.sm),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.photo_camera_outlined, color: AppColors.accent),
+                title: Text('Take photo', style: AppText.row()),
+                onTap: () => Navigator.of(ctx).pop('camera'),
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.photo_library_outlined, color: AppColors.accent),
+                title: Text('Choose from library', style: AppText.row()),
+                onTap: () => Navigator.of(ctx).pop('gallery'),
+              ),
+              if (hasPhoto)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.delete_outline, color: AppColors.accent),
+                  title: Text(
+                    'Remove photo',
+                    style: AppText.row(color: AppColors.accent),
+                  ),
+                  onTap: () => Navigator.of(ctx).pop('remove'),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (choice == null || !context.mounted) {
+      return;
+    }
+    final store = ref.read(profilePhotoStoreProvider);
+    try {
+      if (choice == 'remove') {
+        await store.remove(user.uid);
+      } else {
+        final picked = await ImagePicker().pickImage(
+          source: choice == 'camera' ? ImageSource.camera : ImageSource.gallery,
+          maxWidth: 600,
+          imageQuality: 85,
+          preferredCameraDevice: CameraDevice.front,
+        );
+        if (picked == null) {
+          return;
+        }
+        await store.save(user.uid, File(picked.path));
+      }
+      ref.invalidate(profilePhotoProvider(user.uid));
+    } on PlatformException catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(photoErrorMessage(error))),
+        );
+      }
+    }
+  }
+
+  void _verifyPhone(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (ctx) => const PhoneVerifyScreen()),
+    );
   }
 
   void _info(BuildContext context, String title, String body) {
@@ -346,6 +419,8 @@ class _Profile extends ConsumerWidget {
     }.length;
     final types = {for (final p in places) p.category}.length;
     final photo = user.photoURL;
+    final localPhoto = ref.watch(profilePhotoProvider(user.uid)).value;
+    final phone = user.phoneNumber;
 
     return ListView(
       padding: EdgeInsets.only(bottom: bottomBarClearance(context)),
@@ -368,20 +443,68 @@ class _Profile extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    ClipOval(
-                      child: SizedBox(
-                        width: 72,
-                        height: 72,
-                        child: photo != null
-                            ? Image.network(photo, fit: BoxFit.cover)
-                            : Container(
-                                color: AppColors.navy,
-                                alignment: Alignment.center,
-                                child: Text(
-                                  _name[0].toUpperCase(),
-                                  style: AppText.heading(color: Colors.white),
+                    Semantics(
+                      button: true,
+                      label: 'Change profile photo',
+                      excludeSemantics: true,
+                      child: GestureDetector(
+                        onTap: () =>
+                            _changePhoto(context, ref, localPhoto != null),
+                        child: SizedBox(
+                          width: 72,
+                          height: 72,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              ClipOval(
+                                child: SizedBox(
+                                  width: 72,
+                                  height: 72,
+                                  child: localPhoto != null
+                                      ? Image.file(
+                                          localPhoto,
+                                          fit: BoxFit.cover,
+                                          cacheWidth: 216,
+                                        )
+                                      : photo != null
+                                      ? Image.network(photo, fit: BoxFit.cover)
+                                      : Container(
+                                          color: AppColors.navy,
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            _name[0].toUpperCase(),
+                                            style: AppText.heading(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
                                 ),
                               ),
+                              // Small camera badge: "you can change this".
+                              Positioned(
+                                right: -2,
+                                bottom: -2,
+                                child: Container(
+                                  width: 26,
+                                  height: 26,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.accent,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: AppColors.surface,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.photo_camera,
+                                    size: 13,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: AppSpace.lg),
@@ -452,6 +575,28 @@ class _Profile extends ConsumerWidget {
                 clipBehavior: Clip.antiAlias,
                 child: Column(
                   children: [
+                    _SettingRow(
+                      iconWidget: Icon(
+                        phone == null || phone.isEmpty
+                            ? Icons.phone_iphone
+                            : Icons.verified_outlined,
+                        size: 18,
+                        color: phone == null || phone.isEmpty
+                            ? AppColors.muted
+                            : AppColors.success,
+                      ),
+                      iconBackground: phone == null || phone.isEmpty
+                          ? AppColors.background
+                          : AppColors.successSoft,
+                      title: phone == null || phone.isEmpty
+                          ? 'Phone number'
+                          : phone,
+                      subtitle: phone == null || phone.isEmpty
+                          ? 'Verify it with an SMS code'
+                          : 'Verified · tap to change',
+                      onTap: () => _verifyPhone(context),
+                    ),
+                    const _RowDivider(),
                     _SettingRow(
                       icon: 'person_small',
                       iconBackground: AppColors.background,
@@ -567,7 +712,8 @@ class _RowDivider extends StatelessWidget {
 
 class _SettingRow extends StatelessWidget {
   const _SettingRow({
-    required this.icon,
+    this.icon,
+    this.iconWidget,
     required this.title,
     required this.onTap,
     this.subtitle,
@@ -575,7 +721,9 @@ class _SettingRow extends StatelessWidget {
     this.height = 58,
   });
 
-  final String icon;
+  /// Design icon name, or [iconWidget] for one the design doesn't have.
+  final String? icon;
+  final Widget? iconWidget;
   final String title;
   final String? subtitle;
   final Color? iconBackground;
@@ -598,13 +746,13 @@ class _SettingRow extends StatelessWidget {
                   width: 34,
                   height: 34,
                   child: iconBackground == null
-                      ? Center(child: AppIcon(icon))
+                      ? Center(child: iconWidget ?? AppIcon(icon!))
                       : DecoratedBox(
                           decoration: BoxDecoration(
                             color: iconBackground,
                             borderRadius: BorderRadius.circular(11),
                           ),
-                          child: Center(child: AppIcon(icon)),
+                          child: Center(child: iconWidget ?? AppIcon(icon!)),
                         ),
                 ),
                 const SizedBox(width: AppSpace.md),
@@ -628,6 +776,63 @@ class _SettingRow extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// "Your name" dialog. It owns its text controller and disposes it only once
+/// the dialog has fully closed — disposing it right after `showDialog`
+/// returns crashes, because the field is still on screen while the dialog
+/// animates out.
+class _NameDialog extends StatefulWidget {
+  const _NameDialog({required this.initial});
+
+  final String initial;
+
+  @override
+  State<_NameDialog> createState() => _NameDialogState();
+}
+
+class _NameDialogState extends State<_NameDialog> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initial,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _save() => Navigator.of(context).pop(_controller.text.trim());
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.surface,
+      surfaceTintColor: Colors.transparent,
+      title: Text('Your name', style: AppText.title()),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        textCapitalization: TextCapitalization.words,
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) => _save(),
+        decoration: const InputDecoration(
+          hintText: 'How should we call you?',
+          fillColor: AppColors.background,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('Cancel', style: AppText.label(color: AppColors.muted)),
+        ),
+        TextButton(
+          onPressed: _save,
+          child: Text('Save', style: AppText.label(color: AppColors.accent)),
+        ),
+      ],
     );
   }
 }

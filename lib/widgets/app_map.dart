@@ -5,31 +5,47 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
-/// Shared map pieces (OpenStreetMap data, CARTO tiles).
+/// Shared map pieces (OpenStreetMap tiles and data).
 class AppMap {
   const AppMap._();
 
-  /// CARTO "Voyager" tiles: a light, colorful style that fits the app.
-  /// Free for low-traffic apps; check CARTO's basemap terms before a big
-  /// public launch and switch to a keyed provider if needed.
+  /// Standard OpenStreetMap tiles: free and keyless. Fine for building and
+  /// testing; flutter_map prints a reminder in the console that the public
+  /// OSM servers aren't meant for apps with lots of users. Before a public
+  /// launch, switch [urlTemplate] to a provider with a free API key (e.g.
+  /// MapTiler or Stadia Maps). OSM's policy also requires a real user agent.
   static TileLayer tiles() {
     return TileLayer(
-      urlTemplate:
-          'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-      subdomains: const ['a', 'b', 'c', 'd'],
-      retinaMode: true,
+      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       userAgentPackageName: 'com.khaledwaled.favoriteplaces',
-      maxNativeZoom: 20,
+      maxNativeZoom: 19,
     );
   }
 
-  /// Map data is from OpenStreetMap (ODbL) and the style from CARTO: both
-  /// credits must stay visible on every map.
+  /// The edges of the world map (Web Mercator stops at ±85.05°).
+  static final LatLngBounds worldBounds = LatLngBounds(
+    const LatLng(-85.05, -180),
+    const LatLng(85.05, 180),
+  );
+
+  /// Keeps the camera inside the world: no gray space above or below it,
+  /// no scrolling past its edges, and no zooming out beyond the point where
+  /// the map fills the screen.
+  static final CameraConstraint worldConstraint = CameraConstraint.contain(
+    bounds: worldBounds,
+  );
+
+  /// Lowest zoom the interactive maps allow; at zoom 2 the world is ~1000 px
+  /// tall, so it always covers a phone screen.
+  static const double minZoom = 2;
+
+  /// Map data is from OpenStreetMap (ODbL): the credit must stay visible on
+  /// every map.
   static Widget attribution() {
     return SimpleAttributionWidget(
       backgroundColor: Colors.white.withValues(alpha: 0.85),
       source: Text(
-        '© OpenStreetMap contributors © CARTO',
+        '© OpenStreetMap contributors',
         style: AppText.meta(),
       ),
     );

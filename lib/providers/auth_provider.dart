@@ -6,7 +6,8 @@ final firebaseAuthProvider = Provider<FirebaseAuth>(
   (ref) => FirebaseAuth.instance,
 );
 
-/// The signed-in user, or null when signed out. Updates live on sign in/out.
+/// The signed-in user, or null when signed out. Uses userChanges() (not
+/// authStateChanges()) so profile edits like a new name also show up live.
 final authStateProvider = StreamProvider<User?>(
-  (ref) => ref.watch(firebaseAuthProvider).authStateChanges(),
+  (ref) => ref.watch(firebaseAuthProvider).userChanges(),
 );

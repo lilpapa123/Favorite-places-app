@@ -11,6 +11,8 @@ class SearchField extends StatelessWidget {
     this.onChanged,
     this.onSubmitted,
     this.shadow = false,
+    this.autofocus = false,
+    this.height = 48,
   });
 
   final TextEditingController controller;
@@ -18,11 +20,13 @@ class SearchField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final bool shadow;
+  final bool autofocus;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 48,
+      height: height,
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: AppRadius.fieldAll,
@@ -36,6 +40,7 @@ class SearchField extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: controller,
+              autofocus: autofocus,
               onChanged: onChanged,
               onSubmitted: onSubmitted,
               textInputAction: TextInputAction.search,

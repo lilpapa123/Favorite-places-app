@@ -43,3 +43,22 @@ Future<PlaceLocation> describeLocation(LatLng point) async {
     return fallback;
   }
 }
+
+/// Finds a place or address by name ("Galata Tower", "Kadıköy, Istanbul")
+/// with the phone's geocoder. Returns null when nothing is found or the
+/// lookup fails (offline, too vague).
+Future<LatLng?> findPlace(String query) async {
+  final text = query.trim();
+  if (text.isEmpty) {
+    return null;
+  }
+  try {
+    final List<Location> results = await _geocoding.locationFromAddress(text);
+    if (results.isEmpty) {
+      return null;
+    }
+    return LatLng(results.first.latitude, results.first.longitude);
+  } catch (_) {
+    return null;
+  }
+}
