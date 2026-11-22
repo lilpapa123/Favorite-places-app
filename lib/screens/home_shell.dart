@@ -51,6 +51,33 @@ class _HomeShellState extends State<HomeShell> {
   final Set<int> _opened = {0};
   bool _capturing = false;
 
+  /// True while a page scrolls up or down; the bar shrinks meanwhile.
+  bool _scrolling = false;
+
+  /// Size of the bar while a page scrolls.
+  static const double _scrollingScale = 0.65;
+
+  bool _onScroll(ScrollNotification notification) {
+    // Sideways scrolling (photos, filter chips) leaves the bar alone.
+    if (notification.metrics.axis != Axis.vertical) {
+      return false;
+    }
+    // Only start and end count: an idle UserScrollNotification follows the
+    // end and must not shrink the bar again.
+    final bool scrolling;
+    if (notification is ScrollStartNotification) {
+      scrolling = true;
+    } else if (notification is ScrollEndNotification) {
+      scrolling = false;
+    } else {
+      return false;
+    }
+    if (scrolling != _scrolling) {
+      setState(() => _scrolling = scrolling);
+    }
+    return false;
+  }
+
   /// Photo from the camera button, handed to the add form.
   File? _capturedImage;
 
@@ -66,6 +93,8 @@ class _HomeShellState extends State<HomeShell> {
     setState(() {
       _page = page;
       _opened.add(page);
+      // The old tab may never report that its scrolling ended.
+      _scrolling = false;
     });
   }
 
@@ -201,21 +230,32 @@ class _HomeShellState extends State<HomeShell> {
       child: Scaffold(
         // Content scrolls underneath the glass bar.
         extendBody: true,
-        body: IndexedStack(
-          index: _page,
-          children: [
-            for (var i = 0; i <= _addPage; i++)
-              _opened.contains(i) ? _buildPage(i) : const SizedBox.shrink(),
-          ],
+        body: NotificationListener<ScrollNotification>(
+          onNotification: _onScroll,
+          child: IndexedStack(
+            index: _page,
+            children: [
+              for (var i = 0; i <= _addPage; i++)
+                _opened.contains(i) ? _buildPage(i) : const SizedBox.shrink(),
+            ],
+          ),
         ),
-        bottomNavigationBar: GlassTabBar(
-          tabs: _tabs,
-          currentIndex: _page == _addPage ? -1 : _page,
-          onSelect: _openTab,
-          onCamera: _takePhoto,
-          cameraBusy: _capturing,
-          // Dark glass in dark mode, when the map tiles are dark too.
-          dark: AppColors.isDark,
+        bottomNavigationBar: AnimatedScale(
+          scale: _scrolling ? _scrollingScale : 1,
+          alignment: Alignment.bottomCenter,
+          duration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : AppMotion.medium,
+          curve: AppMotion.ease,
+          child: GlassTabBar(
+            tabs: _tabs,
+            currentIndex: _page == _addPage ? -1 : _page,
+            onSelect: _openTab,
+            onCamera: _takePhoto,
+            cameraBusy: _capturing,
+            // Dark glass in dark mode, when the map tiles are dark too.
+            dark: AppColors.isDark,
+          ),
         ),
       ),
     );

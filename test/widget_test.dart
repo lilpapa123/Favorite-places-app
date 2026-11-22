@@ -2,8 +2,10 @@ import 'package:favorite_places/l10n/app_localizations.dart';
 import 'package:favorite_places/screens/home_shell.dart';
 import 'package:favorite_places/screens/palces.dart';
 import 'package:favorite_places/theme/app_theme.dart';
+import 'package:favorite_places/widgets/glass_tab_bar.dart';
 import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -225,5 +227,58 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Close'));
     await tester.pumpAndSettle();
     expect(find.text('Sign in to see the places people share.'), findsOneWidget);
+  });
+
+  testWidgets('tab bar shrinks while a page scrolls up or down', (tester) async {
+    await tester.pumpWidget(buildTestApp());
+    double scale() => tester
+        .widget<AnimatedScale>(
+          find.ancestor(
+            of: find.byType(GlassTabBar),
+            matching: find.byType(AnimatedScale),
+          ),
+        )
+        .scale;
+    final page = tester.element(find.text('Discover').first);
+    ScrollMetrics metrics(Axis axis) => FixedScrollMetrics(
+      minScrollExtent: 0,
+      maxScrollExtent: 500,
+      pixels: 10,
+      viewportDimension: 600,
+      axisDirection: axis == Axis.vertical
+          ? AxisDirection.down
+          : AxisDirection.right,
+      devicePixelRatio: 1,
+    );
+
+    ScrollStartNotification(
+      metrics: metrics(Axis.horizontal),
+      context: page,
+    ).dispatch(page);
+    await tester.pump();
+    expect(scale(), 1);
+
+    ScrollStartNotification(
+      metrics: metrics(Axis.vertical),
+      context: page,
+    ).dispatch(page);
+    await tester.pump();
+    expect(scale(), 0.65);
+
+    ScrollEndNotification(
+      metrics: metrics(Axis.vertical),
+      context: page,
+    ).dispatch(page);
+    await tester.pump();
+    expect(scale(), 1);
+
+    // Flutter reports "idle" right after the end; the bar stays full size.
+    UserScrollNotification(
+      metrics: metrics(Axis.vertical),
+      context: page,
+      direction: ScrollDirection.idle,
+    ).dispatch(page);
+    await tester.pump();
+    expect(scale(), 1);
   });
 }
