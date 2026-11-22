@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/providers/auth_provider.dart';
 import 'package:favorite_places/providers/social_provider.dart';
@@ -9,9 +11,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Round photo, or the first letter of [name] on red.
 class Avatar extends StatelessWidget {
-  const Avatar({super.key, required this.name, this.photoUrl, this.size = 40});
+  const Avatar({
+    super.key,
+    required this.name,
+    this.image,
+    this.photoUrl,
+    this.size = 40,
+  });
 
   final String name;
+
+  /// A photo on this phone; wins over [photoUrl].
+  final File? image;
   final String? photoUrl;
   final double size;
 
@@ -20,7 +31,13 @@ class Avatar extends StatelessWidget {
     return ClipOval(
       child: SizedBox.square(
         dimension: size,
-        child: photoUrl != null
+        child: image != null
+            ? Image.file(
+                image!,
+                fit: BoxFit.cover,
+                cacheWidth: size.round() * 3,
+              )
+            : photoUrl != null
             ? Image.network(photoUrl!, fit: BoxFit.cover)
             : ColoredBox(
                 color: AppColors.accent,
@@ -115,7 +132,8 @@ class PersonTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(profile.name, style: AppText.row()),
-                  Text('@${profile.username}', style: AppText.meta()),
+                  if (profile.handle case final handle?)
+                    Text(handle, style: AppText.meta()),
                 ],
               ),
             ),

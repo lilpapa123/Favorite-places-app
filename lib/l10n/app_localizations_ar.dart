@@ -19,12 +19,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get back => 'رجوع';
 
   @override
-  String get cancel => 'إلغاء';
-
-  @override
-  String get save => 'حفظ';
-
-  @override
   String get undo => 'تراجع';
 
   @override
@@ -465,12 +459,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get you => 'أنت';
 
   @override
-  String get nameUpdated => 'تم تحديث الاسم';
-
-  @override
-  String get couldNotUpdateName => 'تعذّر تحديث اسمك';
-
-  @override
   String get profilePhoto => 'صورة الملف الشخصي';
 
   @override
@@ -694,12 +682,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get username => 'اسم المستخدم';
 
   @override
-  String get chooseUsername => 'اختر اسم مستخدم';
-
-  @override
-  String get chooseUsernameBody => 'ليجدك أصدقاؤك ويتابعوك.';
-
-  @override
   String get usernameHint => 'مثل khalid.travels';
 
   @override
@@ -708,9 +690,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get usernameTaken => 'اسم المستخدم هذا مأخوذ.';
-
-  @override
-  String get usernameSaved => 'تم حفظ اسم المستخدم';
 
   @override
   String get somethingWentWrong => 'حدث خطأ. تحقق من اتصالك وحاول مرة أخرى.';
@@ -830,4 +809,28 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get badgeStargazerHow => 'احفظ 3 أماكن من نوع ليلي.';
+
+  @override
+  String get bio => 'نبذة';
+
+  @override
+  String get bioHint => 'بضع كلمات عنك';
+
+  @override
+  String get photoOnThisPhone => 'تظهر صورتك على هذا الهاتف فقط حاليًا.';
+
+  @override
+  String get profileSaved => 'تم حفظ الملف الشخصي';
+
+  @override
+  String get profileSaveFailed => 'تعذّر حفظ ملفك الشخصي. حاول مرة أخرى.';
+
+  @override
+  String get usernameRequired => 'أدخل اسم مستخدم.';
+
+  @override
+  String get chooseUsername => 'اختر اسم مستخدم';
+
+  @override
+  String get chooseUsernameBody => 'ليجدك أصدقاؤك ويتابعوك.';
 }

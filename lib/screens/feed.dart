@@ -113,9 +113,9 @@ class _OwnerRow extends ConsumerWidget {
           Avatar(name: name, photoUrl: profile?.photoUrl, size: 30),
           const SizedBox(width: AppSpace.sm),
           Text(name, style: AppText.bodyStrong()),
-          if (profile != null) ...[
+          if (profile?.handle case final handle?) ...[
             const SizedBox(width: AppSpace.xs),
-            Text('@${profile.username}', style: AppText.meta()),
+            Text(handle, style: AppText.meta()),
           ],
         ],
       ),

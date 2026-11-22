@@ -211,8 +211,8 @@ class _HomeShellState extends State<HomeShell> {
           onSelect: _openTab,
           onCamera: _takePhoto,
           cameraBusy: _capturing,
-          // Dark glass over the dark map tiles and in dark mode.
-          dark: _page == 1 || AppColors.isDark,
+          // Dark glass in dark mode, when the map tiles are dark too.
+          dark: AppColors.isDark,
         ),
       ),
     );

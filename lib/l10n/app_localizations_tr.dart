@@ -19,12 +19,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get back => 'Geri';
 
   @override
-  String get cancel => 'İptal';
-
-  @override
-  String get save => 'Kaydet';
-
-  @override
   String get undo => 'Geri al';
 
   @override
@@ -462,12 +456,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get you => 'Siz';
 
   @override
-  String get nameUpdated => 'İsim güncellendi';
-
-  @override
-  String get couldNotUpdateName => 'İsminiz güncellenemedi';
-
-  @override
   String get profilePhoto => 'Profil fotoğrafı';
 
   @override
@@ -692,12 +680,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get username => 'Kullanıcı adı';
 
   @override
-  String get chooseUsername => 'Bir kullanıcı adı seçin';
-
-  @override
-  String get chooseUsernameBody => 'Arkadaşlarınız sizi bulup takip edebilsin.';
-
-  @override
   String get usernameHint => 'ör. khalid.travels';
 
   @override
@@ -706,9 +688,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get usernameTaken => 'Bu kullanıcı adı alınmış.';
-
-  @override
-  String get usernameSaved => 'Kullanıcı adı kaydedildi';
 
   @override
   String get somethingWentWrong =>
@@ -830,4 +809,30 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get badgeStargazerHow => '3 Gece yeri kaydedin.';
+
+  @override
+  String get bio => 'Biyografi';
+
+  @override
+  String get bioHint => 'Kendinizden birkaç kelimeyle bahsedin';
+
+  @override
+  String get photoOnThisPhone =>
+      'Fotoğrafınız şimdilik yalnızca bu telefonda görünür.';
+
+  @override
+  String get profileSaved => 'Profil kaydedildi';
+
+  @override
+  String get profileSaveFailed =>
+      'Profiliniz kaydedilemedi. Lütfen tekrar deneyin.';
+
+  @override
+  String get usernameRequired => 'Bir kullanıcı adı girin.';
+
+  @override
+  String get chooseUsername => 'Bir kullanıcı adı seçin';
+
+  @override
+  String get chooseUsernameBody => 'Arkadaşlarınız sizi bulup takip edebilsin.';
 }

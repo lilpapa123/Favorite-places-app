@@ -13,9 +13,52 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == uid;
     }
 
+    // The app allows 150 visible characters. size() counts UTF-16 units and
+    // the longest standard emoji takes 15, hence 150 * 15.
+    function validBio(data) {
+      return !('bio' in data) || (data.bio is string && data.bio.size() <= 2250);
+    }
+
+    function profilePath(uid) {
+      return /databases/$(database)/documents/users/$(uid);
+    }
+
+    function claimPath(name) {
+      return /databases/$(database)/documents/usernames/$(name);
+    }
+
+    // A profile shows a username only if that name's claim is this user's
+    // once the whole transaction has been applied.
+    function ownsUsername(uid, data) {
+      return (!('username' in data) && !('usernameLower' in data))
+        || (data.username is string
+          && data.username.matches('^[a-zA-Z0-9._]{3,20}$')
+          && data.usernameLower == data.username.lower()
+          && getAfter(claimPath(data.usernameLower)).data.uid == uid);
+    }
+
+    // Leaving a username gives up its claim, so names can't be hoarded.
+    function releasedOldClaim() {
+      return !('usernameLower' in resource.data)
+        || !existsAfter(claimPath(resource.data.usernameLower));
+    }
+
+    function keepsUsername() {
+      return 'usernameLower' in resource.data
+        && 'usernameLower' in request.resource.data
+        && resource.data.usernameLower == request.resource.data.usernameLower;
+    }
+
     match /users/{uid} {
       allow read: if signedIn();
-      allow write: if isMe(uid);
+      allow create: if isMe(uid)
+        && validBio(request.resource.data)
+        && ownsUsername(uid, request.resource.data);
+      allow update: if isMe(uid)
+        && validBio(request.resource.data)
+        && ownsUsername(uid, request.resource.data)
+        && (keepsUsername() || releasedOldClaim());
+      allow delete: if isMe(uid) && releasedOldClaim();
 
       // I manage who I follow.
       match /following/{other} {
@@ -30,12 +73,19 @@ service cloud.firestore {
       }
     }
 
-    // One document per username, so nobody can take a name already in use.
+    // One document per username. A claim and the profile showing it are
+    // created and released together, in one transaction (Social.saveProfile).
     match /usernames/{name} {
       allow read: if signedIn();
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid
+        && getAfter(profilePath(request.auth.uid)).data.usernameLower == name;
       allow update: if false;
-      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      allow delete: if signedIn()
+        && resource.data.uid == request.auth.uid
+        && (!existsAfter(profilePath(request.auth.uid))
+          || getAfter(profilePath(request.auth.uid)).data.get('usernameLower', '') != name);
     }
 
     match /places/{placeId} {

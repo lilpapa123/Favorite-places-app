@@ -70,8 +70,12 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: AppSpace.md),
                   Text(name, style: AppText.title()),
-                  if (profile != null)
-                    Text('@${profile.username}', style: AppText.meta()),
+                  if (profile?.handle case final handle?)
+                    Text(handle, style: AppText.meta()),
+                  if (profile != null && profile.bio.isNotEmpty) ...[
+                    const SizedBox(height: AppSpace.xs),
+                    Text(profile.bio, style: AppText.note()),
+                  ],
                   const SizedBox(height: AppSpace.lg),
                   FollowButton(uid: uid),
                   const SizedBox(height: AppSpace.xxl),

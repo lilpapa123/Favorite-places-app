@@ -118,18 +118,6 @@ abstract class AppLocalizations {
   /// **'Back'**
   String get back;
 
-  /// No description provided for @cancel.
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel'**
-  String get cancel;
-
-  /// No description provided for @save.
-  ///
-  /// In en, this message translates to:
-  /// **'Save'**
-  String get save;
-
   /// No description provided for @undo.
   ///
   /// In en, this message translates to:
@@ -916,18 +904,6 @@ abstract class AppLocalizations {
   /// **'You'**
   String get you;
 
-  /// No description provided for @nameUpdated.
-  ///
-  /// In en, this message translates to:
-  /// **'Name updated'**
-  String get nameUpdated;
-
-  /// No description provided for @couldNotUpdateName.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not update your name'**
-  String get couldNotUpdateName;
-
   /// No description provided for @profilePhoto.
   ///
   /// In en, this message translates to:
@@ -1306,18 +1282,6 @@ abstract class AppLocalizations {
   /// **'Username'**
   String get username;
 
-  /// No description provided for @chooseUsername.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose a username'**
-  String get chooseUsername;
-
-  /// No description provided for @chooseUsernameBody.
-  ///
-  /// In en, this message translates to:
-  /// **'So friends can find and follow you.'**
-  String get chooseUsernameBody;
-
   /// No description provided for @usernameHint.
   ///
   /// In en, this message translates to:
@@ -1335,12 +1299,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'That username is taken.'**
   String get usernameTaken;
-
-  /// No description provided for @usernameSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'Username saved'**
-  String get usernameSaved;
 
   /// No description provided for @somethingWentWrong.
   ///
@@ -1575,6 +1533,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save 3 Night places.'**
   String get badgeStargazerHow;
+
+  /// No description provided for @bio.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get bio;
+
+  /// No description provided for @bioHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A few words about you'**
+  String get bioHint;
+
+  /// No description provided for @photoOnThisPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Your photo is only shown on this phone for now.'**
+  String get photoOnThisPhone;
+
+  /// No description provided for @profileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile saved'**
+  String get profileSaved;
+
+  /// No description provided for @profileSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save your profile. Please try again.'**
+  String get profileSaveFailed;
+
+  /// No description provided for @usernameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a username.'**
+  String get usernameRequired;
+
+  /// No description provided for @chooseUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a username'**
+  String get chooseUsername;
+
+  /// No description provided for @chooseUsernameBody.
+  ///
+  /// In en, this message translates to:
+  /// **'So friends can find and follow you.'**
+  String get chooseUsernameBody;
 }
 
 class _AppLocalizationsDelegate

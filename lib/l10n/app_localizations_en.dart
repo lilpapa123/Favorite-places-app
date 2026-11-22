@@ -19,12 +19,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get back => 'Back';
 
   @override
-  String get cancel => 'Cancel';
-
-  @override
-  String get save => 'Save';
-
-  @override
   String get undo => 'Undo';
 
   @override
@@ -465,12 +459,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get you => 'You';
 
   @override
-  String get nameUpdated => 'Name updated';
-
-  @override
-  String get couldNotUpdateName => 'Could not update your name';
-
-  @override
   String get profilePhoto => 'Profile photo';
 
   @override
@@ -692,12 +680,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get username => 'Username';
 
   @override
-  String get chooseUsername => 'Choose a username';
-
-  @override
-  String get chooseUsernameBody => 'So friends can find and follow you.';
-
-  @override
   String get usernameHint => 'e.g. khalid.travels';
 
   @override
@@ -706,9 +688,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get usernameTaken => 'That username is taken.';
-
-  @override
-  String get usernameSaved => 'Username saved';
 
   @override
   String get somethingWentWrong =>
@@ -829,4 +808,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get badgeStargazerHow => 'Save 3 Night places.';
+
+  @override
+  String get bio => 'Bio';
+
+  @override
+  String get bioHint => 'A few words about you';
+
+  @override
+  String get photoOnThisPhone =>
+      'Your photo is only shown on this phone for now.';
+
+  @override
+  String get profileSaved => 'Profile saved';
+
+  @override
+  String get profileSaveFailed =>
+      'Couldn\'t save your profile. Please try again.';
+
+  @override
+  String get usernameRequired => 'Enter a username.';
+
+  @override
+  String get chooseUsername => 'Choose a username';
+
+  @override
+  String get chooseUsernameBody => 'So friends can find and follow you.';
 }

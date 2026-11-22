@@ -5,7 +5,7 @@ import 'package:favorite_places/providers/user_palces.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Firestore layout:
-/// - `users/{uid}`: username, name and photo of each person.
+/// - `users/{uid}`: username, name, bio and photo of each person.
 /// - `usernames/{lowercase}`: `{uid}`, so a username belongs to one person.
 /// - `users/{uid}/following/{otherUid}` and `users/{uid}/followers/{otherUid}`.
 /// - `places/{id}`: places with `ownerUid` (see user_palces.dart).
@@ -14,6 +14,7 @@ class UserProfile {
     required this.uid,
     required this.username,
     required this.displayName,
+    this.bio = '',
     this.photoUrl,
   });
 
@@ -23,6 +24,7 @@ class UserProfile {
       uid: doc.id,
       username: data['username'] as String? ?? '',
       displayName: data['displayName'] as String? ?? '',
+      bio: data['bio'] as String? ?? '',
       photoUrl: data['photoUrl'] as String?,
     );
   }
@@ -30,24 +32,41 @@ class UserProfile {
   final String uid;
   final String username;
   final String displayName;
+  final String bio;
   final String? photoUrl;
 
   /// Display name, or the username when there is none.
   String get name => displayName.isNotEmpty ? displayName : username;
+
+  /// "@username" for under the name; null when the name already is the
+  /// username, or there is no username.
+  String? get handle =>
+      displayName.isEmpty || username.isEmpty ? null : '@$username';
 }
 
-/// 3–20 letters, numbers, dots or underscores.
-final usernamePattern = RegExp(r'^[a-zA-Z0-9._]{3,20}$');
+/// Counted in visible characters. firestore.rules allows 15x as much, because
+/// it counts UTF-16 units and one emoji can take 15.
+const maxBioLength = 150;
+
+/// 3–20 letters, numbers, dots or underscores. Not `__like_this__`: Firestore
+/// reserves those document IDs.
+final usernamePattern = RegExp(r'^(?!__.*__$)[a-zA-Z0-9._]{3,20}$');
 
 final _myUid = Provider<String?>(
   (ref) => ref.watch(authStateProvider.select((a) => a.value?.uid)),
 );
 
+/// Null only when the server says there is no profile. Offline with an empty
+/// cache it keeps loading, so nobody is asked for a username they already have.
 final profileProvider = StreamProvider.family<UserProfile?, String>((ref, uid) {
+  // Listens again after signing in: signing out ends the stream with an error.
+  ref.watch(_myUid);
   return ref
       .watch(firestoreProvider)
       .doc('users/$uid')
-      .snapshots()
+      // Metadata changes, to hear the server confirm what the cache said.
+      .snapshots(includeMetadataChanges: true)
+      .where((doc) => doc.exists || !doc.metadata.isFromCache)
       .map((doc) => doc.exists ? UserProfile.fromDoc(doc) : null);
 });
 
@@ -153,42 +172,47 @@ class Social {
             ..delete(_db.doc('users/$other/followers/$me')))
           .commit();
 
-  /// Gives [uid] the username [username]; false when someone else has it.
-  Future<bool> claimUsername({
+  /// Saves the public profile all at once. A null [username] or [bio] is
+  /// left as it is. False, with nothing written, when the username is taken.
+  Future<bool> saveProfile({
     required String uid,
-    required String username,
     required String displayName,
+    String? username,
+    String? bio,
     String? photoUrl,
   }) {
-    final key = username.toLowerCase();
+    // A transaction, so that it fails when offline instead of waiting forever.
     return _db.runTransaction((tx) async {
-      final claimed = await tx.get(_db.doc('usernames/$key'));
-      if (claimed.exists && claimed.data()?['uid'] != uid) {
-        return false;
+      final userRef = _db.doc('users/$uid');
+      final old = (await tx.get(userRef)).data()?['usernameLower'] as String?;
+      final key = username?.toLowerCase();
+      if (key != null && key != old) {
+        final claimRef = _db.doc('usernames/$key');
+        final claim = await tx.get(claimRef);
+        if (claim.exists && claim.data()?['uid'] != uid) {
+          return false;
+        }
+        // The rules forbid updating a claim, so only create missing ones.
+        if (!claim.exists) {
+          tx.set(claimRef, {'uid': uid});
+        }
+        if (old != null) {
+          tx.delete(_db.doc('usernames/$old'));
+        }
       }
-      final user = await tx.get(_db.doc('users/$uid'));
-      final old = user.data()?['usernameLower'] as String?;
-      if (old != null && old != key) {
-        tx.delete(_db.doc('usernames/$old'));
-      }
-      tx.set(_db.doc('usernames/$key'), {'uid': uid});
-      tx.set(_db.doc('users/$uid'), {
-        'username': username,
-        'usernameLower': key,
+      tx.set(userRef, {
         'displayName': displayName,
         'displayNameLower': displayName.toLowerCase(),
-        'photoUrl': photoUrl,
+        if (username != null) ...{
+          'username': username,
+          'usernameLower': key,
+          'photoUrl': photoUrl,
+        },
+        'bio': ?bio,
       }, SetOptions(merge: true));
       return true;
-    });
+    }, timeout: const Duration(seconds: 15));
   }
-
-  /// Keeps the searchable name in step with the account name.
-  Future<void> updateDisplayName(String uid, String name) =>
-      _db.doc('users/$uid').set({
-        'displayName': name,
-        'displayNameLower': name.toLowerCase(),
-      }, SetOptions(merge: true));
 
   /// People whose username or name starts with [query].
   Future<List<UserProfile>> search(String query, {String? exclude}) async {

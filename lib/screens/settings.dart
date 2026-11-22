@@ -1,4 +1,5 @@
 import 'package:favorite_places/l10n/app_localizations.dart';
+import 'package:favorite_places/providers/auth_provider.dart';
 import 'package:favorite_places/providers/settings_provider.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
@@ -7,7 +8,8 @@ import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Appearance (system / light / dark) and language (system / en / ar / tr).
+/// Appearance (system / light / dark), language (system / en / ar / tr) and
+/// signing out.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -75,6 +77,20 @@ class SettingsScreen extends ConsumerWidget {
                     onSelect: (i) => notifier.setLocale(
                       i == 0 ? null : supportedLocales[i - 1],
                     ),
+                  ),
+                  const SizedBox(height: AppSpace.xxl),
+                  PillButton(
+                    label: l10n.signOut,
+                    leading: const AppIcon('logout'),
+                    variant: PillButtonVariant.outlined,
+                    expanded: true,
+                    onPressed: () async {
+                      await ref.read(firebaseAuthProvider).signOut();
+                      // Settings sits on top of Account, now the sign-in form.
+                      if (context.mounted) {
+                        Navigator.of(context).popUntil((r) => r.isFirst);
+                      }
+                    },
                   ),
                 ],
               ),

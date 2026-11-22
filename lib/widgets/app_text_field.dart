@@ -13,6 +13,7 @@ class AppTextField extends StatelessWidget {
     this.maxLines = 1,
     this.maxLength,
     this.obscureText = false,
+    this.autocorrect = true,
     this.keyboardType,
     this.textInputAction,
     this.autofillHints,
@@ -29,6 +30,9 @@ class AppTextField extends StatelessWidget {
   final int maxLines;
   final int? maxLength;
   final bool obscureText;
+
+  /// Off for usernames and the like.
+  final bool autocorrect;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final Iterable<String>? autofillHints;
@@ -43,8 +47,8 @@ class AppTextField extends StatelessWidget {
       minLines: maxLines > 1 ? maxLines : null,
       maxLength: maxLength,
       obscureText: obscureText,
-      autocorrect: !obscureText,
-      enableSuggestions: !obscureText,
+      autocorrect: autocorrect && !obscureText,
+      enableSuggestions: autocorrect && !obscureText,
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       autofillHints: autofillHints,

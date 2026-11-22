@@ -16,16 +16,19 @@ class AppMap {
   /// OSM servers aren't meant for apps with lots of users. Before a public
   /// launch, switch [urlTemplate] to a provider with a free API key (e.g.
   /// MapTiler or Stadia Maps). OSM's policy also requires a real user agent.
-  /// Tiles are tinted with the mapcn_flutter dark theme.
+  /// In dark mode the tiles are tinted with the mapcn_flutter dark theme.
   static Widget tiles() {
-    return ColorFiltered(
-      colorFilter: const ColorFilter.matrix(MapcnThemes.mapcnDark),
-      child: TileLayer(
-        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        userAgentPackageName: 'com.khaledwaled.favoriteplaces',
-        maxNativeZoom: 19,
-      ),
+    final layer = TileLayer(
+      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      userAgentPackageName: 'com.khaledwaled.favoriteplaces',
+      maxNativeZoom: 19,
     );
+    return AppColors.isDark
+        ? ColorFiltered(
+            colorFilter: const ColorFilter.matrix(MapcnThemes.mapcnDark),
+            child: layer,
+          )
+        : layer;
   }
 
   /// The edges of the world map (Web Mercator stops at ±85.05°).
@@ -49,7 +52,7 @@ class AppMap {
   /// every map.
   static Widget attribution(BuildContext context) {
     return SimpleAttributionWidget(
-      backgroundColor: Colors.white.withValues(alpha: 0.85),
+      backgroundColor: AppColors.surface.withValues(alpha: 0.85),
       source: Text(context.l10n.osmCredit, style: AppText.meta()),
     );
   }
