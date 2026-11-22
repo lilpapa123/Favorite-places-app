@@ -292,6 +292,9 @@ class _Profile extends ConsumerWidget {
   ) async {
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
+    // Read before the dialog: context and ref die if the screen closes.
+    final displayName = _name(context);
+    final social = ref.read(socialProvider);
     final username = await showDialog<String>(
       context: context,
       useRootNavigator: true,
@@ -310,16 +313,13 @@ class _Profile extends ConsumerWidget {
       say(l10n.usernameInvalid);
       return;
     }
-    final displayName = _name(context);
     try {
-      final ok = await ref
-          .read(socialProvider)
-          .claimUsername(
-            uid: user.uid,
-            username: username,
-            displayName: displayName,
-            photoUrl: user.photoURL,
-          );
+      final ok = await social.claimUsername(
+        uid: user.uid,
+        username: username,
+        displayName: displayName,
+        photoUrl: user.photoURL,
+      );
       say(ok ? l10n.usernameSaved : l10n.usernameTaken);
     } catch (_) {
       say(l10n.somethingWentWrong);
@@ -548,28 +548,6 @@ class _Profile extends ConsumerWidget {
                                                 ),
                                               ),
                                             ),
-                                    ),
-                                  ),
-                                  // Small camera badge: "you can change this".
-                                  Positioned(
-                                    right: -2,
-                                    bottom: -2,
-                                    child: Container(
-                                      width: 26,
-                                      height: 26,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.accent,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: AppColors.surface,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: const Icon(
-                                        Icons.photo_camera,
-                                        size: 13,
-                                        color: Colors.white,
-                                      ),
                                     ),
                                   ),
                                 ],
