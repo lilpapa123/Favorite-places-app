@@ -1,7 +1,7 @@
-import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:favorite_places/l10n/l10n.dart';
+import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
 import 'package:favorite_places/widgets/place_photo.dart';
@@ -10,37 +10,34 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// Photo field for the add form: a dashed drop zone that asks "camera or
-/// library?", then shows the photo with a "Change photo" pill.
+/// library?", then a row of the chosen photos that scrolls sideways, each
+/// with a remove button, and a tile to add more (up to [maxPlacePhotos]).
 class ImageInput extends StatefulWidget {
-  const ImageInput({super.key, this.onImagePicked, this.initialImage});
+  const ImageInput({super.key, this.onChanged, this.initialPhotos = const []});
 
-  final ValueChanged<File?>? onImagePicked;
+  final ValueChanged<List<String>>? onChanged;
 
-  /// A photo already taken (e.g. from the tab bar's camera button).
-  final File? initialImage;
+  /// Photos already chosen (e.g. from the tab bar's camera button).
+  final List<String> initialPhotos;
 
   @override
   State<ImageInput> createState() => _ImageInputState();
 }
 
 class _ImageInputState extends State<ImageInput> {
-  static const int _maxImageWidth = 1200;
+  static const double _maxImageWidth = 1200;
   static const int _imageQuality = 85;
   static const double _emptyHeight = 124;
-  static const double _photoHeight = 200;
+  static const double _tileSize = 120;
 
   final ImagePicker _imagePicker = ImagePicker();
-  File? _selectedImage;
+  late List<String> _photos = [...widget.initialPhotos];
   bool _isPickingImage = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _selectedImage = widget.initialImage;
-  }
+  int get _room => maxPlacePhotos - _photos.length;
 
   Future<void> _chooseSource() async {
-    if (_isPickingImage) {
+    if (_isPickingImage || _room <= 0) {
       return;
     }
     final source = await showModalBottomSheet<ImageSource>(
@@ -76,27 +73,34 @@ class _ImageInputState extends State<ImageInput> {
       ),
     );
     if (source != null) {
-      await _pickImage(source);
+      await _pickImages(source);
     }
   }
 
-  Future<void> _pickImage(ImageSource source) async {
+  Future<void> _pickImages(ImageSource source) async {
     if (!mounted || _isPickingImage) {
       return;
     }
     setState(() => _isPickingImage = true);
     try {
-      final pickedImage = await _imagePicker.pickImage(
-        source: source,
-        maxWidth: _maxImageWidth.toDouble(),
-        imageQuality: _imageQuality,
-      );
-      if (!mounted || pickedImage == null) {
+      // The library allows several at once; image_picker needs a limit of 2+.
+      final picked = source == ImageSource.gallery && _room > 1
+          ? await _imagePicker.pickMultiImage(
+              maxWidth: _maxImageWidth,
+              imageQuality: _imageQuality,
+              limit: _room,
+            )
+          : [
+              ?await _imagePicker.pickImage(
+                source: source,
+                maxWidth: _maxImageWidth,
+                imageQuality: _imageQuality,
+              ),
+            ];
+      if (!mounted || picked.isEmpty) {
         return;
       }
-      final imageFile = File(pickedImage.path);
-      setState(() => _selectedImage = imageFile);
-      widget.onImagePicked?.call(imageFile);
+      _setPhotos([..._photos, for (final x in picked.take(_room)) x.path]);
     } on PlatformException catch (error) {
       if (!mounted) {
         return;
@@ -109,6 +113,11 @@ class _ImageInputState extends State<ImageInput> {
     }
   }
 
+  void _setPhotos(List<String> photos) {
+    setState(() => _photos = photos);
+    widget.onChanged?.call(photos);
+  }
+
   void _showMessage(String message) {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
@@ -116,15 +125,25 @@ class _ImageInputState extends State<ImageInput> {
 
   @override
   Widget build(BuildContext context) {
-    final image = _selectedImage;
-
-    return Semantics(
-      button: true,
-      label: image == null ? context.l10n.addPhoto : context.l10n.changePhoto,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: _isPickingImage ? null : _chooseSource,
-        child: image == null ? _buildEmpty() : _buildPhoto(image),
+    if (_photos.isEmpty) {
+      return Semantics(
+        button: true,
+        label: context.l10n.addPhoto,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _isPickingImage ? null : _chooseSource,
+          child: _buildEmpty(),
+        ),
+      );
+    }
+    return SizedBox(
+      height: _tileSize,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: _photos.length + (_room > 0 ? 1 : 0),
+        separatorBuilder: (context, i) => const SizedBox(width: AppSpace.sm),
+        itemBuilder: (context, i) =>
+            i == _photos.length ? _buildAddTile() : _buildPhoto(i),
       ),
     );
   }
@@ -151,14 +170,7 @@ class _ImageInputState extends State<ImageInput> {
                 shape: BoxShape.circle,
               ),
               child: _isPickingImage
-                  ? SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.2,
-                        color: AppColors.accent,
-                      ),
-                    )
+                  ? _spinner()
                   : const AppIcon('camera_accent'),
             ),
             const SizedBox(width: AppSpace.lg),
@@ -192,30 +204,85 @@ class _ImageInputState extends State<ImageInput> {
     );
   }
 
-  Widget _buildPhoto(File image) {
+  Widget _spinner() => SizedBox(
+    width: 22,
+    height: 22,
+    child: CircularProgressIndicator(strokeWidth: 2.2, color: AppColors.accent),
+  );
+
+  /// Dashed square with a camera: adds more photos.
+  Widget _buildAddTile() {
+    return Semantics(
+      container: true,
+      button: true,
+      label: context.l10n.addMorePhotos,
+      excludeSemantics: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _isPickingImage ? null : _chooseSource,
+        child: CustomPaint(
+          foregroundPainter: _DashedBorderPainter(),
+          child: Container(
+            width: _tileSize,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: AppRadius.cardAll,
+            ),
+            child: _isPickingImage
+                ? _spinner()
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const AppIcon('camera_accent'),
+                      const SizedBox(height: AppSpace.xs),
+                      Text(
+                        '${_photos.length} / $maxPlacePhotos',
+                        style: AppText.meta().copyWith(fontSize: 11),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhoto(int index) {
     return SizedBox(
-      height: _photoHeight,
+      width: _tileSize,
       child: ClipRRect(
         borderRadius: AppRadius.cardAll,
         child: Stack(
           fit: StackFit.expand,
           children: [
-            PlacePhoto(image: image, tint: AppColors.tints.first),
+            PlacePhoto(photo: _photos[index], tint: AppColors.tints.first),
             Positioned(
-              right: AppSpace.md,
-              bottom: AppSpace.md,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: AppSpace.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.ink.withValues(alpha: 0.78),
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
-                ),
-                child: Text(
-                  context.l10n.changePhoto,
-                  style: AppText.button(color: Colors.white, size: 13),
+              right: 0,
+              top: 0,
+              child: Semantics(
+                container: true,
+                button: true,
+                label: context.l10n.removePhoto,
+                excludeSemantics: true,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _setPhotos([..._photos]..removeAt(index)),
+                  // 38 pt to tap, 26 pt to see.
+                  child: Container(
+                    margin: const EdgeInsets.all(6),
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      color: AppColors.ink.withValues(alpha: 0.7),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.close,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -283,10 +350,7 @@ class _DashedBorderPainter extends CustomPainter {
     for (final ui.PathMetric metric in path.computeMetrics()) {
       var distance = 0.0;
       while (distance < metric.length) {
-        canvas.drawPath(
-          metric.extractPath(distance, distance + _dash),
-          paint,
-        );
+        canvas.drawPath(metric.extractPath(distance, distance + _dash), paint);
         distance += _dash + _gap;
       }
     }

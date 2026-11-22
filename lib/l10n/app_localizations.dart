@@ -1581,6 +1581,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'So friends can find and follow you.'**
   String get chooseUsernameBody;
+
+  /// No description provided for @tabDiscover.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover'**
+  String get tabDiscover;
+
+  /// No description provided for @discoverSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite places people recommend.'**
+  String get discoverSubtitle;
+
+  /// No description provided for @signInForDiscover.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to see the places people share.'**
+  String get signInForDiscover;
+
+  /// No description provided for @discoverEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing shared yet'**
+  String get discoverEmptyTitle;
+
+  /// No description provided for @discoverEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Places other people save will show up here.'**
+  String get discoverEmptyBody;
+
+  /// No description provided for @yourPlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR PLACES'**
+  String get yourPlaces;
+
+  /// No description provided for @seeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get seeAll;
+
+  /// No description provided for @noPlacesYetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No places yet. Tap the camera to add one.'**
+  String get noPlacesYetHint;
+
+  /// No description provided for @addMorePhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Add more photos'**
+  String get addMorePhotos;
 }
 
 class _AppLocalizationsDelegate

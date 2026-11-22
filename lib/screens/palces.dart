@@ -1,6 +1,7 @@
 import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/user_palces.dart';
+import 'package:favorite_places/screens/add_place.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
 import 'package:favorite_places/widgets/category_chips.dart';
@@ -24,11 +25,12 @@ enum _SortOrder {
   };
 }
 
-/// The "My places" tab: search, type filters, sort, and the feed.
+/// All of the user's own places, opened from Account: search, type filters,
+/// sort, and the cards.
 class PalcesScreen extends ConsumerStatefulWidget {
   const PalcesScreen({super.key, this.onAddPlace});
 
-  /// Opens the add form (the shell switches pages).
+  /// Opens the add form; by default it opens as a page on top.
   final VoidCallback? onAddPlace;
 
   @override
@@ -52,16 +54,7 @@ class _PalcesScreenState extends ConsumerState<PalcesScreen> {
       if (_filter != null && place.category != _filter) {
         return false;
       }
-      if (query.isEmpty) {
-        return true;
-      }
-      final location = place.location;
-      return place.title.toLowerCase().contains(query) ||
-          place.note.toLowerCase().contains(query) ||
-          (location != null &&
-              '${location.title} ${location.areaLabel} ${location.city}'
-                  .toLowerCase()
-                  .contains(query));
+      return query.isEmpty || place.matches(query);
     }).toList();
 
     switch (_sort) {
@@ -133,12 +126,24 @@ class _PalcesScreenState extends ConsumerState<PalcesScreen> {
           children: [
             PageHeader(
               title: context.l10n.tabMyPlaces,
-              subtitle:
-                  context.l10n.favoritePlacesCount(count),
-              trailing: CircleIconButton(
-                icon: const AppIcon('sliders'),
-                semanticLabel: context.l10n.sortPlaces,
-                onPressed: _chooseSort,
+              subtitle: context.l10n.favoritePlacesCount(count),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleIconButton(
+                    icon: const AppIcon('sliders'),
+                    semanticLabel: context.l10n.sortPlaces,
+                    onPressed: _chooseSort,
+                  ),
+                  if (Navigator.of(context).canPop()) ...[
+                    const SizedBox(width: AppSpace.sm),
+                    CircleIconButton(
+                      icon: const AppIcon('close'),
+                      semanticLabel: context.l10n.close,
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ],
               ),
             ),
             if (places.isNotEmpty) ...[
@@ -181,9 +186,17 @@ class _PalcesScreenState extends ConsumerState<PalcesScreen> {
             ],
             Expanded(
               child: places.isEmpty
-                  ? EmptyPlaces(onAdd: widget.onAddPlace)
+                  ? EmptyPlaces(
+                      onAdd:
+                          widget.onAddPlace ??
+                          () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (ctx) => const AddedPlaceScreen(),
+                            ),
+                          ),
+                    )
                   : visible.isEmpty
-                  ? _NoMatches(
+                  ? NoMatches(
                       onClear: () => setState(() {
                         _filter = null;
                         _search.clear();
@@ -198,8 +211,9 @@ class _PalcesScreenState extends ConsumerState<PalcesScreen> {
   }
 }
 
-class _NoMatches extends StatelessWidget {
-  const _NoMatches({required this.onClear});
+/// "No places match" with a button that clears the search and filter.
+class NoMatches extends StatelessWidget {
+  const NoMatches({super.key, required this.onClear});
 
   final VoidCallback onClear;
 

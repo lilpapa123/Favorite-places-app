@@ -168,8 +168,8 @@ class PlacesDetailScreen extends ConsumerWidget {
                   children: [
                     Hero(
                       tag: 'photo-${place.id}',
-                      child: PlacePhoto(
-                        image: place.image,
+                      child: PlacePhotos(
+                        photos: place.photos,
                         tint: AppColors.tintFor(place.id),
                         iconSize: 40,
                       ),

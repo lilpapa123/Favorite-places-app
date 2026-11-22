@@ -150,6 +150,30 @@ final feedProvider = StreamProvider<List<(String, Place)>>((ref) {
       );
 });
 
+/// Newest places shared by everyone except the signed-in user, with the
+/// owner. Empty when signed out (the rules only let signed-in users read).
+final discoverProvider = StreamProvider<List<(String, Place)>>((ref) {
+  final me = ref.watch(_myUid);
+  if (me == null) {
+    return Stream.value(const []);
+  }
+  // shortcut: newest 100 only, no ranking or paging; add a score field and
+  // paging once there are many places.
+  return ref
+      .watch(firestoreProvider)
+      .collection('places')
+      .orderBy('createdAt', descending: true)
+      .limit(100)
+      .snapshots()
+      .map(
+        (snap) => [
+          for (final doc in snap.docs)
+            if (doc.data()['ownerUid'] case final String owner when owner != me)
+              (owner, Place.fromFirestore(doc.id, doc.data())),
+        ],
+      );
+});
+
 /// Follow, unfollow, usernames and search.
 class Social {
   Social(this._db);

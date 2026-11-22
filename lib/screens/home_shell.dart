@@ -5,7 +5,7 @@ import 'package:favorite_places/screens/account.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/screens/add_place.dart';
 import 'package:favorite_places/screens/feed.dart';
-import 'package:favorite_places/screens/palces.dart';
+import 'package:favorite_places/screens/discover.dart';
 import 'package:favorite_places/screens/places_map.dart';
 import 'package:favorite_places/widgets/glass_tab_bar.dart';
 import 'package:favorite_places/widgets/image_input.dart';
@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
-/// The app's root: My places / Map / Account under the floating glass bar,
+/// The app's root: Discover / Map / Feed / Account under the floating glass bar,
 /// with the camera in its middle.
 ///
 /// Each tab has its own navigator, so a place's details open *inside* the
@@ -31,7 +31,7 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   List<GlassTab> get _tabs => [
-    GlassTab(label: context.l10n.tabMyPlaces, icon: 'tab_heart'),
+    GlassTab(label: context.l10n.tabDiscover, icon: 'tab_heart'),
     GlassTab(label: context.l10n.tabMap, icon: 'tab_map'),
     GlassTab(label: context.l10n.tabFeed, icon: 'tab_people'),
     GlassTab(label: context.l10n.tabAccount, icon: 'tab_person'),
@@ -39,6 +39,7 @@ class _HomeShellState extends State<HomeShell> {
 
   /// Pages 0-3 are the tabs; page 4 is the add form.
   static const int _addPage = 4;
+  static const int _accountPage = 3;
 
   final ImagePicker _picker = ImagePicker();
   final List<GlobalKey<NavigatorState>> _navigators = [
@@ -125,9 +126,11 @@ class _HomeShellState extends State<HomeShell> {
     return _picker.pickImage(source: source, maxWidth: 1200, imageQuality: 85);
   }
 
+  /// Goes to Account, where the new place shows in the user's grid.
   void _onPlaceSaved() {
     setState(() {
-      _page = 0;
+      _page = _accountPage;
+      _opened.add(_accountPage);
       _capturedImage = null;
       _addFormKey = UniqueKey();
     });
@@ -146,7 +149,7 @@ class _HomeShellState extends State<HomeShell> {
   Widget _rootOf(int page) {
     switch (page) {
       case 0:
-        return PalcesScreen(onAddPlace: () => _openAddForm());
+        return const DiscoverScreen();
       case 1:
         return const PlacesMapScreen();
       case 2:

@@ -80,7 +80,7 @@ class FeedScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _OwnerRow(uid: owner),
+                      OwnerRow(uid: owner),
                       const SizedBox(height: AppSpace.sm),
                       PlaceCard(
                         place: place,
@@ -91,33 +91,6 @@ class FeedScreen extends ConsumerWidget {
                 ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// "(K) Khalid  @khalid" above a feed card; opens their profile.
-class _OwnerRow extends ConsumerWidget {
-  const _OwnerRow({required this.uid});
-
-  final String uid;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(profileProvider(uid)).value;
-    final name = profile?.name ?? '';
-    return InkWell(
-      onTap: () => openProfile(context, uid),
-      child: Row(
-        children: [
-          Avatar(name: name, photoUrl: profile?.photoUrl, size: 30),
-          const SizedBox(width: AppSpace.sm),
-          Text(name, style: AppText.bodyStrong()),
-          if (profile?.handle case final handle?) ...[
-            const SizedBox(width: AppSpace.xs),
-            Text(handle, style: AppText.meta()),
-          ],
-        ],
       ),
     );
   }

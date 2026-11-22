@@ -1,3 +1,5 @@
+import 'package:favorite_places/screens/palces.dart';
+import 'package:favorite_places/widgets/places_grid.dart';
 import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/providers/auth_provider.dart';
 
@@ -476,6 +478,34 @@ class _Profile extends ConsumerWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: AppSpace.xxl),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      context.l10n.yourPlaces,
+                      style: AppText.overline(),
+                    ),
+                  ),
+                  if (places.isNotEmpty)
+                    TextButton(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (ctx) => const PalcesScreen(),
+                        ),
+                      ),
+                      child: Text(
+                        context.l10n.seeAll,
+                        style: AppText.label(color: AppColors.accent),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 9),
+              if (places.isEmpty)
+                Text(context.l10n.noPlacesYetHint, style: AppText.meta())
+              else
+                PlacesGrid(places: places),
               const SizedBox(height: AppSpace.xxl),
               Text(context.l10n.yourSpace, style: AppText.overline()),
               const SizedBox(height: 9),

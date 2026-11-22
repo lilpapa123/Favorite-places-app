@@ -378,5 +378,14 @@
   "profileSaveFailed": "Couldn't save your profile. Please try again.",
   "usernameRequired": "Enter a username.",
   "chooseUsername": "Choose a username",
-  "chooseUsernameBody": "So friends can find and follow you."
+  "chooseUsernameBody": "So friends can find and follow you.",
+  "tabDiscover": "Discover",
+  "discoverSubtitle": "Favorite places people recommend.",
+  "signInForDiscover": "Sign in to see the places people share.",
+  "discoverEmptyTitle": "Nothing shared yet",
+  "discoverEmptyBody": "Places other people save will show up here.",
+  "yourPlaces": "YOUR PLACES",
+  "seeAll": "See all",
+  "noPlacesYetHint": "No places yet. Tap the camera to add one.",
+  "addMorePhotos": "Add more photos"
 }

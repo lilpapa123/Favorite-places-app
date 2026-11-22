@@ -225,3 +225,30 @@ class ProfileStats extends ConsumerWidget {
     );
   }
 }
+
+/// "(K) Khalid  @khalid" above a shared place card; opens their profile.
+class OwnerRow extends ConsumerWidget {
+  const OwnerRow({super.key, required this.uid});
+
+  final String uid;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(profileProvider(uid)).value;
+    final name = profile?.name ?? '';
+    return InkWell(
+      onTap: () => openProfile(context, uid),
+      child: Row(
+        children: [
+          Avatar(name: name, photoUrl: profile?.photoUrl, size: 30),
+          const SizedBox(width: AppSpace.sm),
+          Text(name, style: AppText.bodyStrong()),
+          if (profile?.handle case final handle?) ...[
+            const SizedBox(width: AppSpace.xs),
+            Text(handle, style: AppText.meta()),
+          ],
+        ],
+      ),
+    );
+  }
+}

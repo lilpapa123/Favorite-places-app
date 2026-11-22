@@ -834,4 +834,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chooseUsernameBody => 'So friends can find and follow you.';
+
+  @override
+  String get tabDiscover => 'Discover';
+
+  @override
+  String get discoverSubtitle => 'Favorite places people recommend.';
+
+  @override
+  String get signInForDiscover => 'Sign in to see the places people share.';
+
+  @override
+  String get discoverEmptyTitle => 'Nothing shared yet';
+
+  @override
+  String get discoverEmptyBody => 'Places other people save will show up here.';
+
+  @override
+  String get yourPlaces => 'YOUR PLACES';
+
+  @override
+  String get seeAll => 'See all';
+
+  @override
+  String get noPlacesYetHint => 'No places yet. Tap the camera to add one.';
+
+  @override
+  String get addMorePhotos => 'Add more photos';
 }

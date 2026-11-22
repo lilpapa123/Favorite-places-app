@@ -46,7 +46,7 @@ class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   PlaceCategory _category = PlaceCategory.cafe;
-  File? _selectedImage;
+  late List<String> _photos;
   PlaceLocation? _selectedLocation;
 
   bool get _editing => widget.existing != null;
@@ -60,10 +60,10 @@ class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
       _titleController.text = existing.title;
       _noteController.text = existing.note;
       _category = existing.category;
-      _selectedImage = existing.image;
+      _photos = existing.photos;
       _selectedLocation = existing.location;
     } else {
-      _selectedImage = widget.initialImage;
+      _photos = [?widget.initialImage?.path];
     }
     // Rebuild so "Save place" enables as soon as there's a name.
     _titleController.addListener(_onTitleChanged);
@@ -87,7 +87,7 @@ class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
           title: title,
           category: _category,
           note: note,
-          image: _selectedImage,
+          photos: _photos,
           location: _selectedLocation,
           clearLocation: _selectedLocation == null,
         ),
@@ -97,7 +97,7 @@ class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
         title,
         category: _category,
         note: note,
-        image: _selectedImage,
+        photos: _photos,
         location: _selectedLocation,
       );
     }
@@ -108,7 +108,9 @@ class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_editing ? context.l10n.changesSaved : context.l10n.savedToMyPlaces),
+          content: Text(
+            _editing ? context.l10n.changesSaved : context.l10n.savedToMyPlaces,
+          ),
         ),
       );
       Navigator.of(context).maybePop();
@@ -144,7 +146,9 @@ class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
             slivers: [
               SliverToBoxAdapter(
                 child: PageHeader(
-                  title: _editing ? context.l10n.editPlace : context.l10n.addPlace,
+                  title: _editing
+                      ? context.l10n.editPlace
+                      : context.l10n.addPlace,
                   subtitle: _editing
                       ? context.l10n.editPlaceSubtitle
                       : context.l10n.addPlaceSubtitle,
@@ -165,9 +169,8 @@ class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
                 sliver: SliverList.list(
                   children: [
                     ImageInput(
-                      initialImage: _selectedImage,
-                      onImagePicked: (image) =>
-                          setState(() => _selectedImage = image),
+                      initialPhotos: _photos,
+                      onChanged: (photos) => setState(() => _photos = photos),
                     ),
                     const SizedBox(height: AppSpace.lg),
                     AppTextField(
@@ -206,7 +209,9 @@ class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
                     ),
                     const SizedBox(height: AppSpace.xxl),
                     PillButton(
-                      label: _editing ? context.l10n.saveChanges : context.l10n.savePlace,
+                      label: _editing
+                          ? context.l10n.saveChanges
+                          : context.l10n.savePlace,
                       leading: const AppIcon('heart_white'),
                       large: true,
                       expanded: true,

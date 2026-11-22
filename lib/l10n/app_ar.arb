@@ -246,5 +246,14 @@
   "profileSaveFailed": "تعذّر حفظ ملفك الشخصي. حاول مرة أخرى.",
   "usernameRequired": "أدخل اسم مستخدم.",
   "chooseUsername": "اختر اسم مستخدم",
-  "chooseUsernameBody": "ليجدك أصدقاؤك ويتابعوك."
+  "chooseUsernameBody": "ليجدك أصدقاؤك ويتابعوك.",
+  "tabDiscover": "اكتشف",
+  "discoverSubtitle": "أماكن مفضلة يوصي بها الناس.",
+  "signInForDiscover": "سجّل الدخول لترى الأماكن التي يشاركها الناس.",
+  "discoverEmptyTitle": "لا شيء مُشارك بعد",
+  "discoverEmptyBody": "ستظهر هنا الأماكن التي يحفظها الآخرون.",
+  "yourPlaces": "أماكنك",
+  "seeAll": "عرض الكل",
+  "noPlacesYetHint": "لا أماكن بعد. اضغط على الكاميرا لإضافة مكان.",
+  "addMorePhotos": "إضافة المزيد من الصور"
 }

@@ -45,7 +45,8 @@ Set<AppBadge> earnedBadges(List<Place> places) {
     if (continents.length >= 3) AppBadge.frequentFlyer,
     if (_farthestKm(located) >= 500) AppBadge.roadTripper,
     if (places.length >= 25) AppBadge.backpacker,
-    if (places.where((p) => p.image != null).length >= 10) AppBadge.shutterbug,
+    if (places.where((p) => p.photos.isNotEmpty).length >= 10)
+      AppBadge.shutterbug,
     if (ofType(PlaceCategory.hike) >= 3) AppBadge.summitSeeker,
     if (ofType(PlaceCategory.nature) >= 3) AppBadge.jungleExplorer,
     if (ofType(PlaceCategory.beach) >= 3) AppBadge.beachBum,

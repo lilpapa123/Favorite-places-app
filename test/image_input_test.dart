@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:favorite_places/l10n/app_localizations.dart';
 import 'package:favorite_places/theme/app_theme.dart';
@@ -10,10 +9,23 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 
 class _FakeImagePickerPlatform extends ImagePickerPlatform {
-  _FakeImagePickerPlatform({this.onGetImage});
+  _FakeImagePickerPlatform({this.onGetImage, this.library = const []});
 
   final Future<XFile?> Function(ImageSource source)? onGetImage;
+
+  /// What the library returns when several photos may be picked.
+  final List<String> library;
   ImageSource? lastSource;
+  int? lastLimit;
+
+  @override
+  Future<List<XFile>> getMultiImageWithOptions({
+    MultiImagePickerOptions options = const MultiImagePickerOptions(),
+  }) async {
+    lastSource = ImageSource.gallery;
+    lastLimit = options.limit;
+    return [for (final path in library) XFile(path)];
+  }
 
   @override
   Future<XFile?> getImage({
@@ -28,7 +40,7 @@ class _FakeImagePickerPlatform extends ImagePickerPlatform {
   }
 }
 
-Widget _buildHarness({ValueChanged<File?>? onImagePicked}) {
+Widget _buildHarness({ValueChanged<List<String>>? onChanged}) {
   return MaterialApp(
     theme: AppTheme.data(Brightness.light),
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -40,7 +52,7 @@ Widget _buildHarness({ValueChanged<File?>? onImagePicked}) {
     home: Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: ImageInput(onImagePicked: onImagePicked),
+        child: ImageInput(onChanged: onChanged),
       ),
     ),
   );
@@ -70,14 +82,32 @@ void main() {
     expect(find.text('Choose from library'), findsOneWidget);
   });
 
-  testWidgets('uses the library when chosen', (tester) async {
-    final fake = _FakeImagePickerPlatform(onGetImage: (_) async => null);
+  testWidgets('picks several photos from the library, then more, and removes '
+      'one', (tester) async {
+    final fake = _FakeImagePickerPlatform(
+      library: ['/tmp/1.jpg', '/tmp/2.jpg'],
+      onGetImage: (_) async => XFile('/tmp/3.jpg'),
+    );
     ImagePickerPlatform.instance = fake;
+    var photos = <String>[];
 
-    await tester.pumpWidget(_buildHarness());
+    await tester.pumpWidget(_buildHarness(onChanged: (p) => photos = p));
     await _pick(tester, 'Choose from library');
 
     expect(fake.lastSource, ImageSource.gallery);
+    expect(fake.lastLimit, 10);
+    expect(photos, ['/tmp/1.jpg', '/tmp/2.jpg']);
+    expect(find.bySemanticsLabel('Remove photo'), findsNWidgets(2));
+
+    await tester.tap(find.bySemanticsLabel('Add more photos'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Take photo'));
+    await tester.pumpAndSettle();
+    expect(photos, ['/tmp/1.jpg', '/tmp/2.jpg', '/tmp/3.jpg']);
+
+    await tester.tap(find.bySemanticsLabel('Remove photo').first);
+    await tester.pump();
+    expect(photos, ['/tmp/2.jpg', '/tmp/3.jpg']);
   });
 
   testWidgets('shows a message when the device has no camera', (tester) async {
@@ -114,7 +144,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      _buildHarness(onImagePicked: (_) => notified = true),
+      _buildHarness(onChanged: (_) => notified = true),
     );
     await _pick(tester, 'Take photo');
 

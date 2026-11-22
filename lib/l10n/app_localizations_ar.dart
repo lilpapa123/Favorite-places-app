@@ -833,4 +833,32 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get chooseUsernameBody => 'ليجدك أصدقاؤك ويتابعوك.';
+
+  @override
+  String get tabDiscover => 'اكتشف';
+
+  @override
+  String get discoverSubtitle => 'أماكن مفضلة يوصي بها الناس.';
+
+  @override
+  String get signInForDiscover =>
+      'سجّل الدخول لترى الأماكن التي يشاركها الناس.';
+
+  @override
+  String get discoverEmptyTitle => 'لا شيء مُشارك بعد';
+
+  @override
+  String get discoverEmptyBody => 'ستظهر هنا الأماكن التي يحفظها الآخرون.';
+
+  @override
+  String get yourPlaces => 'أماكنك';
+
+  @override
+  String get seeAll => 'عرض الكل';
+
+  @override
+  String get noPlacesYetHint => 'لا أماكن بعد. اضغط على الكاميرا لإضافة مكان.';
+
+  @override
+  String get addMorePhotos => 'إضافة المزيد من الصور';
 }

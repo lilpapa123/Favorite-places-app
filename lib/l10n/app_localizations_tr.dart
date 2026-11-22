@@ -835,4 +835,33 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get chooseUsernameBody => 'Arkadaşlarınız sizi bulup takip edebilsin.';
+
+  @override
+  String get tabDiscover => 'Keşfet';
+
+  @override
+  String get discoverSubtitle => 'İnsanların önerdiği favori yerler.';
+
+  @override
+  String get signInForDiscover =>
+      'İnsanların paylaştığı yerleri görmek için giriş yapın.';
+
+  @override
+  String get discoverEmptyTitle => 'Henüz paylaşılan yok';
+
+  @override
+  String get discoverEmptyBody =>
+      'Başkalarının kaydettiği yerler burada görünecek.';
+
+  @override
+  String get yourPlaces => 'YERLERİNİZ';
+
+  @override
+  String get seeAll => 'Tümünü gör';
+
+  @override
+  String get noPlacesYetHint => 'Henüz yer yok. Eklemek için kameraya dokunun.';
+
+  @override
+  String get addMorePhotos => 'Daha fazla fotoğraf ekle';
 }

@@ -535,7 +535,7 @@ class _PreviewCard extends StatelessWidget {
               width: 104,
               height: 124,
               child: PlacePhoto(
-                image: place.image,
+                photo: place.photos.firstOrNull,
                 tint: AppColors.tintFor(place.id),
                 iconSize: 24,
               ),

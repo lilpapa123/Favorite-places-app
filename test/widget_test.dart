@@ -1,6 +1,8 @@
 import 'package:favorite_places/l10n/app_localizations.dart';
 import 'package:favorite_places/screens/home_shell.dart';
+import 'package:favorite_places/screens/palces.dart';
 import 'package:favorite_places/theme/app_theme.dart';
+import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -24,7 +26,8 @@ class _FakeCamera extends ImagePickerPlatform {
   }
 }
 
-Widget buildTestApp() {
+/// The app, or [home] alone (e.g. the user's own places screen).
+Widget buildTestApp({Widget home = const HomeShell()}) {
   return ProviderScope(
     child: MaterialApp(
       theme: AppTheme.data(Brightness.light),
@@ -34,7 +37,7 @@ Widget buildTestApp() {
         data: MediaQuery.of(context).copyWith(disableAnimations: true),
         child: child!,
       ),
-      home: const HomeShell(),
+      home: home,
     ),
   );
 }
@@ -91,7 +94,7 @@ void main() {
   });
 
   testWidgets('shows the empty state when no places exist', (tester) async {
-    await tester.pumpWidget(buildTestApp());
+    await tester.pumpWidget(buildTestApp(home: const PalcesScreen()));
 
     expect(find.text('My places'), findsOneWidget);
     expect(find.text('No favorite places yet'), findsOneWidget);
@@ -99,7 +102,7 @@ void main() {
   });
 
   testWidgets('adds a place and shows it in the feed', (tester) async {
-    await tester.pumpWidget(buildTestApp());
+    await tester.pumpWidget(buildTestApp(home: const PalcesScreen()));
 
     await openAddForm(tester);
     expect(find.text('Add place'), findsOneWidget);
@@ -126,7 +129,7 @@ void main() {
   });
 
   testWidgets('does not save without a name', (tester) async {
-    await tester.pumpWidget(buildTestApp());
+    await tester.pumpWidget(buildTestApp(home: const PalcesScreen()));
 
     await openAddForm(tester);
     await tapSave(tester);
@@ -139,7 +142,7 @@ void main() {
   });
 
   testWidgets('filters places by type and search', (tester) async {
-    await tester.pumpWidget(buildTestApp());
+    await tester.pumpWidget(buildTestApp(home: const PalcesScreen()));
 
     await addPlace(tester, 'Corner café', type: 'Café');
     expect(find.text('Corner café'), findsOneWidget);
@@ -160,15 +163,13 @@ void main() {
   });
 
   testWidgets('opens details, edits and removes with undo', (tester) async {
-    await tester.pumpWidget(buildTestApp());
+    await tester.pumpWidget(buildTestApp(home: const PalcesScreen()));
 
     await addPlace(tester, 'Galata Tower view', type: 'Viewpoint');
     await tester.tap(find.text('Galata Tower view'));
     await tester.pumpAndSettle();
 
-    // Details open inside the tab: the glass bar is still there.
     expect(find.text('Saved place'), findsOneWidget);
-    expect(find.bySemanticsLabel('Take a photo of a place'), findsOneWidget);
 
     await tester.tap(find.text('Edit place'));
     await tester.pumpAndSettle();
@@ -178,7 +179,17 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Galata at dusk'), findsOneWidget);
 
-    await tester.tap(find.bySemanticsLabel('Remove from my places'));
+    // Let "Changes saved" time out so the undo snackbar can show.
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+
+    // The heart sits on the photo, whose list item merges its label.
+    await tester.tap(
+      find.byWidgetPredicate(
+        (w) =>
+            w is CircleIconButton && w.semanticLabel == 'Remove from my places',
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.text('Galata at dusk'), findsNothing);
 
@@ -190,7 +201,7 @@ void main() {
   testWidgets('shows the glass tab bar with the camera', (tester) async {
     await tester.pumpWidget(buildTestApp());
 
-    expect(find.bySemanticsLabel('My places'), findsOneWidget);
+    expect(find.bySemanticsLabel('Discover'), findsOneWidget);
     expect(find.bySemanticsLabel('Map'), findsOneWidget);
     expect(find.bySemanticsLabel('Account'), findsOneWidget);
     expect(find.bySemanticsLabel('Take a photo of a place'), findsOneWidget);
@@ -207,11 +218,12 @@ void main() {
 
     expect(camera.lastSource, ImageSource.camera);
     expect(find.text('Add place'), findsOneWidget);
-    expect(find.text('Change photo'), findsOneWidget);
+    expect(find.bySemanticsLabel('Remove photo'), findsOneWidget);
+    expect(find.bySemanticsLabel('Add more photos'), findsOneWidget);
 
-    // Closing the form goes back to My places without saving.
+    // Closing the form goes back to Discover without saving.
     await tester.tap(find.bySemanticsLabel('Close'));
     await tester.pumpAndSettle();
-    expect(find.text('No favorite places yet'), findsOneWidget);
+    expect(find.text('Sign in to see the places people share.'), findsOneWidget);
   });
 }

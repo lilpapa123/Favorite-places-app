@@ -246,5 +246,14 @@
   "profileSaveFailed": "Profiliniz kaydedilemedi. Lütfen tekrar deneyin.",
   "usernameRequired": "Bir kullanıcı adı girin.",
   "chooseUsername": "Bir kullanıcı adı seçin",
-  "chooseUsernameBody": "Arkadaşlarınız sizi bulup takip edebilsin."
+  "chooseUsernameBody": "Arkadaşlarınız sizi bulup takip edebilsin.",
+  "tabDiscover": "Keşfet",
+  "discoverSubtitle": "İnsanların önerdiği favori yerler.",
+  "signInForDiscover": "İnsanların paylaştığı yerleri görmek için giriş yapın.",
+  "discoverEmptyTitle": "Henüz paylaşılan yok",
+  "discoverEmptyBody": "Başkalarının kaydettiği yerler burada görünecek.",
+  "yourPlaces": "YERLERİNİZ",
+  "seeAll": "Tümünü gör",
+  "noPlacesYetHint": "Henüz yer yok. Eklemek için kameraya dokunun.",
+  "addMorePhotos": "Daha fazla fotoğraf ekle"
 }
