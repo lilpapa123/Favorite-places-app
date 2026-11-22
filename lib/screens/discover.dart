@@ -72,7 +72,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
               title: l10n.tabDiscover,
               subtitle: l10n.discoverSubtitle,
             ),
-            if (!signedIn)
+            if (!signedIn && shared.isEmpty)
               message(l10n.tabDiscover, l10n.signInForDiscover)
             else if (shared.isEmpty)
               message(l10n.discoverEmptyTitle, l10n.discoverEmptyBody)

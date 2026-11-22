@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:favorite_places/data/sample_posts.dart';
 import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/providers/auth_provider.dart';
 import 'package:favorite_places/providers/social_provider.dart';
@@ -92,7 +93,9 @@ class _FollowButtonState extends ConsumerState<FollowButton> {
   @override
   Widget build(BuildContext context) {
     final me = ref.watch(authStateProvider).value?.uid;
-    if (me == null || me == widget.uid) {
+    // Sample people exist only on this phone: following them would write
+    // to Firestore.
+    if (me == null || me == widget.uid || isSampleUid(widget.uid)) {
       return const SizedBox.shrink();
     }
     final following =

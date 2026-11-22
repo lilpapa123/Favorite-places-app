@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:favorite_places/data/sample_posts.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/auth_provider.dart';
 import 'package:favorite_places/providers/user_palces.dart';
@@ -60,6 +61,9 @@ final _myUid = Provider<String?>(
 /// cache it keeps loading, so nobody is asked for a username they already have.
 final profileProvider = StreamProvider.family<UserProfile?, String>((ref, uid) {
   // Listens again after signing in: signing out ends the stream with an error.
+  if (isSampleUid(uid)) {
+    return Stream.value(sampleProfile(uid));
+  }
   ref.watch(_myUid);
   return ref
       .watch(firestoreProvider)
@@ -92,6 +96,9 @@ final followingIdsProvider = StreamProvider<Set<String>>((ref) {
 /// (followers, following) for [uid], counted by the server.
 final followCountsProvider = FutureProvider.autoDispose
     .family<(int, int), String>((ref, uid) async {
+      if (isSampleUid(uid)) {
+        return (0, 0);
+      }
       final db = ref.watch(firestoreProvider);
       // Recount whenever the signed-in user follows or unfollows someone.
       ref.watch(followingIdsProvider);
@@ -121,7 +128,12 @@ final followListProvider = FutureProvider.autoDispose
 
 /// Places saved by any user, newest first.
 final placesOfUserProvider = StreamProvider.family<List<Place>, String>(
-  (ref, uid) => placesOf(ref.watch(firestoreProvider), uid),
+  (ref, uid) => isSampleUid(uid)
+      ? Stream.value([
+          for (final (owner, place) in samplePosts())
+            if (owner == uid) place,
+        ])
+      : placesOf(ref.watch(firestoreProvider), uid),
 );
 
 /// Newest places from the people the signed-in user follows, with the owner.
@@ -151,11 +163,13 @@ final feedProvider = StreamProvider<List<(String, Place)>>((ref) {
 });
 
 /// Newest places shared by everyone except the signed-in user, with the
-/// owner. Empty when signed out (the rules only let signed-in users read).
+/// owner. Signed out it has only the sample posts (the rules only let
+/// signed-in users read), which debug and profile builds add at the end.
 final discoverProvider = StreamProvider<List<(String, Place)>>((ref) {
   final me = ref.watch(_myUid);
+  final samples = showSamplePosts ? samplePosts() : const <(String, Place)>[];
   if (me == null) {
-    return Stream.value(const []);
+    return Stream.value(samples);
   }
   // shortcut: newest 100 only, no ranking or paging; add a score field and
   // paging once there are many places.
@@ -170,7 +184,8 @@ final discoverProvider = StreamProvider<List<(String, Place)>>((ref) {
           for (final doc in snap.docs)
             if (doc.data()['ownerUid'] case final String owner when owner != me)
               (owner, Place.fromFirestore(doc.id, doc.data())),
-        ],
+          ...samples,
+        ]..sort((a, b) => b.$2.createdAt.compareTo(a.$2.createdAt)),
       );
 });
 
