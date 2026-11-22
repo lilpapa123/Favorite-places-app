@@ -1,4 +1,3 @@
- HEAD
 # favorite_places
 
 A new Flutter project.
@@ -18,4 +17,3 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 # Favorite-places-app
- 430778ebffdb92f3723f2b8401a7b8548e5be873
