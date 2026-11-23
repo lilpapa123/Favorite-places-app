@@ -4,7 +4,7 @@ import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
 import 'package:favorite_places/widgets/page_header.dart';
 import 'package:favorite_places/widgets/pill_button.dart';
-import 'package:favorite_places/widgets/place_card.dart';
+import 'package:favorite_places/widgets/places_two_columns.dart';
 import 'package:favorite_places/widgets/social_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -86,12 +86,9 @@ class ProfileScreen extends ConsumerWidget {
                         style: AppText.meta(),
                       ),
                     ),
-                  for (final place in places) ...[
-                    // shortcut: other people's places have no detail screen
-                    // yet, so the card is not tappable.
-                    PlaceCard(place: place, onTap: () {}),
-                    const SizedBox(height: AppSpace.lg),
-                  ],
+                  // shortcut: other people's places have no detail screen
+                  // yet, so the photos are not tappable.
+                  PlacesTwoColumns(places: places),
                 ],
               ),
             ),
