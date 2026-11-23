@@ -97,7 +97,7 @@ final followingIdsProvider = StreamProvider<Set<String>>((ref) {
 final followCountsProvider = FutureProvider.autoDispose
     .family<(int, int), String>((ref, uid) async {
       if (isSampleUid(uid)) {
-        return (0, 0);
+        return sampleFollowCounts(uid);
       }
       final db = ref.watch(firestoreProvider);
       // Recount whenever the signed-in user follows or unfollows someone.

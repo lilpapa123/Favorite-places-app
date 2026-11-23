@@ -26,6 +26,7 @@ final List<UserProfile> sampleProfiles = [
     ('aisha', 'aisha.views', '', 'Rooftops and sunsets.'),
     ('noah', 'noah_camps', 'Noah Becker', 'Tent, stars, repeat.'),
     ('zeynep', 'zeynep.ist', 'Zeynep Aydın', 'Istanbul, street by street.'),
+    ('maya', 'maya.everywhere', 'Maya Lin', 'Every kind of place, everywhere.'),
   ])
     UserProfile(
       uid: '$samplePrefix$id',
@@ -38,7 +39,12 @@ final List<UserProfile> sampleProfiles = [
 UserProfile? sampleProfile(String uid) =>
     sampleProfiles.where((p) => p.uid == uid).firstOrNull;
 
-/// 30 shared places, newest first, as (owner uid, place).
+/// (followers, following) shown on a sample person's profile. Maya, who
+/// has every badge, also shows a big following.
+(int, int) sampleFollowCounts(String uid) =>
+    uid == '${samplePrefix}maya' ? (945, 180) : (0, 0);
+
+/// 57 shared places, newest first, as (owner uid, place).
 List<(String, Place)> samplePosts() {
   final now = DateTime.now();
   var n = 0;
@@ -120,5 +126,36 @@ List<(String, Place)> samplePosts() {
     post('diego', 'Central Park loop', walk, 'Six miles, all the seasons in one city.', 2, 40.7712, -73.9742, 'Upper West Side', 'New York', 'USA'),
     post('aisha', 'Bosphorus from Çamlıca', view, 'Both continents in one look.', 1, 41.0274, 29.0688, 'Çamlıca', 'Istanbul', 'Türkiye'),
     post('noah', 'Swiss alpine meadow', nature, 'Cowbells and wildflowers above Grindelwald.', 4, 46.6244, 8.0414, 'Grindelwald', 'Bern', 'Switzerland'),
+    // Two more for Noah: five cities, countries on three continents, so
+    // his profile shows six badges.
+    post('noah', 'Lake Louise lakeside camp', camp, 'Turquoise water, glaciers, and elk at dawn.', 3, 51.4254, -116.1773, 'Lake Louise', 'Banff', 'Canada'),
+    post('noah', 'Milford Sound lookout', nature, 'Waterfalls straight into the fjord after rain.', 2, -44.6414, 167.8974, 'Milford Sound', 'Fiordland', 'New Zealand'),
+    // Maya: 25 places of every type on every continent, so she earns all
+    // 12 badges.
+    post('maya', 'Mount Fuji summit trail', hike, 'Start at night, watch the sunrise from the top.', 1, 35.3606, 138.7274, 'Fujinomiya', 'Shizuoka', 'Japan'),
+    post('maya', 'Kilimanjaro Machame route', hike, 'Seven days, worth every step.', 1, -3.0674, 37.3556, 'Machame', 'Moshi', 'Tanzania'),
+    post('maya', 'Matterhorn Hörnli trail', hike, 'The peak looks close all day.', 1, 45.9763, 7.6586, 'Hörnli', 'Zermatt', 'Switzerland'),
+    post('maya', 'Plitvice Lakes boardwalk', nature, 'Sixteen lakes, all a different blue.', 1, 44.8654, 15.5820, 'Plitvice', 'Lika', 'Croatia'),
+    post('maya', 'Iguazu Falls, Devil\'s Throat', nature, 'You hear it long before you see it.', 1, -25.6953, -54.4367, 'Iguazú', 'Misiones', 'Argentina'),
+    post('maya', 'Ha Long Bay by kayak', nature, 'Limestone islands rising out of green water.', 1, 20.9101, 107.1839, 'Ha Long', 'Quảng Ninh', 'Vietnam'),
+    post('maya', 'Navagio shipwreck beach', beach, 'Only reachable by boat.', 1, 37.8594, 20.6243, 'Navagio', 'Zakynthos', 'Greece'),
+    post('maya', 'Maya Bay at dawn', beach, 'Go on the first boat, before the crowds.', 1, 7.6783, 98.7671, 'Phi Phi Leh', 'Krabi', 'Thailand'),
+    post('maya', 'Copacabana boardwalk', beach, 'Coconut water and wave-pattern tiles.', 1, -22.9711, -43.1822, 'Copacabana', 'Rio de Janeiro', 'Brazil'),
+    post('maya', 'Yosemite Valley camp', camp, 'El Capitan right outside the tent.', 1, 37.7456, -119.5936, 'Yosemite Valley', 'California', 'USA'),
+    post('maya', 'Sahara camp near Merzouga', camp, 'Camel ride in, stars all night.', 1, 31.0802, -4.0133, 'Erg Chebbi', 'Merzouga', 'Morocco'),
+    post('maya', 'Lofoten beach camp', camp, 'Midnight sun over the fjord.', 1, 68.2342, 13.6110, 'Haukland', 'Lofoten', 'Norway'),
+    post('maya', 'Times Square at night', night, 'Brighter at midnight than at noon.', 1, 40.7580, -73.9855, 'Midtown', 'New York', 'USA'),
+    post('maya', 'Namsan Tower lights', night, 'The whole of Seoul glowing below.', 1, 37.5512, 126.9882, 'Namsan', 'Seoul', 'South Korea'),
+    post('maya', 'The Las Vegas Strip', night, 'Walk it once, end to end.', 1, 36.1147, -115.1728, 'The Strip', 'Las Vegas', 'USA'),
+    post('maya', 'Melbourne laneway coffee', cafe, 'Find the café with no sign.', 1, -37.8136, 144.9631, 'Degraves Street', 'Melbourne', 'Australia'),
+    post('maya', 'Café Central', cafe, 'Melange and apple strudel under the arches.', 1, 48.2104, 16.3655, 'Innere Stadt', 'Vienna', 'Austria'),
+    post('maya', 'Old Quarter egg coffee', cafe, 'Sweet, rich and only in Hanoi.', 1, 21.0340, 105.8500, 'Hoàn Kiếm', 'Hanoi', 'Vietnam'),
+    post('maya', 'Oia sunset', view, 'Everyone claps when the sun goes down.', 1, 36.4618, 25.3753, 'Oia', 'Santorini', 'Greece'),
+    post('maya', 'Arthur\'s Seat', view, 'A short climb, the whole city below.', 1, 55.9441, -3.1618, 'Holyrood', 'Edinburgh', 'UK'),
+    post('maya', 'Christ the Redeemer', view, 'Go early, the clouds roll in by noon.', 1, -22.9519, -43.2105, 'Corcovado', 'Rio de Janeiro', 'Brazil'),
+    post('maya', 'Lion\'s Head at sunrise', view, 'Chains near the top, views all around.', 1, -33.9353, 18.3891, 'Signal Hill', 'Cape Town', 'South Africa'),
+    post('maya', 'Fushimi Inari gates', walk, 'Keep climbing; the crowds thin out.', 1, 34.9671, 135.7727, 'Fushimi', 'Kyoto', 'Japan'),
+    post('maya', 'Amsterdam canal ring', walk, 'Get lost, every bridge looks the same.', 1, 52.3676, 4.9041, 'Grachtengordel', 'Amsterdam', 'Netherlands'),
+    post('maya', 'San Telmo Sunday market', walk, 'Tango in the square by the afternoon.', 1, -34.6212, -58.3731, 'San Telmo', 'Buenos Aires', 'Argentina'),
   ];
 }
