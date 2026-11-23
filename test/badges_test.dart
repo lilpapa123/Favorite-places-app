@@ -129,7 +129,7 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 800));
     final big = find.byWidgetPredicate(
-      (w) => w is BadgeImage && w.badge == best.first && w.size == 240,
+      (w) => w is BadgeImage && w.badge == best.first && w.size == 210,
     );
     expect(big, findsOneWidget);
     expect(find.text('Earned'), findsOneWidget);
@@ -185,5 +185,48 @@ void main() {
     await finger.up();
     await tester.pump(const Duration(milliseconds: 800));
     expect(scaleOf(best[1]), 1.0);
+  });
+
+  testWidgets('tapping the middle badge in the viewer flips it to its '
+      'details', (tester) async {
+    GoogleFonts.config.allowRuntimeFetching = false;
+    final places = samplePlaces();
+    final best = earnedBadges(places).toList().reversed.toList();
+    final l10n = lookupAppLocalizations(const Locale('en'));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.data(Brightness.light),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(body: EarnedBadgesRow(places: places)),
+      ),
+    );
+    final howTo = find.text(best.first.howTo(l10n));
+    await tester.tapAt(
+      tester.getTopLeft(
+            find.byWidgetPredicate(
+              (w) => w is BadgeImage && w.badge == best.first && w.earned,
+            ),
+          ) +
+          const Offset(10, 28),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(howTo, findsNothing, reason: 'front shows "Earned", not how-to');
+    // The middle badge of the viewer is the big one.
+    final middle = tester.getCenter(
+      find.byWidgetPredicate(
+        (w) => w is BadgeImage && w.badge == best.first && w.size == 210,
+      ),
+    );
+
+    await tester.tapAt(middle);
+    await tester.pump(); // starts the flip
+    await tester.pump(const Duration(milliseconds: 700));
+    expect(howTo, findsOneWidget, reason: 'the back explains the badge');
+
+    await tester.tapAt(middle);
+    await tester.pump(); // starts the flip
+    await tester.pump(const Duration(milliseconds: 700));
+    expect(howTo, findsNothing, reason: 'flipped back');
   });
 }

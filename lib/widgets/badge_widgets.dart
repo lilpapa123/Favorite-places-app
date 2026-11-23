@@ -4,7 +4,7 @@ import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/models/badges.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/theme/app_theme.dart';
-import 'package:favorite_places/widgets/badge_viewer_prototype.dart';
+import 'package:favorite_places/widgets/badge_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -388,7 +388,6 @@ class _TapToView extends StatelessWidget {
   @override
   Widget build(BuildContext context) => GestureDetector(
     behavior: HitTestBehavior.opaque,
-    // PROTOTYPE: viewer layouts; restore one when done.
     onTap: () => showBadgeViewer(context, badges, index, earned),
     child: child,
   );
