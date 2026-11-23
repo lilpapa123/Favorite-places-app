@@ -255,5 +255,8 @@
   "yourPlaces": "أماكنك",
   "seeAll": "عرض الكل",
   "noPlacesYetHint": "لا أماكن بعد. اضغط على الكاميرا لإضافة مكان.",
-  "addMorePhotos": "إضافة المزيد من الصور"
+  "addMorePhotos": "إضافة المزيد من الصور",
+  "agoMinutes": "قبل {count} د",
+  "agoHours": "قبل {count} س",
+  "agoDays": "قبل {count} ي"
 }

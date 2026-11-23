@@ -861,4 +861,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addMorePhotos => 'Add more photos';
+
+  @override
+  String agoMinutes(int count) {
+    return '${count}m ago';
+  }
+
+  @override
+  String agoHours(int count) {
+    return '${count}h ago';
+  }
+
+  @override
+  String agoDays(int count) {
+    return '${count}d ago';
+  }
 }

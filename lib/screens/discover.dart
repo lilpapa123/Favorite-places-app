@@ -6,10 +6,9 @@ import 'package:favorite_places/screens/palces.dart';
 import 'package:favorite_places/screens/profile.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/category_chips.dart';
+import 'package:favorite_places/widgets/cover_post_card.dart';
 import 'package:favorite_places/widgets/page_header.dart';
-import 'package:favorite_places/widgets/place_card.dart';
 import 'package:favorite_places/widgets/search_field.dart';
-import 'package:favorite_places/widgets/social_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -121,25 +120,11 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                   }),
                 ),
               for (final (owner, place) in visible)
-                Padding(
+                CoverPostCard(
                   key: ValueKey(place.id),
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpace.page,
-                    0,
-                    AppSpace.page,
-                    AppSpace.lg,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      OwnerRow(uid: owner),
-                      const SizedBox(height: AppSpace.sm),
-                      PlaceCard(
-                        place: place,
-                        onTap: () => openProfile(context, owner),
-                      ),
-                    ],
-                  ),
+                  owner: owner,
+                  place: place,
+                  onTap: () => openProfile(context, owner),
                 ),
             ],
           ],

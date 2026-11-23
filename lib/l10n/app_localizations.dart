@@ -1635,6 +1635,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add more photos'**
   String get addMorePhotos;
+
+  /// No description provided for @agoMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}m ago'**
+  String agoMinutes(int count);
+
+  /// No description provided for @agoHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}h ago'**
+  String agoHours(int count);
+
+  /// No description provided for @agoDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}d ago'**
+  String agoDays(int count);
 }
 
 class _AppLocalizationsDelegate

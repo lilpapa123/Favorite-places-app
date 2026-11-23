@@ -255,5 +255,8 @@
   "yourPlaces": "YERLERİNİZ",
   "seeAll": "Tümünü gör",
   "noPlacesYetHint": "Henüz yer yok. Eklemek için kameraya dokunun.",
-  "addMorePhotos": "Daha fazla fotoğraf ekle"
+  "addMorePhotos": "Daha fazla fotoğraf ekle",
+  "agoMinutes": "{count} dk önce",
+  "agoHours": "{count} sa önce",
+  "agoDays": "{count} g önce"
 }

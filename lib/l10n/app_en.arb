@@ -387,5 +387,29 @@
   "yourPlaces": "YOUR PLACES",
   "seeAll": "See all",
   "noPlacesYetHint": "No places yet. Tap the camera to add one.",
-  "addMorePhotos": "Add more photos"
+  "addMorePhotos": "Add more photos",
+  "agoMinutes": "{count}m ago",
+  "agoHours": "{count}h ago",
+  "agoDays": "{count}d ago",
+  "@agoMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@agoHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@agoDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

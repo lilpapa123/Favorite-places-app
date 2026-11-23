@@ -864,4 +864,19 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get addMorePhotos => 'Daha fazla fotoğraf ekle';
+
+  @override
+  String agoMinutes(int count) {
+    return '$count dk önce';
+  }
+
+  @override
+  String agoHours(int count) {
+    return '$count sa önce';
+  }
+
+  @override
+  String agoDays(int count) {
+    return '$count g önce';
+  }
 }

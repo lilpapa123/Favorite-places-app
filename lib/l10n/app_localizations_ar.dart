@@ -861,4 +861,19 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get addMorePhotos => 'إضافة المزيد من الصور';
+
+  @override
+  String agoMinutes(int count) {
+    return 'قبل $count د';
+  }
+
+  @override
+  String agoHours(int count) {
+    return 'قبل $count س';
+  }
+
+  @override
+  String agoDays(int count) {
+    return 'قبل $count ي';
+  }
 }
