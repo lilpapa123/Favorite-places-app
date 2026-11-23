@@ -1,7 +1,9 @@
 import 'package:favorite_places/l10n/l10n.dart';
+import 'package:favorite_places/models/badges.dart';
 import 'package:favorite_places/providers/social_provider.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
+import 'package:favorite_places/widgets/badge_widgets.dart';
 import 'package:favorite_places/widgets/page_header.dart';
 import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:favorite_places/widgets/places_two_columns.dart';
@@ -75,6 +77,10 @@ class ProfileScreen extends ConsumerWidget {
                   if (profile != null && profile.bio.isNotEmpty) ...[
                     const SizedBox(height: AppSpace.xs),
                     Text(profile.bio, style: AppText.note()),
+                  ],
+                  if (earnedBadges(places).isNotEmpty) ...[
+                    const SizedBox(height: AppSpace.sm),
+                    EarnedBadgesRow(places: places, showNext: false),
                   ],
                   const SizedBox(height: AppSpace.lg),
                   FollowButton(uid: uid),
