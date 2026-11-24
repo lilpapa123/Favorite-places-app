@@ -15,12 +15,14 @@ class CoverPostCard extends StatelessWidget {
     super.key,
     required this.owner,
     required this.place,
-    required this.onTap,
+    this.onTap,
   });
 
   final String owner;
   final Place place;
-  final VoidCallback onTap;
+
+  /// Null on the post's own screen, where there's nothing more to open.
+  final VoidCallback? onTap;
 
   /// Light coral: the accent is too dark to read on a photo.
   static const Color _kickerOnPhoto = Color(0xFFFFB199);
@@ -35,7 +37,7 @@ class CoverPostCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Semantics(
-            button: true,
+            button: onTap != null,
             label: place.title,
             child: GestureDetector(
               onTap: onTap,
@@ -88,9 +90,8 @@ class CoverPostCard extends StatelessWidget {
                               place.title,
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
-                              style: AppText.display(
-                                color: Colors.white,
-                              ).copyWith(fontSize: 34, height: 1.1),
+                              style: AppText.display(color: Colors.white)
+                                  .copyWith(fontSize: 34, height: 1.1),
                             ),
                           ],
                         ),
@@ -176,9 +177,8 @@ class _Owner extends ConsumerWidget {
                 details,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppText.meta(
-                  color: Colors.white70,
-                ).copyWith(fontSize: 12),
+                style: AppText.meta(color: Colors.white70)
+                    .copyWith(fontSize: 12),
               ),
             ],
           ),

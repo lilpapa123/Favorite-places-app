@@ -36,4 +36,25 @@ void main() {
     expect(find.text('Rome spot'), findsNothing, reason: 'no title shown');
     expect(find.bySemanticsLabel('Rome spot, Rome'), findsOneWidget);
   });
+
+  testWidgets('tapping a place hands it to onTap', (tester) async {
+    final places = [Place(title: 'Rome spot'), Place(title: 'Lima spot')];
+    Place? tapped;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.data(Brightness.light),
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: PlacesTwoColumns(
+              places: places,
+              onTap: (place) => tapped = place,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.bySemanticsLabel('Lima spot'));
+    expect(tapped, places[1]);
+  });
 }

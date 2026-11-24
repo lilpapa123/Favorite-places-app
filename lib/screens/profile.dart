@@ -1,9 +1,11 @@
 import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/models/badges.dart';
+import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/social_provider.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
 import 'package:favorite_places/widgets/badge_widgets.dart';
+import 'package:favorite_places/widgets/cover_post_card.dart';
 import 'package:favorite_places/widgets/page_header.dart';
 import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:favorite_places/widgets/places_two_columns.dart';
@@ -92,12 +94,57 @@ class ProfileScreen extends ConsumerWidget {
                         style: AppText.meta(),
                       ),
                     ),
-                  // shortcut: other people's places have no detail screen
-                  // yet, so the photos are not tappable.
-                  PlacesTwoColumns(places: places),
+                  PlacesTwoColumns(
+                    places: places,
+                    onTap: (place) => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (ctx) => PostScreen(owner: uid, place: place),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One shared place on its own, as it looks on Discover.
+class PostScreen extends StatelessWidget {
+  const PostScreen({super.key, required this.owner, required this.place});
+
+  final String owner;
+  final Place place;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: EdgeInsets.only(bottom: bottomBarClearance(context)),
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpace.page,
+                AppSpace.sm,
+                AppSpace.page,
+                AppSpace.lg,
+              ),
+              child: Row(
+                children: [
+                  CircleIconButton(
+                    icon: AppIcon('back', color: AppColors.accent),
+                    semanticLabel: context.l10n.back,
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+            CoverPostCard(owner: owner, place: place),
           ],
         ),
       ),

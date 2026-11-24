@@ -5,11 +5,12 @@ import 'package:flutter/material.dart';
 
 /// Someone's places in two staggered columns: photos of uneven height with
 /// the city under each (the name is read out, not shown). A stack icon marks
-/// places with several photos.
+/// places with several photos. Tapping one calls [onTap] with it.
 class PlacesTwoColumns extends StatelessWidget {
-  const PlacesTwoColumns({super.key, required this.places});
+  const PlacesTwoColumns({super.key, required this.places, this.onTap});
 
   final List<Place> places;
+  final ValueChanged<Place>? onTap;
 
   /// Photo width / height, repeated down each column so they stagger.
   static const List<double> _ratios = [0.8, 1.2, 1.0, 0.7];
@@ -26,7 +27,11 @@ class PlacesTwoColumns extends StatelessWidget {
               children: [
                 // Left takes 1st, 3rd, 5th…; right takes 2nd, 4th…
                 for (var i = column; i < places.length; i += 2)
-                  _Tile(place: places[i], ratio: _ratios[i % _ratios.length]),
+                  _Tile(
+                    place: places[i],
+                    ratio: _ratios[i % _ratios.length],
+                    onTap: onTap,
+                  ),
               ],
             ),
           ),
@@ -37,56 +42,62 @@ class PlacesTwoColumns extends StatelessWidget {
 }
 
 class _Tile extends StatelessWidget {
-  const _Tile({required this.place, required this.ratio});
+  const _Tile({required this.place, required this.ratio, this.onTap});
 
   final Place place;
   final double ratio;
+  final ValueChanged<Place>? onTap;
 
   @override
   Widget build(BuildContext context) {
     final city = place.location?.city ?? '';
+    final onTap = this.onTap;
     return Semantics(
+      button: onTap != null,
       label: city.isEmpty ? place.title : '${place.title}, $city',
       excludeSemantics: true,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: AppSpace.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: AspectRatio(
-                aspectRatio: ratio,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    PlacePhoto(
-                      photo: place.photos.firstOrNull,
-                      tint: AppColors.tintFor(place.id),
-                      iconSize: 28,
-                    ),
-                    if (place.photos.length > 1)
-                      const PositionedDirectional(
-                        end: 6,
-                        top: 6,
-                        child: Icon(
-                          Icons.collections_rounded,
-                          size: 16,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(color: Color(0x66000000), blurRadius: 3),
-                          ],
-                        ),
+      child: GestureDetector(
+        onTap: onTap == null ? null : () => onTap(place),
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: AppSpace.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: AspectRatio(
+                  aspectRatio: ratio,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      PlacePhoto(
+                        photo: place.photos.firstOrNull,
+                        tint: AppColors.tintFor(place.id),
+                        iconSize: 28,
                       ),
-                  ],
+                      if (place.photos.length > 1)
+                        const PositionedDirectional(
+                          end: 6,
+                          top: 6,
+                          child: Icon(
+                            Icons.collections_rounded,
+                            size: 16,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(color: Color(0x66000000), blurRadius: 3),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            if (city.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(city, style: AppText.meta().copyWith(fontSize: 12)),
+              if (city.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(city, style: AppText.meta().copyWith(fontSize: 12)),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
