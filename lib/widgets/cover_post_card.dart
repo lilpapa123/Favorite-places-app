@@ -1,9 +1,13 @@
+import 'dart:ui';
+
 import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/social_provider.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/place_photo.dart';
+import 'package:favorite_places/widgets/post_sheets.dart';
 import 'package:favorite_places/widgets/social_widgets.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -101,14 +105,31 @@ class CoverPostCard extends StatelessWidget {
                       left: AppSpace.page,
                       right: AppSpace.page,
                       bottom: 30,
-                      child: IgnorePointer(
-                        child: _Owner(
-                          uid: owner,
-                          details: [
-                            ?area,
-                            timeAgo(l10n, place.createdAt),
-                          ].join(' · '),
-                        ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: IgnorePointer(
+                              child: _Owner(
+                                uid: owner,
+                                details: [
+                                  ?area,
+                                  timeAgo(l10n, place.createdAt),
+                                ].join(' · '),
+                              ),
+                            ),
+                          ),
+                          _PhotoAction(
+                            icon: CupertinoIcons.chat_bubble,
+                            label: l10n.comments,
+                            onTap: () => showCommentsSheet(context, place),
+                          ),
+                          const SizedBox(width: AppSpace.sm),
+                          _PhotoAction(
+                            icon: CupertinoIcons.paperplane,
+                            label: l10n.share,
+                            onTap: () => showShareSheet(context, place),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -145,6 +166,42 @@ class CoverPostCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A frosted glass circle with a white icon, over the photo.
+class _PhotoAction extends StatelessWidget {
+  const _PhotoAction({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  static const double _size = 44;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: label,
+    child: ClipOval(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+        child: Material(
+          color: const Color(0x33FFFFFF),
+          shape: const CircleBorder(side: BorderSide(color: Color(0x55FFFFFF))),
+          child: InkWell(
+            onTap: onTap,
+            child: SizedBox.square(
+              dimension: _size,
+              child: Icon(icon, color: Colors.white, size: 22),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 /// Avatar, name and [details] in white, over the photo.

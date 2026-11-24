@@ -879,4 +879,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menu => 'Menu';
+
+  @override
+  String get comments => 'Comments';
+
+  @override
+  String get addComment => 'Add a comment';
+
+  @override
+  String get noCommentsYet => 'No comments yet. Be the first.';
+
+  @override
+  String get signInToComment => 'Sign in to comment.';
+
+  @override
+  String get sendComment => 'Send';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get copyLink => 'Copy link';
+
+  @override
+  String get linkCopied => 'Link copied';
+
+  @override
+  String get shareToApps => 'Share to other apps';
 }

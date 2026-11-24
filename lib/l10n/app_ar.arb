@@ -259,5 +259,14 @@
   "agoMinutes": "قبل {count} د",
   "agoHours": "قبل {count} س",
   "agoDays": "قبل {count} ي",
-  "menu": "القائمة"
+  "menu": "القائمة",
+  "comments": "التعليقات",
+  "addComment": "أضف تعليقًا",
+  "noCommentsYet": "لا توجد تعليقات بعد. كن أول من يعلق.",
+  "signInToComment": "سجّل الدخول لتعلّق.",
+  "sendComment": "إرسال",
+  "share": "مشاركة",
+  "copyLink": "نسخ الرابط",
+  "linkCopied": "تم نسخ الرابط",
+  "shareToApps": "مشاركة عبر تطبيقات أخرى"
 }

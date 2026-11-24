@@ -882,4 +882,31 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get menu => 'Menü';
+
+  @override
+  String get comments => 'Yorumlar';
+
+  @override
+  String get addComment => 'Yorum ekle';
+
+  @override
+  String get noCommentsYet => 'Henüz yorum yok. İlk yorumu sen yap.';
+
+  @override
+  String get signInToComment => 'Yorum yapmak için giriş yap.';
+
+  @override
+  String get sendComment => 'Gönder';
+
+  @override
+  String get share => 'Paylaş';
+
+  @override
+  String get copyLink => 'Bağlantıyı kopyala';
+
+  @override
+  String get linkCopied => 'Bağlantı kopyalandı';
+
+  @override
+  String get shareToApps => 'Diğer uygulamalarla paylaş';
 }

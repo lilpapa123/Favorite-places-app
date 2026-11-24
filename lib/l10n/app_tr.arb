@@ -259,5 +259,14 @@
   "agoMinutes": "{count} dk önce",
   "agoHours": "{count} sa önce",
   "agoDays": "{count} g önce",
-  "menu": "Menü"
+  "menu": "Menü",
+  "comments": "Yorumlar",
+  "addComment": "Yorum ekle",
+  "noCommentsYet": "Henüz yorum yok. İlk yorumu sen yap.",
+  "signInToComment": "Yorum yapmak için giriş yap.",
+  "sendComment": "Gönder",
+  "share": "Paylaş",
+  "copyLink": "Bağlantıyı kopyala",
+  "linkCopied": "Bağlantı kopyalandı",
+  "shareToApps": "Diğer uygulamalarla paylaş"
 }

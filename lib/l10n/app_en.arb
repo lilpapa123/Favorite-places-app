@@ -412,5 +412,14 @@
       }
     }
   },
-  "menu": "Menu"
+  "menu": "Menu",
+  "comments": "Comments",
+  "addComment": "Add a comment",
+  "noCommentsYet": "No comments yet. Be the first.",
+  "signInToComment": "Sign in to comment.",
+  "sendComment": "Send",
+  "share": "Share",
+  "copyLink": "Copy link",
+  "linkCopied": "Link copied",
+  "shareToApps": "Share to other apps"
 }

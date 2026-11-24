@@ -879,4 +879,31 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get menu => 'القائمة';
+
+  @override
+  String get comments => 'التعليقات';
+
+  @override
+  String get addComment => 'أضف تعليقًا';
+
+  @override
+  String get noCommentsYet => 'لا توجد تعليقات بعد. كن أول من يعلق.';
+
+  @override
+  String get signInToComment => 'سجّل الدخول لتعلّق.';
+
+  @override
+  String get sendComment => 'إرسال';
+
+  @override
+  String get share => 'مشاركة';
+
+  @override
+  String get copyLink => 'نسخ الرابط';
+
+  @override
+  String get linkCopied => 'تم نسخ الرابط';
+
+  @override
+  String get shareToApps => 'مشاركة عبر تطبيقات أخرى';
 }
