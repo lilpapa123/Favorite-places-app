@@ -200,22 +200,22 @@ void main() {
     expect(find.text('Galata at dusk'), findsOneWidget);
   });
 
-  testWidgets('shows the glass tab bar with the camera', (tester) async {
+  testWidgets('shows the glass tab bar with the Add button', (tester) async {
     await tester.pumpWidget(buildTestApp());
 
     expect(find.bySemanticsLabel('Discover'), findsOneWidget);
     expect(find.bySemanticsLabel('Map'), findsOneWidget);
     expect(find.bySemanticsLabel('Account'), findsOneWidget);
-    expect(find.bySemanticsLabel('Take a photo of a place'), findsOneWidget);
+    expect(find.bySemanticsLabel('Add a place'), findsOneWidget);
   });
 
-  testWidgets('camera button opens the form with the photo', (tester) async {
+  testWidgets('Add button opens the form with the photo', (tester) async {
     final camera = _FakeCamera();
     ImagePickerPlatform.instance = camera;
     useTallScreen(tester);
 
     await tester.pumpWidget(buildTestApp());
-    await tester.tap(find.bySemanticsLabel('Take a photo of a place'));
+    await tester.tap(find.bySemanticsLabel('Add a place'));
     await tester.pumpAndSettle();
 
     expect(camera.lastSource, ImageSource.camera);
@@ -226,10 +226,15 @@ void main() {
     // Closing the form goes back to Discover without saving.
     await tester.tap(find.bySemanticsLabel('Close'));
     await tester.pumpAndSettle();
-    expect(find.text('Sign in to see the places people share.'), findsOneWidget);
+    expect(
+      find.text('Sign in to see the places people share.'),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('tab bar shrinks while a page scrolls up or down', (tester) async {
+  testWidgets('tab bar shrinks while a page scrolls up or down', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildTestApp());
     double scale() => tester
         .widget<AnimatedScale>(

@@ -16,11 +16,11 @@ class GlassTab {
 }
 
 /// Floating "liquid glass" tab bar from the design: a frosted white capsule
-/// with icon-only tabs, a soft pink pill behind the selected one, and a
-/// camera in the middle that opens the camera straight away.
+/// with icon-only tabs, a soft pink pill behind the selected one, and an
+/// Add button in the middle.
 ///
-/// [tabs] are split around the camera: the first half on its left, the rest
-/// on its right.
+/// [tabs] are split around the Add button: the first half on its left, the
+/// rest on its right.
 ///
 /// Flutter can't use Apple's real Liquid Glass material, so this recreates
 /// the look with a background blur, a milky translucent fill and a bright rim.
@@ -129,7 +129,7 @@ class GlassTabBar extends StatelessWidget {
                   children: [
                     for (var i = 0; i < leftCount; i++) tabAt(i),
                     Expanded(
-                      child: _CameraButton(
+                      child: _AddButton(
                         busy: cameraBusy,
                         iconColor: iconColor,
                         onTap: onCamera,
@@ -147,8 +147,9 @@ class GlassTabBar extends StatelessWidget {
   }
 }
 
-class _CameraButton extends StatefulWidget {
-  const _CameraButton({
+/// The middle  button: add a place, starting from a photo.
+class _AddButton extends StatefulWidget {
+  const _AddButton({
     required this.busy,
     required this.iconColor,
     required this.onTap,
@@ -159,17 +160,17 @@ class _CameraButton extends StatefulWidget {
   final VoidCallback onTap;
 
   @override
-  State<_CameraButton> createState() => _CameraButtonState();
+  State<_AddButton> createState() => _AddButtonState();
 }
 
-class _CameraButtonState extends State<_CameraButton> {
+class _AddButtonState extends State<_AddButton> {
   bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: context.l10n.takePhotoOfPlace,
+      label: context.l10n.addAPlace,
       excludeSemantics: true,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -195,7 +196,11 @@ class _CameraButtonState extends State<_CameraButton> {
                           color: AppColors.accent,
                         ),
                       )
-                    : AppIcon('tab_camera', color: widget.iconColor),
+                    : Icon(
+                        Icons.add_rounded,
+                        size: 32,
+                        color: widget.iconColor,
+                      ),
               ),
             ),
           ),
