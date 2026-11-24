@@ -876,4 +876,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String agoDays(int count) {
     return '${count}d ago';
   }
+
+  @override
+  String get menu => 'Menu';
 }

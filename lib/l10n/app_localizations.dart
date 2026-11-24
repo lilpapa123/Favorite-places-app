@@ -1653,6 +1653,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count}d ago'**
   String agoDays(int count);
+
+  /// No description provided for @menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Menu'**
+  String get menu;
 }
 
 class _AppLocalizationsDelegate

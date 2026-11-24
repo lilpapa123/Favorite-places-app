@@ -314,46 +314,6 @@ class _Profile extends ConsumerWidget {
 
   final User user;
 
-  void _editProfile(BuildContext context, String shownName) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (ctx) => EditProfileScreen(user: user, shownName: shownName),
-      ),
-    );
-  }
-
-  void _verifyPhone(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (ctx) => const PhoneVerifyScreen()),
-    );
-  }
-
-  void _info(BuildContext context, String title, String body) {
-    showModalBottomSheet<void>(
-      context: context,
-      useRootNavigator: true,
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpace.page,
-            0,
-            AppSpace.page,
-            AppSpace.xxl,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: AppText.title()),
-              const SizedBox(height: AppSpace.sm),
-              Text(body, style: AppText.note(color: AppColors.muted)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final places = ref.watch(userPlacesProvider);
@@ -366,8 +326,6 @@ class _Profile extends ConsumerWidget {
     final shownName = _shownName(context, user, name, username);
     final photo = user.photoURL;
     final localPhoto = ref.watch(profilePhotoProvider(user.uid)).value;
-    final phone = user.phoneNumber;
-
     return ListView(
       padding: EdgeInsets.only(bottom: bottomBarClearance(context)),
       children: [
@@ -375,6 +333,16 @@ class _Profile extends ConsumerWidget {
           title: username.isEmpty ? context.l10n.tabAccount : username,
           titleIsUsername: username.isNotEmpty,
           subtitle: context.l10n.accountSubtitle,
+          trailing: CircleIconButton(
+            icon: Icon(Icons.menu_rounded, color: AppColors.ink),
+            semanticLabel: context.l10n.menu,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (ctx) =>
+                    _AccountMenu(user: user, shownName: shownName),
+              ),
+            ),
+          ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpace.page),
@@ -506,111 +474,191 @@ class _Profile extends ConsumerWidget {
                 Text(context.l10n.noPlacesYetHint, style: AppText.meta())
               else
                 PlacesGrid(places: places),
-              const SizedBox(height: AppSpace.xxl),
-              Text(context.l10n.yourSpace, style: AppText.overline()),
-              const SizedBox(height: 9),
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: AppRadius.cardAll,
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: Column(
-                  children: [
-                    _SettingRow(
-                      iconWidget: Icon(
-                        phone == null || phone.isEmpty
-                            ? Icons.phone_iphone
-                            : Icons.verified_outlined,
-                        size: 18,
-                        color: phone == null || phone.isEmpty
-                            ? AppColors.muted
-                            : AppColors.success,
-                      ),
-                      iconBackground: phone == null || phone.isEmpty
-                          ? AppColors.background
-                          : AppColors.successSoft,
-                      title: phone == null || phone.isEmpty
-                          ? context.l10n.phoneNumber
-                          : phone,
-                      subtitle: phone == null || phone.isEmpty
-                          ? context.l10n.verifyWithSms
-                          : context.l10n.verifiedTapToChange,
-                      onTap: () => _verifyPhone(context),
-                    ),
-                    const _RowDivider(),
-                    _SettingRow(
-                      icon: 'person_small',
-                      iconBackground: AppColors.background,
-                      title: context.l10n.profilePreferences,
-                      subtitle: context.l10n.makeYourselfAtHome,
-                      onTap: () => _editProfile(context, shownName),
-                    ),
-                    const _RowDivider(),
-                    _SettingRow(
-                      iconWidget: Icon(
-                        Icons.tune,
-                        size: 18,
-                        color: AppColors.muted,
-                      ),
-                      iconBackground: AppColors.background,
-                      title: context.l10n.settingsTitle,
-                      subtitle: context.l10n.settingsRowSubtitle,
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (ctx) => const SettingsScreen(),
-                        ),
-                      ),
-                    ),
-                    const _RowDivider(),
-                    _SettingRow(
-                      icon: 'lock',
-                      iconBackground: AppColors.accentSoft,
-                      title: context.l10n.privateByDefault,
-                      subtitle: context.l10n.placesJustForYou,
-                      onTap: () => _info(
-                        context,
-                        context.l10n.privateByDefault,
-                        context.l10n.privateBody,
-                      ),
-                    ),
-                    const _RowDivider(),
-                    _SettingRow(
-                      icon: 'cloud',
-                      iconBackground: AppColors.background,
-                      title: context.l10n.backupSync,
-                      subtitle: context.l10n.memoriesKeptSafe,
-                      onTap: () => _info(
-                        context,
-                        context.l10n.backupSync,
-                        context.l10n.backupBody,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpace.lg),
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: AppRadius.cardAll,
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: _SettingRow(
-                  icon: 'help',
-                  title: context.l10n.aLittleHelpQ,
-                  height: 56,
-                  onTap: () => _info(
-                    context,
-                    context.l10n.aLittleHelp,
-                    context.l10n.helpBody,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+/// The Account menu (top-left button): phone, profile, settings, privacy,
+/// backup, and help.
+class _AccountMenu extends ConsumerWidget {
+  const _AccountMenu({required this.user, required this.shownName});
+
+  final User user;
+  final String shownName;
+
+  void _editProfile(BuildContext context, String shownName) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (ctx) => EditProfileScreen(user: user, shownName: shownName),
+      ),
+    );
+  }
+
+  void _verifyPhone(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (ctx) => const PhoneVerifyScreen()),
+    );
+  }
+
+  void _info(BuildContext context, String title, String body) {
+    showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpace.page,
+            0,
+            AppSpace.page,
+            AppSpace.xxl,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: AppText.title()),
+              const SizedBox(height: AppSpace.sm),
+              Text(body, style: AppText.note(color: AppColors.muted)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Live, so a number verified here shows when coming back.
+    final phone = (ref.watch(authStateProvider).value ?? user).phoneNumber;
+    return Scaffold(
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: EdgeInsets.only(bottom: bottomBarClearance(context)),
+          children: [
+            PageHeader(
+              leading: CircleIconButton(
+                icon: AppIcon('back', color: AppColors.accent),
+                semanticLabel: context.l10n.back,
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              title: context.l10n.menu,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpace.page),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(context.l10n.yourSpace, style: AppText.overline()),
+                  const SizedBox(height: 9),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: AppRadius.cardAll,
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                        _SettingRow(
+                          iconWidget: Icon(
+                            phone == null || phone.isEmpty
+                                ? Icons.phone_iphone
+                                : Icons.verified_outlined,
+                            size: 18,
+                            color: phone == null || phone.isEmpty
+                                ? AppColors.muted
+                                : AppColors.success,
+                          ),
+                          iconBackground: phone == null || phone.isEmpty
+                              ? AppColors.background
+                              : AppColors.successSoft,
+                          title: phone == null || phone.isEmpty
+                              ? context.l10n.phoneNumber
+                              : phone,
+                          subtitle: phone == null || phone.isEmpty
+                              ? context.l10n.verifyWithSms
+                              : context.l10n.verifiedTapToChange,
+                          onTap: () => _verifyPhone(context),
+                        ),
+                        const _RowDivider(),
+                        _SettingRow(
+                          icon: 'person_small',
+                          iconBackground: AppColors.background,
+                          title: context.l10n.profilePreferences,
+                          subtitle: context.l10n.makeYourselfAtHome,
+                          onTap: () => _editProfile(context, shownName),
+                        ),
+                        const _RowDivider(),
+                        _SettingRow(
+                          iconWidget: Icon(
+                            Icons.tune,
+                            size: 18,
+                            color: AppColors.muted,
+                          ),
+                          iconBackground: AppColors.background,
+                          title: context.l10n.settingsTitle,
+                          subtitle: context.l10n.settingsRowSubtitle,
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (ctx) => const SettingsScreen(),
+                            ),
+                          ),
+                        ),
+                        const _RowDivider(),
+                        _SettingRow(
+                          icon: 'lock',
+                          iconBackground: AppColors.accentSoft,
+                          title: context.l10n.privateByDefault,
+                          subtitle: context.l10n.placesJustForYou,
+                          onTap: () => _info(
+                            context,
+                            context.l10n.privateByDefault,
+                            context.l10n.privateBody,
+                          ),
+                        ),
+                        const _RowDivider(),
+                        _SettingRow(
+                          icon: 'cloud',
+                          iconBackground: AppColors.background,
+                          title: context.l10n.backupSync,
+                          subtitle: context.l10n.memoriesKeptSafe,
+                          onTap: () => _info(
+                            context,
+                            context.l10n.backupSync,
+                            context.l10n.backupBody,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpace.lg),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: AppRadius.cardAll,
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: _SettingRow(
+                      icon: 'help',
+                      title: context.l10n.aLittleHelpQ,
+                      height: 56,
+                      onTap: () => _info(
+                        context,
+                        context.l10n.aLittleHelp,
+                        context.l10n.helpBody,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

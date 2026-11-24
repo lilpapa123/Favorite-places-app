@@ -78,6 +78,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Sign out'), findsNothing);
 
+    await tester.tap(find.byIcon(Icons.menu_rounded));
+
+    await tester.pumpAndSettle();
+
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Sign out'));

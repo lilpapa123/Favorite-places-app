@@ -879,4 +879,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String agoDays(int count) {
     return '$count g önce';
   }
+
+  @override
+  String get menu => 'Menü';
 }

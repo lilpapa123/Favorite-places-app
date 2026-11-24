@@ -258,5 +258,6 @@
   "addMorePhotos": "Daha fazla fotoğraf ekle",
   "agoMinutes": "{count} dk önce",
   "agoHours": "{count} sa önce",
-  "agoDays": "{count} g önce"
+  "agoDays": "{count} g önce",
+  "menu": "Menü"
 }

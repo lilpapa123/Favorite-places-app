@@ -258,5 +258,6 @@
   "addMorePhotos": "إضافة المزيد من الصور",
   "agoMinutes": "قبل {count} د",
   "agoHours": "قبل {count} س",
-  "agoDays": "قبل {count} ي"
+  "agoDays": "قبل {count} ي",
+  "menu": "القائمة"
 }

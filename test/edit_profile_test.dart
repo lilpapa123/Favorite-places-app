@@ -560,6 +560,8 @@ void main() {
       final report = FlutterError.onError!;
       await show(tester, name: 'Khalid', profile: withUsername);
       expect(find.text('Khalid'), findsNothing);
+      await tester.tap(find.byIcon(Icons.menu_rounded));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Profile & preferences'));
       await tester.pumpAndSettle();
       FlutterError.onError = report;
@@ -682,6 +684,8 @@ void main() {
       final report = FlutterError.onError!;
       await show(tester);
       expect(find.text('I like maps'), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.menu_rounded));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Profile & preferences'));
       await tester.pumpAndSettle();
       FlutterError.onError = report;
@@ -691,6 +695,8 @@ void main() {
     testWidgets('the photo can be removed from the editor', (tester) async {
       final report = FlutterError.onError!;
       final photos = await show(tester);
+      await tester.tap(find.byIcon(Icons.menu_rounded));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Profile & preferences'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Change photo'));

@@ -876,4 +876,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String agoDays(int count) {
     return 'قبل $count ي';
   }
+
+  @override
+  String get menu => 'القائمة';
 }
