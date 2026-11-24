@@ -209,13 +209,17 @@ void main() {
     expect(find.bySemanticsLabel('Add a place'), findsOneWidget);
   });
 
-  testWidgets('Add button opens the form with the photo', (tester) async {
+  testWidgets('Add asks camera or library, then opens the form with the '
+      'photo', (tester) async {
     final camera = _FakeCamera();
     ImagePickerPlatform.instance = camera;
     useTallScreen(tester);
 
     await tester.pumpWidget(buildTestApp());
     await tester.tap(find.bySemanticsLabel('Add a place'));
+    await tester.pumpAndSettle();
+    expect(find.text('Choose from library'), findsOneWidget);
+    await tester.tap(find.text('Take photo'));
     await tester.pumpAndSettle();
 
     expect(camera.lastSource, ImageSource.camera);

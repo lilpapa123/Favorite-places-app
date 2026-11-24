@@ -30,8 +30,8 @@ class GlassTabBar extends StatelessWidget {
     required this.tabs,
     required this.currentIndex,
     required this.onSelect,
-    required this.onCamera,
-    this.cameraBusy = false,
+    required this.onAdd,
+    this.addBusy = false,
     this.dark = false,
   });
 
@@ -40,8 +40,8 @@ class GlassTabBar extends StatelessWidget {
   /// Selected tab, or -1 when none is (e.g. while the add form is open).
   final int currentIndex;
   final ValueChanged<int> onSelect;
-  final VoidCallback onCamera;
-  final bool cameraBusy;
+  final VoidCallback onAdd;
+  final bool addBusy;
 
   /// Dark-tinted glass with light icons, for use over dark content.
   final bool dark;
@@ -130,9 +130,9 @@ class GlassTabBar extends StatelessWidget {
                     for (var i = 0; i < leftCount; i++) tabAt(i),
                     Expanded(
                       child: _AddButton(
-                        busy: cameraBusy,
+                        busy: addBusy,
                         iconColor: iconColor,
-                        onTap: onCamera,
+                        onTap: onAdd,
                       ),
                     ),
                     for (var i = leftCount; i < tabs.length; i++) tabAt(i),

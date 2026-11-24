@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/user_palces.dart';
@@ -23,15 +21,15 @@ class AddedPlaceScreen extends ConsumerStatefulWidget {
     super.key,
     this.onSaved,
     this.onCancel,
-    this.initialImage,
+    this.initialPhotos = const [],
     this.existing,
   });
 
   final VoidCallback? onSaved;
   final VoidCallback? onCancel;
 
-  /// Photo taken with the tab bar's camera, pre-filled in the form.
-  final File? initialImage;
+  /// Photos picked with the tab bar's Add button, pre-filled in the form.
+  final List<String> initialPhotos;
 
   /// The place being edited, if any.
   final Place? existing;
@@ -63,7 +61,7 @@ class _AddedPlaceScreenState extends ConsumerState<AddedPlaceScreen> {
       _photos = existing.photos;
       _selectedLocation = existing.location;
     } else {
-      _photos = [?widget.initialImage?.path];
+      _photos = widget.initialPhotos;
     }
     // Rebuild so "Save place" enables as soon as there's a name.
     _titleController.addListener(_onTitleChanged);

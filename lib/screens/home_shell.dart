@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:favorite_places/l10n/l10n.dart';
+import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/screens/account.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/screens/add_place.dart';
@@ -20,8 +19,8 @@ import 'package:image_picker/image_picker.dart';
 /// tab with the bar still showing, as in the design. Tapping the current tab
 /// again goes back to its first screen.
 ///
-/// The camera opens straight away; once a photo is taken the add form opens
-/// with that photo already filled in.
+/// The Add button asks camera or library; once photos are picked the add
+/// form opens with them already filled in.
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
 
@@ -78,8 +77,8 @@ class _HomeShellState extends State<HomeShell> {
     return false;
   }
 
-  /// Photo from the camera button, handed to the add form.
-  File? _capturedImage;
+  /// Photos picked with the Add button, handed to the add form.
+  List<String> _startPhotos = const [];
 
   /// Replaced each time the form opens fresh, so it starts empty.
   Key _addFormKey = UniqueKey();
@@ -98,13 +97,13 @@ class _HomeShellState extends State<HomeShell> {
     });
   }
 
-  /// Opens the add form, optionally with a photo already in it.
-  void _openAddForm({File? image}) {
+  /// Opens the add form, optionally with photos already in it.
+  void _openAddForm({List<String> photos = const []}) {
     setState(() {
       if (_page != _addPage) {
         _pageBeforeAdd = _page;
       }
-      _capturedImage = image;
+      _startPhotos = photos;
       _addFormKey = UniqueKey();
       _page = _addPage;
       _opened.add(_addPage);
@@ -114,34 +113,45 @@ class _HomeShellState extends State<HomeShell> {
   void _closeAddForm() {
     setState(() {
       _page = _pageBeforeAdd;
-      _capturedImage = null;
+      _startPhotos = const [];
       _addFormKey = UniqueKey();
     });
   }
 
-  Future<void> _takePhoto() async {
+  /// The Add button: asks camera or library, picks, then opens the form.
+  Future<void> _add() async {
     final l10n = context.l10n;
     if (_capturing) {
       return;
     }
+    final source = await chooseImageSource(context);
+    if (source == null || !mounted) {
+      return;
+    }
     setState(() => _capturing = true);
     try {
-      XFile? photo;
-      try {
-        photo = await _pick(ImageSource.camera);
-      } on PlatformException catch (error) {
-        if (error.code != 'no_available_camera') {
-          _showMessage(photoErrorMessage(l10n, error));
-          return;
+      List<XFile> picked;
+      if (source == ImageSource.gallery) {
+        picked = await _pickFromLibrary();
+      } else {
+        try {
+          picked = [?await _pick(ImageSource.camera)];
+        } on PlatformException catch (error) {
+          if (error.code != 'no_available_camera') {
+            _showMessage(photoErrorMessage(l10n, error));
+            return;
+          }
+          // Simulators have no camera: fall back to the photo library.
+          _showMessage(l10n.noCameraChoosePhoto);
+          picked = await _pickFromLibrary();
         }
-        // Simulators have no camera: fall back to the photo library.
-        _showMessage(l10n.noCameraChoosePhoto);
-        photo = await _pick(ImageSource.gallery);
       }
-      if (!mounted || photo == null) {
+      if (!mounted || picked.isEmpty) {
         return;
       }
-      _openAddForm(image: File(photo.path));
+      _openAddForm(
+        photos: [for (final x in picked.take(maxPlacePhotos)) x.path],
+      );
     } on PlatformException catch (error) {
       _showMessage(photoErrorMessage(l10n, error));
     } finally {
@@ -150,6 +160,12 @@ class _HomeShellState extends State<HomeShell> {
       }
     }
   }
+
+  Future<List<XFile>> _pickFromLibrary() => _picker.pickMultiImage(
+    maxWidth: 1200,
+    imageQuality: 85,
+    limit: maxPlacePhotos,
+  );
 
   Future<XFile?> _pick(ImageSource source) {
     return _picker.pickImage(source: source, maxWidth: 1200, imageQuality: 85);
@@ -160,7 +176,7 @@ class _HomeShellState extends State<HomeShell> {
     setState(() {
       _page = _accountPage;
       _opened.add(_accountPage);
-      _capturedImage = null;
+      _startPhotos = const [];
       _addFormKey = UniqueKey();
     });
     _showMessage(context.l10n.savedToMyPlaces);
@@ -192,7 +208,7 @@ class _HomeShellState extends State<HomeShell> {
     if (page == _addPage) {
       return AddedPlaceScreen(
         key: _addFormKey,
-        initialImage: _capturedImage,
+        initialPhotos: _startPhotos,
         onSaved: _onPlaceSaved,
         onCancel: _closeAddForm,
       );
@@ -251,8 +267,8 @@ class _HomeShellState extends State<HomeShell> {
             tabs: _tabs,
             currentIndex: _page == _addPage ? -1 : _page,
             onSelect: _openTab,
-            onCamera: _takePhoto,
-            cameraBusy: _capturing,
+            onAdd: _add,
+            addBusy: _capturing,
             // Dark glass in dark mode, when the map tiles are dark too.
             dark: AppColors.isDark,
           ),
