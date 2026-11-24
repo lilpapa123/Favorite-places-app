@@ -63,6 +63,10 @@ class _MyAppState extends ConsumerState<MyApp> {
       locale: settings.locale,
       supportedLocales: supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
+      // Same layout in every language: Arabic changes the words, not which
+      // side things sit on.
+      builder: (context, child) =>
+          Directionality(textDirection: TextDirection.ltr, child: child!),
       home: const HomeShell(),
     );
   }
