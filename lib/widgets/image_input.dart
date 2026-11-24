@@ -40,38 +40,7 @@ class _ImageInputState extends State<ImageInput> {
     if (_isPickingImage || _room <= 0) {
       return;
     }
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpace.page,
-            0,
-            AppSpace.page,
-            AppSpace.lg,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(context.l10n.choosePhoto, style: AppText.title()),
-              const SizedBox(height: AppSpace.md),
-              _SourceTile(
-                icon: Icons.photo_camera_outlined,
-                label: context.l10n.takePhoto,
-                onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
-              ),
-              const SizedBox(height: AppSpace.sm),
-              _SourceTile(
-                icon: Icons.photo_library_outlined,
-                label: context.l10n.chooseFromLibrary,
-                onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    final source = await chooseImageSource(context);
     if (source != null) {
       await _pickImages(source);
     }
@@ -293,8 +262,101 @@ class _ImageInputState extends State<ImageInput> {
   }
 }
 
-class _SourceTile extends StatelessWidget {
-  const _SourceTile({
+/// Asks "Take photo or choose from library?" on a floating frosted-glass
+/// panel above the tab bar; null when dismissed by tapping outside. Used by
+/// the photo field and the tab bar's Add button.
+Future<ImageSource?> chooseImageSource(BuildContext context) {
+  final reduceMotion = MediaQuery.disableAnimationsOf(context);
+  return showGeneralDialog<ImageSource>(
+    context: context,
+    useRootNavigator: true,
+    barrierDismissible: true,
+    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+    barrierColor: const Color(0x99000000),
+    transitionDuration: reduceMotion ? Duration.zero : AppMotion.medium,
+    transitionBuilder: (ctx, animation, _, child) => FadeTransition(
+      opacity: animation,
+      child: SlideTransition(
+        position: Tween(
+          begin: const Offset(0, 0.08),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(parent: animation, curve: AppMotion.ease)),
+        child: child,
+      ),
+    ),
+    pageBuilder: (ctx, _, _) => const _GlassSourcePanel(),
+  );
+}
+
+class _GlassSourcePanel extends StatelessWidget {
+  const _GlassSourcePanel();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    void pick(ImageSource s) => Navigator.of(context).pop(s);
+    return Material(
+      type: MaterialType.transparency,
+      child: Stack(
+        children: [
+          // Tapping the dim area closes it.
+          Positioned.fill(
+            child: GestureDetector(onTap: () => Navigator.of(context).pop()),
+          ),
+          Positioned(
+            left: AppSpace.lg,
+            right: AppSpace.lg,
+            bottom: MediaQuery.paddingOf(context).bottom + 96,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(30),
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                child: Container(
+                  padding: const EdgeInsets.all(AppSpace.md),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    color: Colors.white.withValues(alpha: 0.12),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        l10n.choosePhoto,
+                        style: AppText.bodyStrong(color: Colors.white),
+                      ),
+                      const SizedBox(height: AppSpace.xs),
+                      Row(
+                        children: [
+                          _GlassOption(
+                            icon: Icons.photo_camera_rounded,
+                            label: l10n.takePhoto,
+                            onTap: () => pick(ImageSource.camera),
+                          ),
+                          _GlassOption(
+                            icon: Icons.photo_library_rounded,
+                            label: l10n.chooseFromLibrary,
+                            onTap: () => pick(ImageSource.gallery),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A glass circle with an icon and a label under it.
+class _GlassOption extends StatelessWidget {
+  const _GlassOption({
     required this.icon,
     required this.label,
     required this.onTap,
@@ -306,23 +368,38 @@ class _SourceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.background,
-      borderRadius: AppRadius.fieldAll,
-      child: InkWell(
-        borderRadius: AppRadius.fieldAll,
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpace.lg,
-            vertical: 14,
-          ),
-          child: Row(
-            children: [
-              Icon(icon, color: AppColors.accent),
-              const SizedBox(width: AppSpace.md),
-              Text(label, style: AppText.bodyStrong()),
-            ],
+    return Expanded(
+      child: Semantics(
+        button: true,
+        label: label,
+        excludeSemantics: true,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(22),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpace.lg),
+            child: Column(
+              children: [
+                Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.35),
+                    ),
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 28),
+                ),
+                const SizedBox(height: AppSpace.sm),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: AppText.label(color: Colors.white),
+                ),
+              ],
+            ),
           ),
         ),
       ),
