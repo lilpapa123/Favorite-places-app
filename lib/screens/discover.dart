@@ -30,17 +30,24 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   /// The search bar is open; closing it clears the search and filter.
   bool _searching = false;
 
-  void _closeSearch() => setState(() {
-    _searching = false;
-    _filter = null;
-    _search.clear();
-  });
+  /// While the filter sheet is up, taps on it are not "outside" the bar.
+  bool _filtersOpen = false;
+
+  /// A tap outside the bar closes it when there is nothing to search for;
+  /// with text or a filter, it only hides the keyboard so the results stay.
+  void _tapOutside() {
+    FocusScope.of(context).unfocus();
+    if (!_filtersOpen && _filter == null && _search.text.trim().isEmpty) {
+      setState(() => _searching = false);
+    }
+  }
 
   /// Type filters, chosen from the search bar.
   void _showFilters(List<PlaceCategory> filters, int total) {
     final l10n = context.l10n;
     // Else the keyboard comes back when the sheet closes.
     FocusScope.of(context).unfocus();
+    _filtersOpen = true;
     showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
@@ -89,7 +96,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           ),
         ),
       ),
-    );
+    ).whenComplete(() => _filtersOpen = false);
   }
 
   @override
@@ -137,16 +144,12 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
             PageHeader(
               title: l10n.tabDiscover,
               subtitle: l10n.discoverSubtitle,
-              trailing: shared.isEmpty
+              trailing: shared.isEmpty || _searching
                   ? null
                   : CircleIconButton(
-                      icon: AppIcon(_searching ? 'close' : 'search'),
-                      semanticLabel: _searching
-                          ? l10n.closeSearch
-                          : l10n.findFavoritePlace,
-                      onPressed: _searching
-                          ? _closeSearch
-                          : () => setState(() => _searching = true),
+                      icon: const AppIcon('search'),
+                      semanticLabel: l10n.findFavoritePlace,
+                      onPressed: () => setState(() => _searching = true),
                     ),
             ),
             if (!signedIn && shared.isEmpty)
@@ -166,19 +169,24 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpace.page,
                         ),
-                        child: SearchField(
-                          controller: _search,
-                          hintText: l10n.findFavoritePlace,
-                          autofocus: true,
-                          onChanged: (_) => setState(() {}),
-                          trailing: IconButton(
-                            tooltip: l10n.filterPlaces,
-                            onPressed: () =>
-                                _showFilters(filters, shared.length),
-                            // Orange while a filter is on.
-                            icon: AppIcon(
-                              'sliders',
-                              color: _filter == null ? null : AppColors.accent,
+                        child: TapRegion(
+                          onTapOutside: (_) => _tapOutside(),
+                          child: SearchField(
+                            controller: _search,
+                            hintText: l10n.findFavoritePlace,
+                            autofocus: true,
+                            onChanged: (_) => setState(() {}),
+                            trailing: IconButton(
+                              tooltip: l10n.filterPlaces,
+                              onPressed: () =>
+                                  _showFilters(filters, shared.length),
+                              // Orange while a filter is on.
+                              icon: AppIcon(
+                                'sliders',
+                                color: _filter == null
+                                    ? null
+                                    : AppColors.accent,
+                              ),
                             ),
                           ),
                         ),

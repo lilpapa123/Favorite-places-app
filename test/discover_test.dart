@@ -62,8 +62,19 @@ void main() {
     expect(find.text(firstCafe.$2.title), findsOneWidget);
     expect(find.text(firstOther.$2.title), findsNothing);
 
-    // Closing search clears the filter too.
-    await tester.tap(_circleButton('Close search'));
+    // A tap outside keeps the bar while a filter is on...
+    await tester.tapAt(const Offset(200, 40));
+    await tester.pumpAndSettle();
+    expect(searchBox, findsOneWidget);
+    expect(find.text(firstOther.$2.title), findsNothing);
+
+    // ...and closes it once there is nothing to search for.
+    await tester.tap(find.byTooltip('Filter'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('All · ${posts.length}'));
+    await tester.pumpAndSettle();
+    expect(searchBox, findsOneWidget);
+    await tester.tapAt(const Offset(200, 40));
     await tester.pumpAndSettle();
     expect(searchBox, findsNothing);
     expect(find.text(posts.first.$2.title), findsOneWidget);
