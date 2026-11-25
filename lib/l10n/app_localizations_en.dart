@@ -983,4 +983,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterPlaces => 'Filter';
+
+  @override
+  String get splashTagline => 'Save the places you love';
 }

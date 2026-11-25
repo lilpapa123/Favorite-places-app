@@ -986,4 +986,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get filterPlaces => 'Filtrele';
+
+  @override
+  String get splashTagline => 'Sevdiğin yerleri kaydet';
 }

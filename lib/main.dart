@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:favorite_places/firebase_options.dart';
-import 'package:favorite_places/l10n/app_localizations.dart';
 import 'package:favorite_places/providers/settings_provider.dart';
+import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/screens/home_shell.dart';
 import 'package:favorite_places/theme/app_theme.dart';
+import 'package:favorite_places/widgets/splash_scene.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -67,7 +71,86 @@ class _MyAppState extends ConsumerState<MyApp> {
       // side things sit on.
       builder: (context, child) =>
           Directionality(textDirection: TextDirection.ltr, child: child!),
-      home: const HomeShell(),
+      home: const _Splash(child: HomeShell()),
+    );
+  }
+}
+
+/// The splash scene for 3 seconds at launch; the app loads underneath, then
+/// shows through as the splash fades out. The native launch screens use the
+/// scene's top cream, so there is no flash before it.
+class _Splash extends StatefulWidget {
+  const _Splash({required this.child});
+
+  final Widget child;
+
+  static const shown = Duration(seconds: 3);
+  static const fade = Duration(milliseconds: 400);
+
+  @override
+  State<_Splash> createState() => _SplashState();
+}
+
+class _SplashState extends State<_Splash> {
+  /// The skyline is loaded (or took too long); the scene shows whole from
+  /// then on, for 3 seconds.
+  bool _ready = false;
+  bool _fading = false;
+  bool _gone = false;
+  bool _started = false;
+  Timer? _fallback;
+  Timer? _timer;
+
+  void _show() {
+    if (_ready || !mounted) {
+      return;
+    }
+    _fallback?.cancel();
+    setState(() => _ready = true);
+    _timer = Timer(_Splash.shown, () => setState(() => _fading = true));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) {
+      return;
+    }
+    _started = true;
+    SplashScene.precache().whenComplete(_show);
+    _fallback = Timer(const Duration(milliseconds: 600), _show);
+  }
+
+  @override
+  void dispose() {
+    _fallback?.cancel();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fade = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : _Splash.fade;
+    return Stack(
+      children: [
+        widget.child,
+        if (!_gone)
+          IgnorePointer(
+            ignoring: _fading,
+            child: AnimatedOpacity(
+              opacity: _fading ? 0 : 1,
+              duration: fade,
+              onEnd: () => setState(() => _gone = true),
+              // Dark status bar icons on the light cream.
+              child: AnnotatedRegion<SystemUiOverlayStyle>(
+                value: SystemUiOverlayStyle.dark,
+                child: const SplashScene(),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

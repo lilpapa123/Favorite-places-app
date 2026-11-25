@@ -1851,6 +1851,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Filter'**
   String get filterPlaces;
+
+  /// No description provided for @splashTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Save the places you love'**
+  String get splashTagline;
 }
 
 class _AppLocalizationsDelegate

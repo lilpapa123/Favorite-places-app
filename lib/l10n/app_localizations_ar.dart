@@ -983,4 +983,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get filterPlaces => 'تصفية';
+
+  @override
+  String get splashTagline => 'احفظ الأماكن التي تحبها';
 }
