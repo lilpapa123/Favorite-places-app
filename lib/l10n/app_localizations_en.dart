@@ -10,7 +10,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Favorite Places';
+  String get appTitle => 'Viaggio';
 
   @override
   String get close => 'Close';
@@ -310,11 +310,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errCameraDenied =>
-      'Camera access was denied. Allow it in Settings > Favorite Places.';
+      'Camera access was denied. Allow it in Settings > Viaggio.';
 
   @override
   String get errPhotosDenied =>
-      'Photo library access was denied. Allow it in Settings > Favorite Places.';
+      'Photo library access was denied. Allow it in Settings > Viaggio.';
 
   @override
   String get errCameraRestricted =>
@@ -346,7 +346,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get locationBlocked =>
-      'Location access is blocked. Allow it in Settings > Favorite Places, or pick the spot on the map instead.';
+      'Location access is blocked. Allow it in Settings > Viaggio, or pick the spot on the map instead.';
 
   @override
   String get findingSpot => 'Finding the spot…';

@@ -1,6 +1,6 @@
 {
-    "name": "favorite_places",
-    "short_name": "favorite_places",
+    "name": "Viaggio",
+    "short_name": "Viaggio",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#F3EDC8",

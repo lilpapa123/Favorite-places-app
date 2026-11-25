@@ -103,7 +103,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'Favorite Places'**
+  /// **'Viaggio'**
   String get appTitle;
 
   /// No description provided for @close.
@@ -649,13 +649,13 @@ abstract class AppLocalizations {
   /// No description provided for @errCameraDenied.
   ///
   /// In en, this message translates to:
-  /// **'Camera access was denied. Allow it in Settings > Favorite Places.'**
+  /// **'Camera access was denied. Allow it in Settings > Viaggio.'**
   String get errCameraDenied;
 
   /// No description provided for @errPhotosDenied.
   ///
   /// In en, this message translates to:
-  /// **'Photo library access was denied. Allow it in Settings > Favorite Places.'**
+  /// **'Photo library access was denied. Allow it in Settings > Viaggio.'**
   String get errPhotosDenied;
 
   /// No description provided for @errCameraRestricted.
@@ -709,7 +709,7 @@ abstract class AppLocalizations {
   /// No description provided for @locationBlocked.
   ///
   /// In en, this message translates to:
-  /// **'Location access is blocked. Allow it in Settings > Favorite Places, or pick the spot on the map instead.'**
+  /// **'Location access is blocked. Allow it in Settings > Viaggio, or pick the spot on the map instead.'**
   String get locationBlocked;
 
   /// No description provided for @findingSpot.

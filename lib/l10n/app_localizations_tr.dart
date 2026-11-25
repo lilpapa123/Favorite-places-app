@@ -10,7 +10,7 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
-  String get appTitle => 'Favori Yerler';
+  String get appTitle => 'Viaggio';
 
   @override
   String get close => 'Kapat';
@@ -308,11 +308,11 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get errCameraDenied =>
-      'Kamera erişimi reddedildi. Ayarlar > Favori Yerler\'den izin verin.';
+      'Kamera erişimi reddedildi. Ayarlar > Viaggio\'dan izin verin.';
 
   @override
   String get errPhotosDenied =>
-      'Fotoğraf arşivi erişimi reddedildi. Ayarlar > Favori Yerler\'den izin verin.';
+      'Fotoğraf arşivi erişimi reddedildi. Ayarlar > Viaggio\'dan izin verin.';
 
   @override
   String get errCameraRestricted =>
@@ -343,7 +343,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get locationBlocked =>
-      'Konum erişimi engelli. Ayarlar > Favori Yerler\'den izin verin veya noktayı haritada seçin.';
+      'Konum erişimi engelli. Ayarlar > Viaggio\'dan izin verin veya noktayı haritada seçin.';
 
   @override
   String get findingSpot => 'Nokta bulunuyor…';

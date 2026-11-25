@@ -10,7 +10,7 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get appTitle => 'الأماكن المفضلة';
+  String get appTitle => 'Viaggio';
 
   @override
   String get close => 'إغلاق';
@@ -310,11 +310,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get errCameraDenied =>
-      'تم رفض الوصول إلى الكاميرا. اسمح به من الإعدادات > الأماكن المفضلة.';
+      'تم رفض الوصول إلى الكاميرا. اسمح به من الإعدادات > Viaggio.';
 
   @override
   String get errPhotosDenied =>
-      'تم رفض الوصول إلى مكتبة الصور. اسمح به من الإعدادات > الأماكن المفضلة.';
+      'تم رفض الوصول إلى مكتبة الصور. اسمح به من الإعدادات > Viaggio.';
 
   @override
   String get errCameraRestricted =>
@@ -346,7 +346,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get locationBlocked =>
-      'الوصول إلى الموقع محظور. اسمح به من الإعدادات > الأماكن المفضلة، أو اختر المكان على الخريطة.';
+      'الوصول إلى الموقع محظور. اسمح به من الإعدادات > Viaggio، أو اختر المكان على الخريطة.';
 
   @override
   String get findingSpot => 'جارٍ تحديد المكان…';
