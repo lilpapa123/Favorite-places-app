@@ -971,4 +971,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String removeMemberConfirm(String name) {
     return 'Remove $name from the group?';
   }
+
+  @override
+  String get sendTo => 'Send to';
+
+  @override
+  String get send => 'Send';
+
+  @override
+  String get postSent => 'Sent';
 }

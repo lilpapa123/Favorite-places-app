@@ -7,6 +7,7 @@ import 'package:favorite_places/data/sample_posts.dart';
 import 'package:favorite_places/providers/social_provider.dart';
 import 'package:favorite_places/screens/chat.dart';
 import 'package:favorite_places/screens/profile.dart';
+import 'package:favorite_places/widgets/post_sheets.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -282,4 +283,58 @@ void main() {
       expect(find.text('M'), findsOneWidget);
     },
   );
+
+  testWidgets('Share sends a post to picked chats as a card', (tester) async {
+    tester.view.physicalSize = const Size(400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final (owner, place) = samplePosts().first;
+    final lina = sampleProfiles.firstWhere((p) => p.uid == 'sample-lina');
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authStateProvider.overrideWith((ref) => Stream<User?>.value(_User())),
+          firestoreProvider.overrideWithValue(_Db()),
+          chatsProvider.overrideWith((ref) => Stream.value(const [])),
+          followListProvider(('me', false)).overrideWith((ref) async => [lina]),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.data(Brightness.light),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Column(
+                children: [
+                  TextButton(
+                    onPressed: () => showShareSheet(context, owner, place),
+                    child: const Text('open share'),
+                  ),
+                  TextButton(
+                    onPressed: () =>
+                        openChat(context, Chat.direct('me', 'sample-lina')),
+                    child: const Text('open chat'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open share'));
+    await tester.pumpAndSettle();
+    expect(find.text('Copy link'), findsOneWidget);
+    expect(find.text('SEND TO'), findsOneWidget);
+
+    await tester.tap(find.text('Lina Haddad'));
+    await tester.pump();
+    await tester.tap(find.text('Send · 1'));
+    await tester.pumpAndSettle();
+    expect(find.text('Sent'), findsOneWidget);
+
+    await tester.tap(find.text('open chat'));
+    await tester.pumpAndSettle();
+    expect(find.text(place.title), findsOneWidget);
+  });
 }

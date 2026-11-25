@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:favorite_places/data/sample_posts.dart';
+import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/auth_provider.dart';
 import 'package:favorite_places/providers/user_palces.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -60,16 +61,52 @@ class Chat {
   int get hashCode => id.hashCode;
 }
 
+/// A post sent in a chat: enough to find it again, and its title to show
+/// while it loads (or if it was deleted).
+class SharedPost {
+  const SharedPost({
+    required this.id,
+    required this.owner,
+    required this.title,
+  });
+
+  static SharedPost? fromData(Object? data) => data is Map
+      ? SharedPost(
+          id: data['id'] as String? ?? '',
+          owner: data['owner'] as String? ?? '',
+          title: data['title'] as String? ?? '',
+        )
+      : null;
+
+  final String id;
+  final String owner;
+  final String title;
+
+  Map<String, String> toData() => {'id': id, 'owner': owner, 'title': title};
+
+  // sharedPostProvider keys on it.
+  @override
+  bool operator ==(Object other) =>
+      other is SharedPost && other.id == id && other.owner == owner;
+
+  @override
+  int get hashCode => Object.hash(id, owner);
+}
+
 class ChatMessage {
   const ChatMessage({
     required this.uid,
     required this.text,
     required this.createdAt,
+    this.post,
   });
 
   final String uid;
+
+  /// May be empty when the message is only a [post].
   final String text;
   final DateTime createdAt;
+  final SharedPost? post;
 }
 
 /// One chat in the inbox, with its latest message.
@@ -204,6 +241,7 @@ final messagesProvider = StreamProvider.family<List<ChatMessage>, Chat>((
               uid: doc.data()['uid'] as String? ?? '',
               text: doc.data()['text'] as String? ?? '',
               createdAt: _time(doc.data()['createdAt']),
+              post: SharedPost.fromData(doc.data()['post']),
             ),
         ],
       );
@@ -219,7 +257,7 @@ final chatsProvider = StreamProvider<List<ChatSummary>>((ref) {
     for (final (chat, messages) in ref.watch(_sampleChatsProvider).values)
       ChatSummary(
         chat: chat,
-        lastText: messages.last.text,
+        lastText: _preview(messages.last.text, messages.last.post),
         lastAt: messages.last.createdAt,
       ),
   ];
@@ -250,21 +288,38 @@ final chatsProvider = StreamProvider<List<ChatSummary>>((ref) {
   }();
 });
 
+/// The inbox line for a message: its text, or the post it shares.
+String _preview(String text, SharedPost? post) =>
+    text.isNotEmpty || post == null ? text : '📍 ${post.title}';
+
 Future<void> sendMessage(
   WidgetRef ref, {
   required String me,
   required Chat chat,
-  required String text,
+  String text = '',
+  SharedPost? post,
 }) async {
+  assert(text.isNotEmpty || post != null);
   if (chat._isSample) {
     ref
         .read(_sampleChatsProvider.notifier)
-        .add(chat, ChatMessage(uid: me, text: text, createdAt: DateTime.now()));
+        .add(
+          chat,
+          ChatMessage(
+            uid: me,
+            text: text,
+            createdAt: DateTime.now(),
+            post: post,
+          ),
+        );
     return;
   }
   final db = ref.read(firestoreProvider);
   final doc = db.doc('chats/${chat.id}');
-  final last = {'lastText': text, 'lastAt': FieldValue.serverTimestamp()};
+  final last = {
+    'lastText': _preview(text, post),
+    'lastAt': FieldValue.serverTimestamp(),
+  };
   final batch = db.batch();
   if (chat.isGroup) {
     batch.update(doc, last);
@@ -275,6 +330,7 @@ Future<void> sendMessage(
   batch.set(doc.collection('messages').doc(), {
     'uid': me,
     'text': text,
+    'post': ?post?.toData(),
     'createdAt': FieldValue.serverTimestamp(),
   });
   await batch.commit();
@@ -326,3 +382,17 @@ Future<void> removeMember(WidgetRef ref, Chat chat, String uid) {
     'members': FieldValue.arrayRemove([uid]),
   });
 }
+
+/// The post a [SharedPost] points at; null if it is gone.
+final sharedPostProvider = FutureProvider.autoDispose
+    .family<Place?, SharedPost>((ref, post) async {
+      if (isSampleUid(post.owner)) {
+        return samplePosts().where((p) => p.$2.id == post.id).firstOrNull?.$2;
+      }
+      final doc = await ref
+          .watch(firestoreProvider)
+          .doc('places/${post.id}')
+          .get();
+      final data = doc.data();
+      return data == null ? null : Place.fromFirestore(doc.id, data);
+    });

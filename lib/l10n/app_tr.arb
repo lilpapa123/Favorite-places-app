@@ -287,5 +287,8 @@
   "cancel": "Vazgeç",
   "groupAdmin": "Yönetici",
   "removeFromGroup": "Çıkar",
-  "removeMemberConfirm": "{name} gruptan çıkarılsın mı?"
+  "removeMemberConfirm": "{name} gruptan çıkarılsın mı?",
+  "sendTo": "Kime gönderilsin",
+  "send": "Gönder",
+  "postSent": "Gönderildi"
 }

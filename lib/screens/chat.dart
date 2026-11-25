@@ -11,6 +11,7 @@ import 'package:favorite_places/widgets/app_icon.dart';
 import 'package:favorite_places/widgets/cover_post_card.dart';
 import 'package:favorite_places/widgets/page_header.dart';
 import 'package:favorite_places/widgets/pill_button.dart';
+import 'package:favorite_places/widgets/place_photo.dart';
 import 'package:favorite_places/widgets/profile_photo_picker.dart';
 import 'package:favorite_places/widgets/search_field.dart';
 import 'package:favorite_places/widgets/image_input.dart';
@@ -30,7 +31,7 @@ void openChat(BuildContext context, Chat chat) {
 
 /// "Lina, Mert, Sofia" when a group has no name; the person's name for a
 /// two-person chat.
-String _chatTitle(WidgetRef ref, Chat chat, String me) {
+String chatTitle(WidgetRef ref, Chat chat, String me) {
   if (chat.name.isNotEmpty) {
     return chat.name;
   }
@@ -41,8 +42,13 @@ String _chatTitle(WidgetRef ref, Chat chat, String me) {
 }
 
 /// The person's photo, or a group icon.
-class _ChatAvatar extends ConsumerWidget {
-  const _ChatAvatar({required this.chat, required this.me, this.size = 48});
+class ChatAvatar extends ConsumerWidget {
+  const ChatAvatar({
+    super.key,
+    required this.chat,
+    required this.me,
+    this.size = 48,
+  });
 
   final Chat chat;
   final String me;
@@ -166,14 +172,14 @@ class _ChatTile extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            _ChatAvatar(chat: chat, me: me),
+            ChatAvatar(chat: chat, me: me),
             const SizedBox(width: AppSpace.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _chatTitle(ref, chat, me),
+                    chatTitle(ref, chat, me),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppText.bodyStrong(),
@@ -540,11 +546,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               ),
                         child: Row(
                           children: [
-                            _ChatAvatar(chat: chat, me: me, size: 36),
+                            ChatAvatar(chat: chat, me: me, size: 36),
                             const SizedBox(width: AppSpace.sm),
                             Expanded(
                               child: Text(
-                                _chatTitle(ref, chat, me),
+                                chatTitle(ref, chat, me),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: AppText.title(),
@@ -636,6 +642,70 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
 enum _Avatar { none, shown, space }
 
+/// A post sent in a chat: its photo and title; opens the post.
+class _PostCard extends ConsumerWidget {
+  const _PostCard({required this.post});
+
+  final SharedPost post;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final place = ref.watch(sharedPostProvider(post)).value;
+    final owner = ref.watch(profileProvider(post.owner)).value;
+    return GestureDetector(
+      onTap: place == null
+          ? null
+          : () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (ctx) => PostScreen(owner: post.owner, place: place),
+              ),
+            ),
+      child: SizedBox(
+        width: 220,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: ColoredBox(
+            color: AppColors.background,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AspectRatio(
+                  aspectRatio: 4 / 3,
+                  child: PlacePhoto(
+                    photo: place?.photos.firstOrNull,
+                    tint: AppColors.tintFor(post.id),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(AppSpace.sm),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        place?.title ?? post.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.bodyStrong(),
+                      ),
+                      if (owner != null)
+                        Text(
+                          owner.handle ?? owner.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppText.meta().copyWith(fontSize: 12),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _Bubble extends ConsumerWidget {
   const _Bubble({
     required this.message,
@@ -671,17 +741,28 @@ class _Bubble extends ConsumerWidget {
           ),
         Container(
           margin: const EdgeInsets.only(bottom: AppSpace.xs),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpace.md,
-            vertical: AppSpace.sm,
-          ),
+          // A post alone gets a thin frame; text keeps the usual padding.
+          padding: message.text.isEmpty
+              ? const EdgeInsets.all(3)
+              : const EdgeInsets.symmetric(
+                  horizontal: AppSpace.md,
+                  vertical: AppSpace.sm,
+                ),
           decoration: BoxDecoration(
             color: mine ? AppColors.accent : AppColors.surface,
             borderRadius: BorderRadius.circular(18),
           ),
-          child: Text(
-            message.text,
-            style: AppText.body(color: mine ? AppColors.onAccent : null),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (message.post case final post?) _PostCard(post: post),
+              if (message.text.isNotEmpty)
+                Text(
+                  message.text,
+                  style: AppText.body(color: mine ? AppColors.onAccent : null),
+                ),
+            ],
           ),
         ),
       ],
@@ -879,7 +960,7 @@ class _GroupDetailsState extends ConsumerState<GroupDetailsScreen> {
                   onTap: _saving || !isAdmin ? null : () => _changePhoto(chat),
                   child: Stack(
                     children: [
-                      _ChatAvatar(chat: chat, me: me, size: 112),
+                      ChatAvatar(chat: chat, me: me, size: 112),
                       if (isAdmin)
                         PositionedDirectional(
                           end: 0,
@@ -915,7 +996,7 @@ class _GroupDetailsState extends ConsumerState<GroupDetailsScreen> {
                 children: [
                   Flexible(
                     child: Text(
-                      _chatTitle(ref, chat, me),
+                      chatTitle(ref, chat, me),
                       textAlign: TextAlign.center,
                       style: AppText.title(),
                     ),

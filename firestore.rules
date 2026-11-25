@@ -191,12 +191,22 @@ service cloud.firestore {
         allow create: if signedIn()
           && ((direct() && request.auth.uid in chatId.split('_'))
             || request.auth.uid in getAfter(chatPath()).data.members)
-          && request.resource.data.keys().hasOnly(['uid', 'text', 'createdAt'])
+          && request.resource.data.keys().hasOnly(['uid', 'text', 'createdAt', 'post'])
           && request.resource.data.uid == request.auth.uid
           && request.resource.data.text is string
-          && request.resource.data.text.size() > 0
           && request.resource.data.text.size() <= 15000
-          && request.resource.data.createdAt == request.time;
+          && request.resource.data.createdAt == request.time
+          // Text, a shared post, or both.
+          && (request.resource.data.text.size() > 0 || 'post' in request.resource.data)
+          && (!('post' in request.resource.data)
+            || (request.resource.data.post is map
+              && request.resource.data.post.keys().hasOnly(['id', 'owner', 'title'])
+              && request.resource.data.post.id is string
+              && request.resource.data.post.id.size() <= 200
+              && request.resource.data.post.owner is string
+              && request.resource.data.post.owner.size() <= 200
+              && request.resource.data.post.title is string
+              && request.resource.data.post.title.size() <= 3000));
         allow update, delete: if false;
       }
     }

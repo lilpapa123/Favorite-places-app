@@ -127,7 +127,7 @@ class CoverPostCard extends StatelessWidget {
                           _PhotoAction(
                             icon: CupertinoIcons.paperplane,
                             label: l10n.share,
-                            onTap: () => showShareSheet(context, place),
+                            onTap: () => showShareSheet(context, owner, place),
                           ),
                         ],
                       ),

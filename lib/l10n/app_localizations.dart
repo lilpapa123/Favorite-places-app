@@ -1827,6 +1827,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove {name} from the group?'**
   String removeMemberConfirm(String name);
+
+  /// No description provided for @sendTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to'**
+  String get sendTo;
+
+  /// No description provided for @send.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get send;
+
+  /// No description provided for @postSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get postSent;
 }
 
 class _AppLocalizationsDelegate
