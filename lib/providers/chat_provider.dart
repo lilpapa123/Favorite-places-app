@@ -49,7 +49,8 @@ class Chat {
       if (uid != me) uid,
   ];
 
-  bool get _isSample => !isGroup && members.any(isSampleUid);
+  bool get _isSample =>
+      id.startsWith(samplePrefix) || (!isGroup && members.any(isSampleUid));
 
   // The same chat, wherever it is opened from: messagesProvider keys on it.
   @override
@@ -101,12 +102,58 @@ final _myUid = Provider<String?>(
 /// Chats with sample people during this run, by chat id.
 class _SampleChats extends Notifier<Map<String, (Chat, List<ChatMessage>)>> {
   @override
-  Map<String, (Chat, List<ChatMessage>)> build() => const {};
+  Map<String, (Chat, List<ChatMessage>)> build() {
+    final me = ref.watch(_myUid);
+    if (!showSamplePosts || me == null) {
+      return const {};
+    }
+    final chat = _sampleGroup(me);
+    return {chat.id: (chat, _sampleGroupMessages(me))};
+  }
 
   void add(Chat chat, ChatMessage message) => state = {
     ...state,
     chat.id: (chat, [...?state[chat.id]?.$2, message]),
   };
+}
+
+/// A made-up group, so group chats can be tried while developing. Lina
+/// made it, so you see it as a member, not its admin.
+Chat _sampleGroup(String me) => Chat(
+  id: '${samplePrefix}group-weekend',
+  members: [
+    '${samplePrefix}lina',
+    me,
+    '${samplePrefix}mert',
+    '${samplePrefix}sofia',
+    '${samplePrefix}omar',
+  ],
+  name: 'Weekend in Kapadokya',
+);
+
+List<ChatMessage> _sampleGroupMessages(String me) {
+  final start = DateTime.now().subtract(const Duration(hours: 3));
+  var minutes = 0;
+  ChatMessage say(String who, String text, [int after = 4]) => ChatMessage(
+    uid: who == 'me' ? me : '$samplePrefix$who',
+    text: text,
+    createdAt: start.add(Duration(minutes: minutes += after)),
+  );
+  return [
+    say('lina', 'Made a group for the Kapadokya trip! 🎈'),
+    say('mert', 'Finally. Are we still going Friday night?'),
+    say('lina', 'Yes, bus leaves 22:30 from Esenler.', 2),
+    say('sofia', 'I booked the cave hotel in Göreme, 2 rooms.'),
+    say('sofia', 'Breakfast on the roof included ☕', 1),
+    say('me', 'Amazing. Who wants the balloon ride at sunrise?'),
+    say('omar', 'Me! I have been waiting years for this.'),
+    say('mert', 'I will watch from the ground with a camera 😅', 3),
+    say('lina', 'I can ask the hotel to book 3 spots.'),
+    say('me', 'Do it, count me in.', 2),
+    say('omar', 'Same. Should we hike Love Valley after?', 6),
+    say('sofia', 'Yes! Bring good shoes, it gets dusty.'),
+    say('lina', 'Sending the plan here tonight 📍', 10),
+  ];
 }
 
 final _sampleChatsProvider =
@@ -120,7 +167,7 @@ DateTime _time(Object? value) =>
 
 /// [chat] as it is now: a group's name and photo can change while it is open.
 final chatProvider = StreamProvider.family<Chat, Chat>((ref, chat) {
-  if (!chat.isGroup) {
+  if (!chat.isGroup || chat._isSample) {
     return Stream.value(chat);
   }
   return ref

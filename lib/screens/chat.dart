@@ -573,11 +573,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           _Bubble(
                             message: m,
                             mine: m.uid == me,
-                            color: chat.isGroup && m.uid != me
-                                ? memberColor(m.uid)
-                                : null,
-                            // In a group, who wrote it, above the first of
-                            // their messages in a row.
+                            // In a group, others' photos sit beside their
+                            // messages: shown by the last of a run, with
+                            // room kept beside the rest.
+                            avatar: !chat.isGroup || m.uid == me
+                                ? _Avatar.none
+                                : i == 0 ||
+                                      messages[messages.length - i].uid != m.uid
+                                ? _Avatar.shown
+                                : _Avatar.space,
+                            // Who wrote it, above the first of a run.
                             showName:
                                 chat.isGroup &&
                                 m.uid != me &&
@@ -629,86 +634,89 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 }
 
-/// Bubble colors for other people in a group: deep enough for white text,
-/// none close to the app's orange, which marks your own messages.
-const _memberColors = [
-  Color(0xFF3B6FB6), // blue
-  Color(0xFF2E8B6E), // green
-  Color(0xFF8A4FBF), // purple
-  Color(0xFFC0447A), // pink
-  Color(0xFF1F8A9E), // teal
-  Color(0xFF6B7A2E), // olive
-  Color(0xFF5A5FCF), // indigo
-  Color(0xFFA0522D), // brown
-];
-
-/// The same color for [uid] every time, on every phone.
-Color memberColor(String uid) =>
-    _memberColors[uid.codeUnits.fold(0, (h, c) => (h * 31 + c) & 0x7fffffff) %
-        _memberColors.length];
+enum _Avatar { none, shown, space }
 
 class _Bubble extends ConsumerWidget {
   const _Bubble({
     required this.message,
     required this.mine,
-    this.color,
+    this.avatar = _Avatar.none,
     this.showName = false,
   });
 
+  static const double _avatarSize = 28;
+
   final ChatMessage message;
   final bool mine;
-
-  /// The writer's own color in a group, with white text.
-  final Color? color;
+  final _Avatar avatar;
   final bool showName;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final name = showName
-        ? ref.watch(profileProvider(message.uid)).value?.name ?? ''
-        : '';
+    final profile = showName || avatar == _Avatar.shown
+        ? ref.watch(profileProvider(message.uid)).value
+        : null;
+    final name = showName ? profile?.name ?? '' : '';
+    final bubble = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (name.isNotEmpty)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(
+              start: AppSpace.md,
+              top: AppSpace.xs,
+              bottom: 2,
+            ),
+            child: Text(name, style: AppText.meta().copyWith(fontSize: 12)),
+          ),
+        Container(
+          margin: const EdgeInsets.only(bottom: AppSpace.xs),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpace.md,
+            vertical: AppSpace.sm,
+          ),
+          decoration: BoxDecoration(
+            color: mine ? AppColors.accent : AppColors.surface,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Text(
+            message.text,
+            style: AppText.body(color: mine ? AppColors.onAccent : null),
+          ),
+        ),
+      ],
+    );
     return Align(
       alignment: mine
           ? AlignmentDirectional.centerEnd
           : AlignmentDirectional.centerStart,
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: MediaQuery.sizeOf(context).width * 0.75,
+          maxWidth: MediaQuery.sizeOf(context).width * 0.8,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (name.isNotEmpty)
-              Padding(
-                padding: const EdgeInsetsDirectional.only(
-                  start: AppSpace.md,
-                  top: AppSpace.xs,
-                  bottom: 2,
-                ),
-                child: Text(
-                  name,
-                  style: AppText.meta(color: color).copyWith(fontSize: 12),
-                ),
+        child: avatar == _Avatar.none
+            ? bubble
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpace.xs),
+                    child: avatar == _Avatar.shown
+                        ? GestureDetector(
+                            onTap: () => openProfile(context, message.uid),
+                            child: Avatar(
+                              name: profile?.name ?? '',
+                              photoUrl: profile?.photoUrl,
+                              size: _avatarSize,
+                            ),
+                          )
+                        : const SizedBox(width: _avatarSize),
+                  ),
+                  const SizedBox(width: AppSpace.sm),
+                  Flexible(child: bubble),
+                ],
               ),
-            Container(
-              margin: const EdgeInsets.only(bottom: AppSpace.xs),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpace.md,
-                vertical: AppSpace.sm,
-              ),
-              decoration: BoxDecoration(
-                color: mine ? AppColors.accent : color ?? AppColors.surface,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Text(
-                message.text,
-                style: AppText.body(
-                  color: mine || color != null ? Colors.white : null,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
