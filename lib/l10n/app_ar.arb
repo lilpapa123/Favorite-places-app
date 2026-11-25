@@ -284,5 +284,8 @@
   "groupPhoto": "صورة المجموعة",
   "editGroupName": "تعديل اسم المجموعة",
   "groupMembers": "{count} أعضاء",
-  "cancel": "إلغاء"
+  "cancel": "إلغاء",
+  "groupAdmin": "المشرف",
+  "removeFromGroup": "إزالة",
+  "removeMemberConfirm": "إزالة {name} من المجموعة؟"
 }

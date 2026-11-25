@@ -461,5 +461,15 @@
         "type": "int"
       }
     }
+  },
+  "groupAdmin": "Admin",
+  "removeFromGroup": "Remove",
+  "removeMemberConfirm": "Remove {name} from the group?",
+  "@removeMemberConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

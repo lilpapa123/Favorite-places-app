@@ -1809,6 +1809,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get cancel;
+
+  /// No description provided for @groupAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get groupAdmin;
+
+  /// No description provided for @removeFromGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeFromGroup;
+
+  /// No description provided for @removeMemberConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} from the group?'**
+  String removeMemberConfirm(String name);
 }
 
 class _AppLocalizationsDelegate

@@ -684,8 +684,8 @@ class _Bubble extends ConsumerWidget {
   }
 }
 
-/// A group's photo, name and members; any member can change the photo and
-/// name.
+/// A group's photo, name and members. Its admin can change the photo and
+/// name, and remove people.
 class GroupDetailsScreen extends ConsumerStatefulWidget {
   const GroupDetailsScreen({super.key, required this.chat});
 
@@ -744,6 +744,32 @@ class _GroupDetailsState extends ConsumerState<GroupDetailsScreen> {
     });
   }
 
+  Future<void> _remove(Chat chat, String uid, String name) async {
+    final l10n = context.l10n;
+    final sure = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.removeMemberConfirm(name)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              l10n.removeFromGroup,
+              style: TextStyle(color: AppColors.accent),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (sure ?? false) {
+      await _run(() => removeMember(ref, chat, uid));
+    }
+  }
+
   Future<void> _rename(Chat chat) async {
     final l10n = context.l10n;
     final text = TextEditingController(text: chat.name);
@@ -784,6 +810,7 @@ class _GroupDetailsState extends ConsumerState<GroupDetailsScreen> {
     if (me == null) {
       return const Scaffold();
     }
+    final isAdmin = chat.admin == me;
     return Scaffold(
       body: SafeArea(
         child: ListView(
@@ -811,31 +838,32 @@ class _GroupDetailsState extends ConsumerState<GroupDetailsScreen> {
                 button: true,
                 label: l10n.groupPhoto,
                 child: GestureDetector(
-                  onTap: _saving ? null : () => _changePhoto(chat),
+                  onTap: _saving || !isAdmin ? null : () => _changePhoto(chat),
                   child: Stack(
                     children: [
                       _ChatAvatar(chat: chat, me: me, size: 112),
-                      PositionedDirectional(
-                        end: 0,
-                        bottom: 0,
-                        child: CircleAvatar(
-                          radius: 18,
-                          backgroundColor: AppColors.accent,
-                          child: _saving
-                              ? const SizedBox.square(
-                                  dimension: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
+                      if (isAdmin)
+                        PositionedDirectional(
+                          end: 0,
+                          bottom: 0,
+                          child: CircleAvatar(
+                            radius: 18,
+                            backgroundColor: AppColors.accent,
+                            child: _saving
+                                ? const SizedBox.square(
+                                    dimension: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppColors.onAccent,
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.photo_camera_rounded,
+                                    size: 18,
                                     color: AppColors.onAccent,
                                   ),
-                                )
-                              : const Icon(
-                                  Icons.photo_camera_rounded,
-                                  size: 18,
-                                  color: AppColors.onAccent,
-                                ),
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -854,11 +882,12 @@ class _GroupDetailsState extends ConsumerState<GroupDetailsScreen> {
                       style: AppText.title(),
                     ),
                   ),
-                  IconButton(
-                    tooltip: l10n.editGroupName,
-                    onPressed: _saving ? null : () => _rename(chat),
-                    icon: Icon(Icons.edit_rounded, color: AppColors.accent),
-                  ),
+                  if (isAdmin)
+                    IconButton(
+                      tooltip: l10n.editGroupName,
+                      onPressed: _saving ? null : () => _rename(chat),
+                      icon: Icon(Icons.edit_rounded, color: AppColors.accent),
+                    ),
                 ],
               ),
             ),
@@ -871,7 +900,15 @@ class _GroupDetailsState extends ConsumerState<GroupDetailsScreen> {
               ),
             ),
             const SizedBox(height: AppSpace.xs),
-            for (final uid in [me, ...chat.others(me)]) _Member(uid: uid),
+            // The admin first, as in members.
+            for (final uid in chat.members)
+              _Member(
+                uid: uid,
+                isAdmin: uid == chat.admin,
+                onRemove: isAdmin && uid != me && !_saving
+                    ? (name) => _remove(chat, uid, name)
+                    : null,
+              ),
           ],
         ),
       ),
@@ -880,15 +917,38 @@ class _GroupDetailsState extends ConsumerState<GroupDetailsScreen> {
 }
 
 class _Member extends ConsumerWidget {
-  const _Member({required this.uid});
+  const _Member({required this.uid, required this.isAdmin, this.onRemove});
 
   final String uid;
+  final bool isAdmin;
+
+  /// Shown to the admin on everyone else; gets the person's name.
+  final ValueChanged<String>? onRemove;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final profile = ref.watch(profileProvider(uid)).value;
-    return profile == null
-        ? const SizedBox.shrink()
-        : PersonTile(profile: profile);
+    if (profile == null) {
+      return const SizedBox.shrink();
+    }
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpace.page),
+      leading: Avatar(name: profile.name, photoUrl: profile.photoUrl, size: 44),
+      title: Text(profile.name, style: AppText.bodyStrong()),
+      subtitle: profile.handle == null
+          ? null
+          : Text(profile.handle!, style: AppText.meta()),
+      trailing: isAdmin
+          ? Text(l10n.groupAdmin, style: AppText.meta(color: AppColors.accent))
+          : onRemove == null
+          ? null
+          : IconButton(
+              tooltip: l10n.removeFromGroup,
+              onPressed: () => onRemove!(profile.name),
+              icon: Icon(Icons.person_remove_outlined, color: AppColors.muted),
+            ),
+      onTap: () => openProfile(context, uid),
+    );
   }
 }

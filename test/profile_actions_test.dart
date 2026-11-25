@@ -174,5 +174,49 @@ void main() {
     await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
     expect(find.byType(AlertDialog), findsNothing);
+
+    // The maker is admin: they can remove the others, asked first.
+    expect(find.text('Admin'), findsOneWidget);
+    expect(find.byTooltip('Remove'), findsNWidgets(2));
+    await tester.tap(find.byTooltip('Remove').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Remove Lina Haddad from the group?'), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('Group details: others cannot edit or remove', (tester) async {
+    tester.view.physicalSize = const Size(400, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    const chat = Chat(
+      id: 'group2',
+      members: ['sample-lina', 'me', 'sample-mert'],
+      name: 'Lina’s trip',
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authStateProvider.overrideWith((ref) => Stream<User?>.value(_User())),
+          chatProvider(chat).overrideWith((ref) => Stream.value(chat)),
+          profileProvider('me').overrideWith(
+            (ref) => Stream.value(
+              const UserProfile(uid: 'me', username: 'me', displayName: 'Me'),
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.data(Brightness.light),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const GroupDetailsScreen(chat: chat),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Admin'), findsOneWidget);
+    expect(find.byTooltip('Edit group name'), findsNothing);
+    expect(find.byTooltip('Remove'), findsNothing);
+    expect(find.byIcon(Icons.photo_camera_rounded), findsNothing);
   });
 }

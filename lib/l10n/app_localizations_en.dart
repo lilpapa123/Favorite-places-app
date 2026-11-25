@@ -960,4 +960,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancel => 'Cancel';
+
+  @override
+  String get groupAdmin => 'Admin';
+
+  @override
+  String get removeFromGroup => 'Remove';
+
+  @override
+  String removeMemberConfirm(String name) {
+    return 'Remove $name from the group?';
+  }
 }

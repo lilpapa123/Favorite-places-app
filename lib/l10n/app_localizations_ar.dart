@@ -960,4 +960,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get cancel => 'إلغاء';
+
+  @override
+  String get groupAdmin => 'المشرف';
+
+  @override
+  String get removeFromGroup => 'إزالة';
+
+  @override
+  String removeMemberConfirm(String name) {
+    return 'إزالة $name من المجموعة؟';
+  }
 }

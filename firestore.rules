@@ -115,7 +115,7 @@ service cloud.firestore {
 
     // A chat between two people has the id of their uids, sorted, joined by
     // '_', so only those two can open it. A group has a random id and 3 to 9
-    // members, fixed when it is made. The app allows 1000 visible characters
+    // members when it is made, its maker first. The app allows 1000 visible characters
     // per message and 50 per group name, 15 UTF-16 units per emoji.
     match /chats/{chatId} {
       function direct() {
@@ -152,29 +152,36 @@ service cloud.firestore {
         && validChat(request.resource.data)
         && (validDirect(request.resource.data)
           || (!direct()
-            && request.auth.uid in request.resource.data.members
+            && request.resource.data.members[0] == request.auth.uid
             && request.resource.data.members.size() >= 3
             && request.resource.data.members.size() <= 9
             && request.resource.data.members.toSet().size() == request.resource.data.members.size()));
-      // A two-person chat changes with each message. A group's members
-      // stay fixed: a message changes the last message, and any member may
-      // change the name and photo.
+      // A two-person chat changes with each message. In a group, a message
+      // changes only the last message. The group's maker, first in
+      // members, is its admin: only they change the name and photo, and
+      // remove members (never themselves).
       allow update: if signedIn()
         && ((validChat(request.resource.data)
             && validDirect(request.resource.data))
           || (!direct()
             && request.auth.uid in resource.data.members
             && request.resource.data.members == resource.data.members
-            && ((validChat(request.resource.data)
-                && request.resource.data.diff(resource.data).affectedKeys()
-                  .hasOnly(['lastText', 'lastAt']))
-              || (request.resource.data.diff(resource.data).affectedKeys()
-                  .hasOnly(['name', 'photo'])
-                && request.resource.data.get('name', '') is string
-                && request.resource.data.get('name', '').size() <= 750
-                && (!('photo' in request.resource.data)
-                  || (request.resource.data.photo is bytes
-                    && request.resource.data.photo.size() <= 102400))))));
+            && validChat(request.resource.data)
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['lastText', 'lastAt']))
+          || (!direct()
+            && request.auth.uid == resource.data.members[0]
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['name', 'photo', 'members'])
+            && request.resource.data.members is list
+            && request.resource.data.members.size() >= 2
+            && request.resource.data.members[0] == resource.data.members[0]
+            && resource.data.members.toSet().hasAll(request.resource.data.members)
+            && request.resource.data.get('name', '') is string
+            && request.resource.data.get('name', '').size() <= 750
+            && (!('photo' in request.resource.data)
+              || (request.resource.data.photo is bytes
+                && request.resource.data.photo.size() <= 102400))));
       allow delete: if false;
 
       match /messages/{messageId} {

@@ -963,4 +963,15 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get cancel => 'Vazgeç';
+
+  @override
+  String get groupAdmin => 'Yönetici';
+
+  @override
+  String get removeFromGroup => 'Çıkar';
+
+  @override
+  String removeMemberConfirm(String name) {
+    return '$name gruptan çıkarılsın mı?';
+  }
 }

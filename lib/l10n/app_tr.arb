@@ -284,5 +284,8 @@
   "groupPhoto": "Grup fotoğrafı",
   "editGroupName": "Grup adını düzenle",
   "groupMembers": "{count} üye",
-  "cancel": "Vazgeç"
+  "cancel": "Vazgeç",
+  "groupAdmin": "Yönetici",
+  "removeFromGroup": "Çıkar",
+  "removeMemberConfirm": "{name} gruptan çıkarılsın mı?"
 }

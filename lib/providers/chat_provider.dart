@@ -39,6 +39,10 @@ class Chat {
 
   bool get isGroup => !id.contains('_');
 
+  /// A group's maker, kept first in [members]: the only one who can rename
+  /// it, change its photo and remove people.
+  String? get admin => isGroup ? members.firstOrNull : null;
+
   /// Everyone in the chat except [me].
   List<String> others(String me) => [
     for (final uid in members)
@@ -229,7 +233,8 @@ Future<void> sendMessage(
   await batch.commit();
 }
 
-/// A new group of [me] and [others], up to [maxGroupMembers] in all.
+/// A new group of [me] and [others], up to [maxGroupMembers] in all. [me]
+/// goes first in members, which makes them its admin.
 Future<Chat> createGroup(
   WidgetRef ref, {
   required String me,
@@ -264,5 +269,13 @@ Future<void> setGroupPhoto(WidgetRef ref, Chat chat, Uint8List? bytes) {
   }
   return ref.read(firestoreProvider).doc('chats/${chat.id}').update({
     'photo': bytes == null ? FieldValue.delete() : Blob(bytes),
+  });
+}
+
+/// Takes [uid] out of [chat]; only its admin may.
+Future<void> removeMember(WidgetRef ref, Chat chat, String uid) {
+  assert(uid != chat.admin);
+  return ref.read(firestoreProvider).doc('chats/${chat.id}').update({
+    'members': FieldValue.arrayRemove([uid]),
   });
 }
