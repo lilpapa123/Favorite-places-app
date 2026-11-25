@@ -113,6 +113,21 @@ service cloud.firestore {
       }
     }
 
+    // Place photos, one JPEG per document (the app keeps them under 900 KB).
+    // Anyone signed in can see them, like the places; only the owner adds or
+    // removes theirs.
+    match /photos/{photoId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['ownerUid', 'placeId', 'data'])
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.placeId is string
+        && request.resource.data.data is bytes
+        && request.resource.data.data.size() <= 1000000;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+    }
+
     // A chat between two people has the id of their uids, sorted, joined by
     // '_', so only those two can open it. A group has a random id and 3 to 9
     // members when it is made, its maker first. The app allows 1000 visible characters

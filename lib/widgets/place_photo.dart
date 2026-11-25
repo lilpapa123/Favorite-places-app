@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:favorite_places/models/place.dart';
+import 'package:favorite_places/services/place_photo_store.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
@@ -47,6 +48,21 @@ class PlacePhoto extends StatelessWidget {
             : null;
         Widget onError(BuildContext context, Object error, StackTrace? st) =>
             placeholder;
+        if (source.startsWith(firestorePhotoScheme)) {
+          return Image(
+            image: ResizeImage.resizeIfNeeded(
+              width,
+              null,
+              FirestorePhotoImage(source),
+            ),
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            errorBuilder: onError,
+            frameBuilder: (context, child, frame, sync) =>
+                frame == null && !sync ? ColoredBox(color: tint) : child,
+          );
+        }
         return isUploadedPhoto(source)
             ? Image.network(
                 source,

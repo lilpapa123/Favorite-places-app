@@ -83,7 +83,12 @@ const int maxPlacePhotos = 10;
 
 /// True for a photo already in Firebase Storage (a download URL), false for
 /// a file path on this phone.
-bool isUploadedPhoto(String photo) => photo.startsWith('https://');
+/// How a place lists a photo kept in Firestore (see place_photo_store.dart).
+const firestorePhotoScheme = 'firestore://';
+
+/// Shared so others can see it, rather than a file on this phone.
+bool isUploadedPhoto(String photo) =>
+    photo.startsWith('https://') || photo.startsWith(firestorePhotoScheme);
 
 class Place {
   Place({
