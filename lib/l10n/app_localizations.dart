@@ -1845,6 +1845,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sent'**
   String get postSent;
+
+  /// No description provided for @filterPlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter'**
+  String get filterPlaces;
 }
 
 class _AppLocalizationsDelegate

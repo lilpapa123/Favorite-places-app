@@ -14,6 +14,7 @@ class SearchField extends StatelessWidget {
     this.shadow = false,
     this.autofocus = false,
     this.height = 48,
+    this.trailing,
   });
 
   final TextEditingController controller;
@@ -23,6 +24,9 @@ class SearchField extends StatelessWidget {
   final bool shadow;
   final bool autofocus;
   final double height;
+
+  /// After the clear button, e.g. a filter button.
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -64,17 +68,14 @@ class SearchField extends StatelessWidget {
                 ? const SizedBox(width: 14)
                 : IconButton(
                     tooltip: context.l10n.clearSearch,
-                    icon: Icon(
-                      Icons.cancel,
-                      size: 18,
-                      color: AppColors.faint,
-                    ),
+                    icon: Icon(Icons.cancel, size: 18, color: AppColors.faint),
                     onPressed: () {
                       controller.clear();
                       onChanged?.call('');
                     },
                   ),
           ),
+          ?trailing,
         ],
       ),
     );

@@ -980,4 +980,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get postSent => 'Sent';
+
+  @override
+  String get filterPlaces => 'Filter';
 }

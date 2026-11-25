@@ -980,4 +980,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get postSent => 'تم الإرسال';
+
+  @override
+  String get filterPlaces => 'تصفية';
 }

@@ -45,11 +45,15 @@ class ChoicePill extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.background,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
+
+  /// When not selected; defaults to the surface color.
+  final Color? background;
 
   @override
   Widget build(BuildContext context) {
@@ -64,15 +68,20 @@ class ChoicePill extends StatelessWidget {
           curve: AppMotion.ease,
           height: 36,
           padding: const EdgeInsets.symmetric(horizontal: 18),
-          alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: selected ? AppColors.accent : AppColors.surface,
+            color: selected
+                ? AppColors.accent
+                : background ?? AppColors.surface,
             borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
-          child: Text(
-            label,
-            style: AppText.labelMedium(
-              color: selected ? AppColors.onAccent : AppColors.muted,
+          // As wide as the label, also where there is room to stretch.
+          child: Center(
+            widthFactor: 1,
+            child: Text(
+              label,
+              style: AppText.labelMedium(
+                color: selected ? AppColors.onAccent : AppColors.muted,
+              ),
             ),
           ),
         ),

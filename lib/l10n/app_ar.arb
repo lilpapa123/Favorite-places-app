@@ -290,5 +290,6 @@
   "removeMemberConfirm": "إزالة {name} من المجموعة؟",
   "sendTo": "إرسال إلى",
   "send": "إرسال",
-  "postSent": "تم الإرسال"
+  "postSent": "تم الإرسال",
+  "filterPlaces": "تصفية"
 }

@@ -983,4 +983,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get postSent => 'Gönderildi';
+
+  @override
+  String get filterPlaces => 'Filtrele';
 }
