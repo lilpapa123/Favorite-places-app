@@ -573,6 +573,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           _Bubble(
                             message: m,
                             mine: m.uid == me,
+                            color: chat.isGroup && m.uid != me
+                                ? memberColor(m.uid)
+                                : null,
                             // In a group, who wrote it, above the first of
                             // their messages in a row.
                             showName:
@@ -626,15 +629,37 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 }
 
+/// Bubble colors for other people in a group: deep enough for white text,
+/// none close to the app's orange, which marks your own messages.
+const _memberColors = [
+  Color(0xFF3B6FB6), // blue
+  Color(0xFF2E8B6E), // green
+  Color(0xFF8A4FBF), // purple
+  Color(0xFFC0447A), // pink
+  Color(0xFF1F8A9E), // teal
+  Color(0xFF6B7A2E), // olive
+  Color(0xFF5A5FCF), // indigo
+  Color(0xFFA0522D), // brown
+];
+
+/// The same color for [uid] every time, on every phone.
+Color memberColor(String uid) =>
+    _memberColors[uid.codeUnits.fold(0, (h, c) => (h * 31 + c) & 0x7fffffff) %
+        _memberColors.length];
+
 class _Bubble extends ConsumerWidget {
   const _Bubble({
     required this.message,
     required this.mine,
+    this.color,
     this.showName = false,
   });
 
   final ChatMessage message;
   final bool mine;
+
+  /// The writer's own color in a group, with white text.
+  final Color? color;
   final bool showName;
 
   @override
@@ -660,7 +685,10 @@ class _Bubble extends ConsumerWidget {
                   top: AppSpace.xs,
                   bottom: 2,
                 ),
-                child: Text(name, style: AppText.meta().copyWith(fontSize: 12)),
+                child: Text(
+                  name,
+                  style: AppText.meta(color: color).copyWith(fontSize: 12),
+                ),
               ),
             Container(
               margin: const EdgeInsets.only(bottom: AppSpace.xs),
@@ -669,12 +697,14 @@ class _Bubble extends ConsumerWidget {
                 vertical: AppSpace.sm,
               ),
               decoration: BoxDecoration(
-                color: mine ? AppColors.accent : AppColors.surface,
+                color: mine ? AppColors.accent : color ?? AppColors.surface,
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Text(
                 message.text,
-                style: AppText.body(color: mine ? AppColors.onAccent : null),
+                style: AppText.body(
+                  color: mine || color != null ? Colors.white : null,
+                ),
               ),
             ),
           ],

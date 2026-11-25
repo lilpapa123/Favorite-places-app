@@ -219,4 +219,62 @@ void main() {
     expect(find.byTooltip('Remove'), findsNothing);
     expect(find.byIcon(Icons.photo_camera_rounded), findsNothing);
   });
+
+  testWidgets('Group chat: each person has their own bubble color', (
+    tester,
+  ) async {
+    const chat = Chat(
+      id: 'group3',
+      members: ['me', 'sample-lina', 'sample-mert'],
+      name: 'Trip',
+    );
+    final now = DateTime.now();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authStateProvider.overrideWith((ref) => Stream<User?>.value(_User())),
+          chatProvider(chat).overrideWith((ref) => Stream.value(chat)),
+          messagesProvider(chat).overrideWith(
+            (ref) => Stream.value([
+              ChatMessage(
+                uid: 'sample-lina',
+                text: 'From Lina',
+                createdAt: now,
+              ),
+              ChatMessage(
+                uid: 'sample-mert',
+                text: 'From Mert',
+                createdAt: now,
+              ),
+              ChatMessage(uid: 'me', text: 'From me', createdAt: now),
+            ]),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.data(Brightness.light),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const ChatScreen(chat: chat),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    Color? bubble(String text) =>
+        (tester
+                    .widget<Container>(
+                      find
+                          .ancestor(
+                            of: find.text(text),
+                            matching: find.byType(Container),
+                          )
+                          .first,
+                    )
+                    .decoration!
+                as BoxDecoration)
+            .color;
+    expect(bubble('From Lina'), memberColor('sample-lina'));
+    expect(bubble('From Mert'), memberColor('sample-mert'));
+    expect(memberColor('sample-lina'), isNot(memberColor('sample-mert')));
+    expect(bubble('From me'), AppColors.accent);
+  });
 }
