@@ -80,33 +80,68 @@ final myProfileProvider = Provider<AsyncValue<UserProfile?>>((ref) {
   return uid == null ? const AsyncData(null) : ref.watch(profileProvider(uid));
 });
 
+/// Sample people followed during this run; they exist only on this phone.
+class _SampleFollows extends Notifier<Set<String>> {
+  @override
+  Set<String> build() => const {};
+
+  void toggle(String uid) =>
+      state = state.contains(uid) ? ({...state}..remove(uid)) : {...state, uid};
+}
+
+final _sampleFollowsProvider = NotifierProvider<_SampleFollows, Set<String>>(
+  _SampleFollows.new,
+);
+
 /// Uids the signed-in user follows.
 final followingIdsProvider = StreamProvider<Set<String>>((ref) {
   final uid = ref.watch(_myUid);
   if (uid == null) {
     return Stream.value(const {});
   }
+  final samples = ref.watch(_sampleFollowsProvider);
   return ref
       .watch(firestoreProvider)
       .collection('users/$uid/following')
       .snapshots()
-      .map((snap) => {for (final doc in snap.docs) doc.id});
+      .map((snap) => {for (final doc in snap.docs) doc.id, ...samples});
 });
+
+/// Follows [other], or unfollows when [following].
+Future<void> toggleFollow(
+  WidgetRef ref, {
+  required String me,
+  required String other,
+  required bool following,
+}) async {
+  if (isSampleUid(other)) {
+    ref.read(_sampleFollowsProvider.notifier).toggle(other);
+    return;
+  }
+  final social = ref.read(socialProvider);
+  await (following ? social.unfollow(me, other) : social.follow(me, other));
+}
 
 /// (followers, following) for [uid], counted by the server.
 final followCountsProvider = FutureProvider.autoDispose
     .family<(int, int), String>((ref, uid) async {
       if (isSampleUid(uid)) {
-        return sampleFollowCounts(uid);
+        final (followers, following) = sampleFollowCounts(uid);
+        final followedByMe = ref.watch(_sampleFollowsProvider).contains(uid);
+        return (followers + (followedByMe ? 1 : 0), following);
       }
       final db = ref.watch(firestoreProvider);
       // Recount whenever the signed-in user follows or unfollows someone.
       ref.watch(followingIdsProvider);
+      // Sample people I follow live on this phone, not in Firestore.
+      final samples = uid == ref.watch(_myUid)
+          ? ref.watch(_sampleFollowsProvider).length
+          : 0;
       final results = await Future.wait([
         db.collection('users/$uid/followers').count().get(),
         db.collection('users/$uid/following').count().get(),
       ]);
-      return (results[0].count ?? 0, results[1].count ?? 0);
+      return (results[0].count ?? 0, (results[1].count ?? 0) + samples);
     });
 
 /// People in [uid]'s followers (or following) list.
@@ -120,7 +155,11 @@ final followListProvider = FutureProvider.autoDispose
       final docs = await Future.wait([
         for (final doc in snap.docs) db.doc('users/${doc.id}').get(),
       ]);
+      final samples = !followers && uid == ref.watch(_myUid)
+          ? ref.watch(_sampleFollowsProvider)
+          : const <String>{};
       return [
+        for (final id in samples) ?sampleProfile(id),
         for (final doc in docs)
           if (doc.exists) UserProfile.fromDoc(doc),
       ];
@@ -138,9 +177,14 @@ final placesOfUserProvider = StreamProvider.family<List<Place>, String>(
 
 /// Newest places from the people the signed-in user follows, with the owner.
 final feedProvider = StreamProvider<List<(String, Place)>>((ref) {
-  final ids = ref.watch(followingIdsProvider).value ?? const {};
+  final all = ref.watch(followingIdsProvider).value ?? const {};
+  final samples = [
+    for (final post in samplePosts())
+      if (all.contains(post.$1)) post,
+  ];
+  final ids = all.where((id) => !isSampleUid(id));
   if (ids.isEmpty) {
-    return Stream.value(const []);
+    return Stream.value(samples);
   }
   // shortcut: Firestore's whereIn takes at most 30 values, so only the first
   // 30 people followed appear; split into several queries beyond that.
@@ -158,7 +202,8 @@ final feedProvider = StreamProvider<List<(String, Place)>>((ref) {
               doc.data()['ownerUid'] as String,
               Place.fromFirestore(doc.id, doc.data()),
             ),
-        ],
+          ...samples,
+        ]..sort((a, b) => b.$2.createdAt.compareTo(a.$2.createdAt)),
       );
 });
 

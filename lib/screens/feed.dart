@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/providers/auth_provider.dart';
 import 'package:favorite_places/providers/social_provider.dart';
+import 'package:favorite_places/screens/chat.dart';
 import 'package:favorite_places/screens/profile.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
@@ -11,6 +12,7 @@ import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:favorite_places/widgets/place_card.dart';
 import 'package:favorite_places/widgets/search_field.dart';
 import 'package:favorite_places/widgets/social_widgets.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -57,10 +59,24 @@ class FeedScreen extends ConsumerWidget {
               title: l10n.tabFeed,
               subtitle: l10n.feedSubtitle,
               trailing: signedIn
-                  ? CircleIconButton(
-                      icon: const AppIcon('search'),
-                      semanticLabel: l10n.findPeople,
-                      onPressed: () => _openSearch(context),
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircleIconButton(
+                          icon: Icon(
+                            CupertinoIcons.chat_bubble_2,
+                            color: AppColors.ink,
+                          ),
+                          semanticLabel: l10n.messagesTitle,
+                          onPressed: () => openInbox(context),
+                        ),
+                        const SizedBox(width: AppSpace.sm),
+                        CircleIconButton(
+                          icon: const AppIcon('search'),
+                          semanticLabel: l10n.findPeople,
+                          onPressed: () => _openSearch(context),
+                        ),
+                      ],
                     )
                   : null,
             ),

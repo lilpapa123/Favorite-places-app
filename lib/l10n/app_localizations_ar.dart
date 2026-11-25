@@ -906,4 +906,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get shareToApps => 'مشاركة عبر تطبيقات أخرى';
+
+  @override
+  String get message => 'مراسلة';
+
+  @override
+  String get messagesTitle => 'الرسائل';
+
+  @override
+  String get noMessagesYet => 'لا توجد رسائل بعد';
+
+  @override
+  String get writeMessage => 'اكتب رسالة…';
 }

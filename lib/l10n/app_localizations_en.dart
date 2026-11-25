@@ -906,4 +906,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareToApps => 'Share to other apps';
+
+  @override
+  String get message => 'Message';
+
+  @override
+  String get messagesTitle => 'Messages';
+
+  @override
+  String get noMessagesYet => 'No messages yet';
+
+  @override
+  String get writeMessage => 'Message…';
 }

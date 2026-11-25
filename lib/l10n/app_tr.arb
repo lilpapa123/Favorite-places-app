@@ -268,5 +268,9 @@
   "share": "Paylaş",
   "copyLink": "Bağlantıyı kopyala",
   "linkCopied": "Bağlantı kopyalandı",
-  "shareToApps": "Diğer uygulamalarla paylaş"
+  "shareToApps": "Diğer uygulamalarla paylaş",
+  "message": "Mesaj",
+  "messagesTitle": "Mesajlar",
+  "noMessagesYet": "Henüz mesaj yok",
+  "writeMessage": "Mesaj yaz…"
 }

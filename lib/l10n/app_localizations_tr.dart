@@ -909,4 +909,16 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get shareToApps => 'Diğer uygulamalarla paylaş';
+
+  @override
+  String get message => 'Mesaj';
+
+  @override
+  String get messagesTitle => 'Mesajlar';
+
+  @override
+  String get noMessagesYet => 'Henüz mesaj yok';
+
+  @override
+  String get writeMessage => 'Mesaj yaz…';
 }

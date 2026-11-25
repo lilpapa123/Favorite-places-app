@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:favorite_places/data/sample_posts.dart';
 import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/providers/auth_provider.dart';
 import 'package:favorite_places/providers/social_provider.dart';
@@ -75,12 +74,7 @@ class _FollowButtonState extends ConsumerState<FollowButton> {
     final messenger = ScaffoldMessenger.of(context);
     setState(() => _busy = true);
     try {
-      final social = ref.read(socialProvider);
-      if (following) {
-        await social.unfollow(me, widget.uid);
-      } else {
-        await social.follow(me, widget.uid);
-      }
+      await toggleFollow(ref, me: me, other: widget.uid, following: following);
     } catch (_) {
       messenger.showSnackBar(SnackBar(content: Text(l10n.somethingWentWrong)));
     } finally {
@@ -93,9 +87,7 @@ class _FollowButtonState extends ConsumerState<FollowButton> {
   @override
   Widget build(BuildContext context) {
     final me = ref.watch(authStateProvider).value?.uid;
-    // Sample people exist only on this phone: following them would write
-    // to Firestore.
-    if (me == null || me == widget.uid || isSampleUid(widget.uid)) {
+    if (me == null || me == widget.uid) {
       return const SizedBox.shrink();
     }
     final following =

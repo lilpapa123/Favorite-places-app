@@ -1713,6 +1713,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share to other apps'**
   String get shareToApps;
+
+  /// No description provided for @message.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get message;
+
+  /// No description provided for @messagesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages'**
+  String get messagesTitle;
+
+  /// No description provided for @noMessagesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet'**
+  String get noMessagesYet;
+
+  /// No description provided for @writeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Message…'**
+  String get writeMessage;
 }
 
 class _AppLocalizationsDelegate

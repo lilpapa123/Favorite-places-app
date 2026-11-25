@@ -268,5 +268,9 @@
   "share": "مشاركة",
   "copyLink": "نسخ الرابط",
   "linkCopied": "تم نسخ الرابط",
-  "shareToApps": "مشاركة عبر تطبيقات أخرى"
+  "shareToApps": "مشاركة عبر تطبيقات أخرى",
+  "message": "مراسلة",
+  "messagesTitle": "الرسائل",
+  "noMessagesYet": "لا توجد رسائل بعد",
+  "writeMessage": "اكتب رسالة…"
 }

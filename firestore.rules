@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// Favorite Places: profiles, usernames, follows and shared places.
+// Favorite Places: profiles, usernames, follows, shared places and chats.
 // Review against the project's current rules before deploying: deploying
 // replaces ALL Firestore rules in the project.
 service cloud.firestore {
@@ -110,6 +110,37 @@ service cloud.firestore {
           && exists(/databases/$(database)/documents/places/$(placeId));
         allow update: if false;
         allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      }
+    }
+
+    // A chat between two people. Its id is their uids, sorted, joined by
+    // '_', so only those two can open it. The app allows 1000 visible
+    // characters per message, 15 UTF-16 units per emoji.
+    match /chats/{chatId} {
+      allow get: if signedIn() && request.auth.uid in chatId.split('_');
+      allow list: if signedIn() && request.auth.uid in resource.data.members;
+      allow create, update: if signedIn()
+        && request.auth.uid in chatId.split('_')
+        && request.resource.data.keys().hasOnly(['members', 'lastText', 'lastAt'])
+        && request.resource.data.members == chatId.split('_')
+        && request.resource.data.members.size() == 2
+        && request.resource.data.members[0] != request.resource.data.members[1]
+        && request.resource.data.lastText is string
+        && request.resource.data.lastText.size() <= 15000
+        && request.resource.data.lastAt == request.time;
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if signedIn() && request.auth.uid in chatId.split('_');
+        allow create: if signedIn()
+          && request.auth.uid in chatId.split('_')
+          && request.resource.data.keys().hasOnly(['uid', 'text', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 15000
+          && request.resource.data.createdAt == request.time;
+        allow update, delete: if false;
       }
     }
   }

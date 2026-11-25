@@ -1,7 +1,9 @@
 import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/models/badges.dart';
 import 'package:favorite_places/models/place.dart';
+import 'package:favorite_places/providers/auth_provider.dart';
 import 'package:favorite_places/providers/social_provider.dart';
+import 'package:favorite_places/screens/chat.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
 import 'package:favorite_places/widgets/badge_widgets.dart';
@@ -18,7 +20,8 @@ void openProfile(BuildContext context, String uid) {
       .push(MaterialPageRoute<void>(builder: (ctx) => ProfileScreen(uid: uid)));
 }
 
-/// Someone's profile: who they are, their counts, Follow, and their places.
+/// Someone's profile: who they are, their counts, Follow and Message, and
+/// their places.
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key, required this.uid});
 
@@ -29,6 +32,7 @@ class ProfileScreen extends ConsumerWidget {
     final profile = ref.watch(profileProvider(uid)).value;
     final places = ref.watch(placesOfUserProvider(uid)).value ?? const [];
     final name = profile?.name ?? '';
+    final me = ref.watch(authStateProvider).value?.uid;
 
     return Scaffold(
       body: SafeArea(
@@ -85,7 +89,21 @@ class ProfileScreen extends ConsumerWidget {
                     EarnedBadgesRow(places: places, showNext: false),
                   ],
                   const SizedBox(height: AppSpace.lg),
-                  FollowButton(uid: uid),
+                  if (me != null && me != uid)
+                    Row(
+                      children: [
+                        Expanded(child: FollowButton(uid: uid)),
+                        const SizedBox(width: AppSpace.sm),
+                        Expanded(
+                          child: PillButton(
+                            label: context.l10n.message,
+                            variant: PillButtonVariant.soft,
+                            expanded: true,
+                            onPressed: () => openChat(context, uid),
+                          ),
+                        ),
+                      ],
+                    ),
                   const SizedBox(height: AppSpace.xxl),
                   if (places.isEmpty)
                     Center(
