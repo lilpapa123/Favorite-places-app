@@ -113,27 +113,77 @@ service cloud.firestore {
       }
     }
 
-    // A chat between two people. Its id is their uids, sorted, joined by
-    // '_', so only those two can open it. The app allows 1000 visible
-    // characters per message, 15 UTF-16 units per emoji.
+    // A chat between two people has the id of their uids, sorted, joined by
+    // '_', so only those two can open it. A group has a random id and 3 to 9
+    // members, fixed when it is made. The app allows 1000 visible characters
+    // per message and 50 per group name, 15 UTF-16 units per emoji.
     match /chats/{chatId} {
-      allow get: if signedIn() && request.auth.uid in chatId.split('_');
+      function direct() {
+        return chatId.split('_').size() == 2;
+      }
+
+      function chatPath() {
+        return /databases/$(database)/documents/chats/$(chatId);
+      }
+
+      function validChat(data) {
+        return data.keys().hasOnly(['members', 'lastText', 'lastAt', 'name', 'photo'])
+          && data.members is list
+          && data.lastText is string
+          && data.lastText.size() <= 15000
+          && data.lastAt == request.time
+          && (!('name' in data) || (data.name is string && data.name.size() <= 750))
+          && (!('photo' in data) || (data.photo is bytes && data.photo.size() <= 102400));
+      }
+
+      function validDirect(data) {
+        return direct()
+          && request.auth.uid in chatId.split('_')
+          && data.members == chatId.split('_')
+          && data.members[0] != data.members[1]
+          && !('name' in data);
+      }
+
+      allow get: if signedIn()
+        && ((direct() && request.auth.uid in chatId.split('_'))
+          || request.auth.uid in resource.data.members);
       allow list: if signedIn() && request.auth.uid in resource.data.members;
-      allow create, update: if signedIn()
-        && request.auth.uid in chatId.split('_')
-        && request.resource.data.keys().hasOnly(['members', 'lastText', 'lastAt'])
-        && request.resource.data.members == chatId.split('_')
-        && request.resource.data.members.size() == 2
-        && request.resource.data.members[0] != request.resource.data.members[1]
-        && request.resource.data.lastText is string
-        && request.resource.data.lastText.size() <= 15000
-        && request.resource.data.lastAt == request.time;
+      allow create: if signedIn()
+        && validChat(request.resource.data)
+        && (validDirect(request.resource.data)
+          || (!direct()
+            && request.auth.uid in request.resource.data.members
+            && request.resource.data.members.size() >= 3
+            && request.resource.data.members.size() <= 9
+            && request.resource.data.members.toSet().size() == request.resource.data.members.size()));
+      // A two-person chat changes with each message. A group's members
+      // stay fixed: a message changes the last message, and any member may
+      // change the name and photo.
+      allow update: if signedIn()
+        && ((validChat(request.resource.data)
+            && validDirect(request.resource.data))
+          || (!direct()
+            && request.auth.uid in resource.data.members
+            && request.resource.data.members == resource.data.members
+            && ((validChat(request.resource.data)
+                && request.resource.data.diff(resource.data).affectedKeys()
+                  .hasOnly(['lastText', 'lastAt']))
+              || (request.resource.data.diff(resource.data).affectedKeys()
+                  .hasOnly(['name', 'photo'])
+                && request.resource.data.get('name', '') is string
+                && request.resource.data.get('name', '').size() <= 750
+                && (!('photo' in request.resource.data)
+                  || (request.resource.data.photo is bytes
+                    && request.resource.data.photo.size() <= 102400))))));
       allow delete: if false;
 
       match /messages/{messageId} {
-        allow read: if signedIn() && request.auth.uid in chatId.split('_');
+        allow read: if signedIn()
+          && ((direct() && request.auth.uid in chatId.split('_'))
+            || request.auth.uid in get(chatPath()).data.members);
         allow create: if signedIn()
-          && request.auth.uid in chatId.split('_')
+          && ((direct() && request.auth.uid in chatId.split('_'))
+            || request.auth.uid in getAfter(chatPath()).data.members)
           && request.resource.data.keys().hasOnly(['uid', 'text', 'createdAt'])
           && request.resource.data.uid == request.auth.uid
           && request.resource.data.text is string

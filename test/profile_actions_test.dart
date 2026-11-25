@@ -1,7 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:favorite_places/l10n/app_localizations.dart';
 import 'package:favorite_places/providers/auth_provider.dart';
+import 'package:favorite_places/providers/chat_provider.dart';
 import 'package:favorite_places/providers/user_palces.dart';
+import 'package:favorite_places/data/sample_posts.dart';
+import 'package:favorite_places/providers/social_provider.dart';
+import 'package:favorite_places/screens/chat.dart';
 import 'package:favorite_places/screens/profile.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -86,5 +90,89 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Back'));
     await tester.pumpAndSettle();
     expect(find.text('946'), findsOneWidget);
+  });
+
+  testWidgets('New message: people you follow, and groups up to 9', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authStateProvider.overrideWith((ref) => Stream<User?>.value(_User())),
+          firestoreProvider.overrideWithValue(_Db()),
+          followListProvider(('me', false))
+              .overrideWith((ref) async => sampleProfiles),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.data(Brightness.light),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const NewMessageScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('PEOPLE YOU FOLLOW'), findsOneWidget);
+
+    await tester.tap(find.text('New group'));
+    await tester.pumpAndSettle();
+    final create = find.textContaining('Create group');
+    expect(create, findsOneWidget);
+    expect(find.text('Create group · 1/9'), findsOneWidget);
+
+    // You and 8 more fill the group; the 9th pick is refused.
+    for (final p in sampleProfiles.take(9)) {
+      await tester.tap(find.text(p.name).last);
+      await tester.pump();
+    }
+    await tester.pumpAndSettle();
+    expect(find.text('Create group · 9/9'), findsOneWidget);
+    expect(find.text('Up to 9 people, you included.'), findsWidgets);
+  });
+
+  testWidgets('Group details: photo, name, members, rename', (tester) async {
+    tester.view.physicalSize = const Size(400, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    const chat = Chat(
+      id: 'group1',
+      members: ['me', 'sample-lina', 'sample-mert'],
+      name: 'Weekend trip',
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authStateProvider.overrideWith((ref) => Stream<User?>.value(_User())),
+          chatProvider(chat).overrideWith((ref) => Stream.value(chat)),
+          profileProvider('me').overrideWith(
+            (ref) => Stream.value(
+              const UserProfile(uid: 'me', username: 'me', displayName: 'Me'),
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.data(Brightness.light),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const GroupDetailsScreen(chat: chat),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Weekend trip'), findsOneWidget);
+    expect(find.text('3 MEMBERS'), findsOneWidget);
+    expect(find.text('Lina Haddad'), findsOneWidget);
+    expect(find.text('Mert Yılmaz'), findsOneWidget);
+    expect(find.bySemanticsLabel('Group photo'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Edit group name'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(TextField, 'Weekend trip'), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
   });
 }

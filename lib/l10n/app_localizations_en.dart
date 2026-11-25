@@ -918,4 +918,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get writeMessage => 'Message…';
+
+  @override
+  String get newMessage => 'New message';
+
+  @override
+  String get newGroup => 'New group';
+
+  @override
+  String get groupNameHint => 'Group name (optional)';
+
+  @override
+  String get createGroup => 'Create group';
+
+  @override
+  String groupCount(int count, int max) {
+    return '$count/$max';
+  }
+
+  @override
+  String get peopleYouFollow => 'People you follow';
+
+  @override
+  String groupLimit(int max) {
+    return 'Up to $max people, you included.';
+  }
+
+  @override
+  String get signInToMessage => 'Sign in to message people.';
+
+  @override
+  String get groupPhoto => 'Group photo';
+
+  @override
+  String get editGroupName => 'Edit group name';
+
+  @override
+  String groupMembers(int count) {
+    return '$count members';
+  }
+
+  @override
+  String get cancel => 'Cancel';
 }

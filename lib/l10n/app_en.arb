@@ -425,5 +425,41 @@
   "message": "Message",
   "messagesTitle": "Messages",
   "noMessagesYet": "No messages yet",
-  "writeMessage": "Message…"
+  "writeMessage": "Message…",
+  "newMessage": "New message",
+  "newGroup": "New group",
+  "groupNameHint": "Group name (optional)",
+  "createGroup": "Create group",
+  "groupCount": "{count}/{max}",
+  "peopleYouFollow": "People you follow",
+  "groupLimit": "Up to {max} people, you included.",
+  "signInToMessage": "Sign in to message people.",
+  "@groupCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@groupLimit": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "groupPhoto": "Group photo",
+  "editGroupName": "Edit group name",
+  "groupMembers": "{count} members",
+  "cancel": "Cancel",
+  "@groupMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

@@ -175,38 +175,6 @@ final placesOfUserProvider = StreamProvider.family<List<Place>, String>(
       : placesOf(ref.watch(firestoreProvider), uid),
 );
 
-/// Newest places from the people the signed-in user follows, with the owner.
-final feedProvider = StreamProvider<List<(String, Place)>>((ref) {
-  final all = ref.watch(followingIdsProvider).value ?? const {};
-  final samples = [
-    for (final post in samplePosts())
-      if (all.contains(post.$1)) post,
-  ];
-  final ids = all.where((id) => !isSampleUid(id));
-  if (ids.isEmpty) {
-    return Stream.value(samples);
-  }
-  // shortcut: Firestore's whereIn takes at most 30 values, so only the first
-  // 30 people followed appear; split into several queries beyond that.
-  return ref
-      .watch(firestoreProvider)
-      .collection('places')
-      .where('ownerUid', whereIn: ids.take(30).toList())
-      .orderBy('createdAt', descending: true)
-      .limit(100)
-      .snapshots()
-      .map(
-        (snap) => [
-          for (final doc in snap.docs)
-            (
-              doc.data()['ownerUid'] as String,
-              Place.fromFirestore(doc.id, doc.data()),
-            ),
-          ...samples,
-        ]..sort((a, b) => b.$2.createdAt.compareTo(a.$2.createdAt)),
-      );
-});
-
 /// Newest places shared by everyone except the signed-in user, with the
 /// owner. Signed out it has only the sample posts (the rules only let
 /// signed-in users read), which debug and profile builds add at the end.

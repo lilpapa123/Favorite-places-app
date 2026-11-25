@@ -921,4 +921,46 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get writeMessage => 'Mesaj yaz…';
+
+  @override
+  String get newMessage => 'Yeni mesaj';
+
+  @override
+  String get newGroup => 'Yeni grup';
+
+  @override
+  String get groupNameHint => 'Grup adı (isteğe bağlı)';
+
+  @override
+  String get createGroup => 'Grup oluştur';
+
+  @override
+  String groupCount(int count, int max) {
+    return '$count/$max';
+  }
+
+  @override
+  String get peopleYouFollow => 'Takip ettiklerin';
+
+  @override
+  String groupLimit(int max) {
+    return 'Sen dahil en fazla $max kişi.';
+  }
+
+  @override
+  String get signInToMessage => 'Mesajlaşmak için giriş yap.';
+
+  @override
+  String get groupPhoto => 'Grup fotoğrafı';
+
+  @override
+  String get editGroupName => 'Grup adını düzenle';
+
+  @override
+  String groupMembers(int count) {
+    return '$count üye';
+  }
+
+  @override
+  String get cancel => 'Vazgeç';
 }

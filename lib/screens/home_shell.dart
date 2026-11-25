@@ -3,7 +3,7 @@ import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/screens/account.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/screens/add_place.dart';
-import 'package:favorite_places/screens/feed.dart';
+import 'package:favorite_places/screens/chat.dart';
 import 'package:favorite_places/screens/discover.dart';
 import 'package:favorite_places/screens/places_map.dart';
 import 'package:favorite_places/widgets/glass_tab_bar.dart';
@@ -32,7 +32,7 @@ class _HomeShellState extends State<HomeShell> {
   List<GlassTab> get _tabs => [
     GlassTab(label: context.l10n.tabDiscover, icon: 'tab_heart'),
     GlassTab(label: context.l10n.tabMap, icon: 'tab_map'),
-    GlassTab(label: context.l10n.tabFeed, icon: 'tab_people'),
+    GlassTab(label: context.l10n.messagesTitle, icon: 'tab_chat'),
     GlassTab(label: context.l10n.tabAccount, icon: 'tab_person'),
   ];
 
@@ -198,7 +198,7 @@ class _HomeShellState extends State<HomeShell> {
       case 1:
         return const PlacesMapScreen();
       case 2:
-        return const FeedScreen();
+        return const MessagesScreen();
       default:
         return const AccountScreen();
     }

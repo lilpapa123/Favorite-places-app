@@ -20,7 +20,46 @@ Future<void> changeProfilePhoto(
   final messenger = ScaffoldMessenger.of(context);
   final container = ProviderScope.containerOf(context, listen: false);
   final store = container.read(profilePhotoStoreProvider);
-  final choice = await showModalBottomSheet<String>(
+  final choice = await askPhotoSource(
+    context,
+    title: l10n.profilePhoto,
+    hasPhoto: hasPhoto,
+  );
+  if (choice == null) {
+    return;
+  }
+  try {
+    if (choice == 'remove') {
+      await store.remove(uid);
+    } else {
+      final picked = await ImagePicker().pickImage(
+        source: choice == 'camera' ? ImageSource.camera : ImageSource.gallery,
+        maxWidth: 600,
+        imageQuality: 85,
+        preferredCameraDevice: CameraDevice.front,
+      );
+      if (picked == null) {
+        return;
+      }
+      await store.save(uid, File(picked.path));
+    }
+    container.invalidate(profilePhotoProvider(uid));
+  } on PlatformException catch (error) {
+    messenger.showSnackBar(
+      SnackBar(content: Text(photoErrorMessage(l10n, error))),
+    );
+  }
+}
+
+/// 'camera', 'gallery' or 'remove' (only offered with [hasPhoto]); null when
+/// dismissed.
+Future<String?> askPhotoSource(
+  BuildContext context, {
+  required String title,
+  required bool hasPhoto,
+}) {
+  final l10n = context.l10n;
+  return showModalBottomSheet<String>(
     context: context,
     useRootNavigator: true,
     builder: (ctx) => SafeArea(
@@ -35,7 +74,7 @@ Future<void> changeProfilePhoto(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(l10n.profilePhoto, style: AppText.title()),
+            Text(title, style: AppText.title()),
             const SizedBox(height: AppSpace.sm),
             ListTile(
               contentPadding: EdgeInsets.zero,
@@ -70,28 +109,4 @@ Future<void> changeProfilePhoto(
       ),
     ),
   );
-  if (choice == null) {
-    return;
-  }
-  try {
-    if (choice == 'remove') {
-      await store.remove(uid);
-    } else {
-      final picked = await ImagePicker().pickImage(
-        source: choice == 'camera' ? ImageSource.camera : ImageSource.gallery,
-        maxWidth: 600,
-        imageQuality: 85,
-        preferredCameraDevice: CameraDevice.front,
-      );
-      if (picked == null) {
-        return;
-      }
-      await store.save(uid, File(picked.path));
-    }
-    container.invalidate(profilePhotoProvider(uid));
-  } on PlatformException catch (error) {
-    messenger.showSnackBar(
-      SnackBar(content: Text(photoErrorMessage(l10n, error))),
-    );
-  }
 }

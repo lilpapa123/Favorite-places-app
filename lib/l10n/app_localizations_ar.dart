@@ -918,4 +918,46 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get writeMessage => 'اكتب رسالة…';
+
+  @override
+  String get newMessage => 'رسالة جديدة';
+
+  @override
+  String get newGroup => 'مجموعة جديدة';
+
+  @override
+  String get groupNameHint => 'اسم المجموعة (اختياري)';
+
+  @override
+  String get createGroup => 'إنشاء مجموعة';
+
+  @override
+  String groupCount(int count, int max) {
+    return '$count/$max';
+  }
+
+  @override
+  String get peopleYouFollow => 'أشخاص تتابعهم';
+
+  @override
+  String groupLimit(int max) {
+    return 'حتى $max أشخاص، وأنت منهم.';
+  }
+
+  @override
+  String get signInToMessage => 'سجّل الدخول لمراسلة الآخرين.';
+
+  @override
+  String get groupPhoto => 'صورة المجموعة';
+
+  @override
+  String get editGroupName => 'تعديل اسم المجموعة';
+
+  @override
+  String groupMembers(int count) {
+    return '$count أعضاء';
+  }
+
+  @override
+  String get cancel => 'إلغاء';
 }

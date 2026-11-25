@@ -272,5 +272,17 @@
   "message": "مراسلة",
   "messagesTitle": "الرسائل",
   "noMessagesYet": "لا توجد رسائل بعد",
-  "writeMessage": "اكتب رسالة…"
+  "writeMessage": "اكتب رسالة…",
+  "newMessage": "رسالة جديدة",
+  "newGroup": "مجموعة جديدة",
+  "groupNameHint": "اسم المجموعة (اختياري)",
+  "createGroup": "إنشاء مجموعة",
+  "groupCount": "{count}/{max}",
+  "peopleYouFollow": "أشخاص تتابعهم",
+  "groupLimit": "حتى {max} أشخاص، وأنت منهم.",
+  "signInToMessage": "سجّل الدخول لمراسلة الآخرين.",
+  "groupPhoto": "صورة المجموعة",
+  "editGroupName": "تعديل اسم المجموعة",
+  "groupMembers": "{count} أعضاء",
+  "cancel": "إلغاء"
 }

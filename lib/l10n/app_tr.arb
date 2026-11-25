@@ -272,5 +272,17 @@
   "message": "Mesaj",
   "messagesTitle": "Mesajlar",
   "noMessagesYet": "Henüz mesaj yok",
-  "writeMessage": "Mesaj yaz…"
+  "writeMessage": "Mesaj yaz…",
+  "newMessage": "Yeni mesaj",
+  "newGroup": "Yeni grup",
+  "groupNameHint": "Grup adı (isteğe bağlı)",
+  "createGroup": "Grup oluştur",
+  "groupCount": "{count}/{max}",
+  "peopleYouFollow": "Takip ettiklerin",
+  "groupLimit": "Sen dahil en fazla {max} kişi.",
+  "signInToMessage": "Mesajlaşmak için giriş yap.",
+  "groupPhoto": "Grup fotoğrafı",
+  "editGroupName": "Grup adını düzenle",
+  "groupMembers": "{count} üye",
+  "cancel": "Vazgeç"
 }

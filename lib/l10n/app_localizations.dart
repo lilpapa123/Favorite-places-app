@@ -1737,6 +1737,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Message…'**
   String get writeMessage;
+
+  /// No description provided for @newMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'New message'**
+  String get newMessage;
+
+  /// No description provided for @newGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'New group'**
+  String get newGroup;
+
+  /// No description provided for @groupNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Group name (optional)'**
+  String get groupNameHint;
+
+  /// No description provided for @createGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Create group'**
+  String get createGroup;
+
+  /// No description provided for @groupCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}/{max}'**
+  String groupCount(int count, int max);
+
+  /// No description provided for @peopleYouFollow.
+  ///
+  /// In en, this message translates to:
+  /// **'People you follow'**
+  String get peopleYouFollow;
+
+  /// No description provided for @groupLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {max} people, you included.'**
+  String groupLimit(int max);
+
+  /// No description provided for @signInToMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to message people.'**
+  String get signInToMessage;
+
+  /// No description provided for @groupPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Group photo'**
+  String get groupPhoto;
+
+  /// No description provided for @editGroupName.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit group name'**
+  String get editGroupName;
+
+  /// No description provided for @groupMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} members'**
+  String groupMembers(int count);
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
 }
 
 class _AppLocalizationsDelegate
