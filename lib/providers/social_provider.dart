@@ -175,8 +175,7 @@ final placesOfUserProvider = StreamProvider.family<List<Place>, String>(
       : placesOf(ref.watch(firestoreProvider), uid),
 );
 
-/// Newest places shared by everyone except the signed-in user, with the
-/// owner. Signed out it has only the sample posts (the rules only let
+/// Newest places shared by everyone, your own included, with the owner. Signed out it has only the sample posts (the rules only let
 /// signed-in users read), which debug and profile builds add at the end.
 final discoverProvider = StreamProvider<List<(String, Place)>>((ref) {
   final me = ref.watch(_myUid);
@@ -195,7 +194,7 @@ final discoverProvider = StreamProvider<List<(String, Place)>>((ref) {
       .map(
         (snap) => [
           for (final doc in snap.docs)
-            if (doc.data()['ownerUid'] case final String owner when owner != me)
+            if (doc.data()['ownerUid'] case final String owner)
               (owner, Place.fromFirestore(doc.id, doc.data())),
           ...samples,
         ]..sort((a, b) => b.$2.createdAt.compareTo(a.$2.createdAt)),
