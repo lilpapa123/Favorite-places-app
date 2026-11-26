@@ -36,8 +36,15 @@ class CoverPostCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final area = place.location?.areaLabel;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpace.xxxl),
+    // A card 10 px in from the screen edges: the photo on top, the note
+    // underneath, all inside its rounded corners.
+    return Container(
+      margin: const EdgeInsets.fromLTRB(10, 0, 10, AppSpace.lg),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(24),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -144,7 +151,7 @@ class CoverPostCard extends StatelessWidget {
                 AppSpace.page,
                 AppSpace.lg,
                 AppSpace.page,
-                0,
+                AppSpace.lg,
               ),
               child: Container(
                 padding: const EdgeInsetsDirectional.only(start: AppSpace.md),
