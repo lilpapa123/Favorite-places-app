@@ -989,4 +989,91 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get splashTagline => 'Sevdiğin yerleri kaydet';
+
+  @override
+  String get factSaved => 'Kaydedildi';
+
+  @override
+  String get factPhotos => 'Fotoğraflar';
+
+  @override
+  String get factVisibleTo => 'Görenler';
+
+  @override
+  String get visibleToEveryone => 'Herkes';
+
+  @override
+  String get directions => 'Yol tarifi';
+
+  @override
+  String get pickSomeoneToSend => 'Göndereceğin kişiyi seç';
+
+  @override
+  String sendToName(String name) {
+    return '$name kişisine gönder';
+  }
+
+  @override
+  String sendToCount(int count) {
+    return '$count kişiye gönder';
+  }
+
+  @override
+  String byOwner(String name) {
+    return '$name paylaştı';
+  }
+
+  @override
+  String get settingsFooter => 'Gezmeyi sevenler için yapıldı.';
+
+  @override
+  String get languageAutoCode => 'Oto';
+
+  @override
+  String placesSavedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count yer kaydedildi',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get edit => 'Düzenle';
+
+  @override
+  String get secureStep => 'Güvenli adım';
+
+  @override
+  String get checkYourMessages => 'Mesajlarını kontrol et';
+
+  @override
+  String weSentCodeTo(String number) {
+    return '$number numarasına 6 haneli bir kod gönderdik.';
+  }
+
+  @override
+  String get change => 'Değiştir';
+
+  @override
+  String get enterAll6Digits => '6 haneyi gir';
+
+  @override
+  String get deleteDigit => 'Rakamı sil';
+
+  @override
+  String get messagesSubtitle => 'Takip ettiklerinle sohbetler.';
+
+  @override
+  String get chats => 'Sohbetler';
+
+  @override
+  String get today => 'Bugün';
+
+  @override
+  String get yesterday => 'Dün';
+
+  @override
+  String get phoneLanguage => 'Telefon';
 }

@@ -15,6 +15,7 @@ class PillButton extends StatefulWidget {
     this.leading,
     this.expanded = false,
     this.large = false,
+    this.glow = false,
   });
 
   final String label;
@@ -28,6 +29,9 @@ class PillButton extends StatefulWidget {
 
   /// 52 px tall instead of 44 — for the form's main "Save place" action.
   final bool large;
+
+  /// The design's main call to action: gradient green with a soft glow.
+  final bool glow;
 
   @override
   State<PillButton> createState() => _PillButtonState();
@@ -61,7 +65,9 @@ class _PillButtonState extends State<PillButton> {
         _enabled ? AppColors.accent : AppColors.accentDisabled,
       ),
       PillButtonVariant.soft => (
-        _pressed ? const Color(0xFFF6D6CE) : AppColors.accentSoft,
+        _pressed
+            ? Color.lerp(AppColors.accentSoft, AppColors.accent, 0.12)!
+            : AppColors.accentSoft,
         AppColors.accent,
         null,
       ),
@@ -90,10 +96,29 @@ class _PillButtonState extends State<PillButton> {
             padding: const EdgeInsets.symmetric(horizontal: AppSpace.xl),
             decoration: BoxDecoration(
               color: bg,
+              gradient: widget.glow && _enabled && !_pressed
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.accent,
+                        AppColors.isDark
+                            ? const Color(0xFF5FAE40)
+                            : const Color(0xFF4E9E33),
+                      ],
+                    )
+                  : null,
+              boxShadow: widget.glow && _enabled && !AppColors.isDark
+                  ? [
+                      BoxShadow(
+                        color: AppColors.accent.withValues(alpha: .3),
+                        blurRadius: 22,
+                        offset: const Offset(0, 10),
+                      ),
+                    ]
+                  : null,
               borderRadius: BorderRadius.circular(AppRadius.pill),
-              border: border == null
-                  ? null
-                  : Border.all(color: border),
+              border: border == null ? null : Border.all(color: border),
             ),
             child: Row(
               mainAxisSize: widget.expanded

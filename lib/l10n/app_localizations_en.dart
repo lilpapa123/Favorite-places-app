@@ -986,4 +986,92 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get splashTagline => 'Save the places you love';
+
+  @override
+  String get factSaved => 'Saved';
+
+  @override
+  String get factPhotos => 'Photos';
+
+  @override
+  String get factVisibleTo => 'Visible to';
+
+  @override
+  String get visibleToEveryone => 'Everyone';
+
+  @override
+  String get directions => 'Directions';
+
+  @override
+  String get pickSomeoneToSend => 'Pick someone to send to';
+
+  @override
+  String sendToName(String name) {
+    return 'Send to $name';
+  }
+
+  @override
+  String sendToCount(int count) {
+    return 'Send to $count people';
+  }
+
+  @override
+  String byOwner(String name) {
+    return 'by $name';
+  }
+
+  @override
+  String get settingsFooter => 'Made for people who wander.';
+
+  @override
+  String get languageAutoCode => 'Auto';
+
+  @override
+  String placesSavedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count places saved',
+      one: '1 place saved',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get secureStep => 'Secure step';
+
+  @override
+  String get checkYourMessages => 'Check your messages';
+
+  @override
+  String weSentCodeTo(String number) {
+    return 'We sent a 6-digit code to $number.';
+  }
+
+  @override
+  String get change => 'Change';
+
+  @override
+  String get enterAll6Digits => 'Enter all 6 digits';
+
+  @override
+  String get deleteDigit => 'Delete digit';
+
+  @override
+  String get messagesSubtitle => 'Chats with people you follow.';
+
+  @override
+  String get chats => 'Chats';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
+  String get phoneLanguage => 'Phone';
 }

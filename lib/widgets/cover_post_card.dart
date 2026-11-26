@@ -29,7 +29,8 @@ class CoverPostCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   /// Light coral: the accent is too dark to read on a photo.
-  static const Color _kickerOnPhoto = Color(0xFFFFB199);
+  /// The palette's light green, readable on the darkened photo.
+  static const Color _kickerOnPhoto = Color(0xFF76C457);
 
   @override
   Widget build(BuildContext context) {

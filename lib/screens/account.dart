@@ -15,6 +15,7 @@ import 'package:favorite_places/widgets/profile_photo_picker.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
 import 'package:favorite_places/widgets/app_text_field.dart';
+import 'package:favorite_places/widgets/golden_hour.dart';
 import 'package:favorite_places/widgets/page_header.dart';
 import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -51,23 +52,26 @@ class AccountScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: authState.when(
-          loading: () =>
-              Center(child: CircularProgressIndicator(color: AppColors.accent)),
-          error: (error, _) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpace.page),
-              child: Text(
-                context.l10n.signInUnavailable('$error'),
-                textAlign: TextAlign.center,
-                style: AppText.meta(),
+      body: GoldenHour(
+        child: SafeArea(
+          bottom: false,
+          child: authState.when(
+            loading: () => Center(
+              child: CircularProgressIndicator(color: AppColors.accent),
+            ),
+            error: (error, _) => Center(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpace.page),
+                child: Text(
+                  context.l10n.signInUnavailable('$error'),
+                  textAlign: TextAlign.center,
+                  style: AppText.meta(),
+                ),
               ),
             ),
+            data: (user) =>
+                user == null ? const _SignInForm() : _Profile(user: user),
           ),
-          data: (user) =>
-              user == null ? const _SignInForm() : _Profile(user: user),
         ),
       ),
     );
@@ -215,9 +219,10 @@ class _SignInFormState extends ConsumerState<_SignInForm> {
             0,
           ),
           child: AutofillGroup(
-            // Fields sit straight on the gray page, like the add form.
-            child: Padding(
-              padding: EdgeInsets.zero,
+            // The form on a frosted card over the golden wash.
+            child: Container(
+              padding: const EdgeInsets.all(18),
+              decoration: GoldenHour.card(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -265,8 +270,10 @@ class _SignInFormState extends ConsumerState<_SignInForm> {
                         : (_isSignUp
                               ? context.l10n.createAccount
                               : context.l10n.signIn),
+                    icon: Icons.arrow_forward_rounded,
                     large: true,
                     expanded: true,
+                    glow: true,
                     onPressed: _isBusy ? null : _submit,
                   ),
                 ],
@@ -349,13 +356,10 @@ class _Profile extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Profile card.
+              // Profile card, frosted over the golden wash.
               Container(
                 padding: const EdgeInsets.all(AppSpace.lg),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: AppRadius.cardAll,
-                ),
+                decoration: GoldenHour.card(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -373,9 +377,29 @@ class _Profile extends ConsumerWidget {
                               uid: user.uid,
                               hasPhoto: localPhoto != null,
                             ),
-                            child: SizedBox(
+                            child: Container(
                               width: 72,
                               height: 72,
+                              // A cream ring inside a light-green one.
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF2A7C13)
+                                        .withValues(alpha: .3),
+                                    blurRadius: 24,
+                                    offset: const Offset(0, 12),
+                                  ),
+                                  const BoxShadow(
+                                    color: Color(0xFF76C457),
+                                    spreadRadius: 5,
+                                  ),
+                                  BoxShadow(
+                                    color: AppColors.surface,
+                                    spreadRadius: 3,
+                                  ),
+                                ],
+                              ),
                               child: Stack(
                                 clipBehavior: Clip.none,
                                 children: [
@@ -395,13 +419,22 @@ class _Profile extends ConsumerWidget {
                                               fit: BoxFit.cover,
                                             )
                                           : Container(
-                                              color: AppColors.accent,
+                                              decoration: const BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                  colors: [
+                                                    Color(0xFF2A7C13),
+                                                    Color(0xFF76C457),
+                                                  ],
+                                                ),
+                                              ),
                                               alignment: Alignment.center,
                                               child: Text(
                                                 shownName[0].toUpperCase(),
                                                 style: AppText.heading(
                                                   color: Colors.white,
-                                                ),
+                                                ).copyWith(fontSize: 28),
                                               ),
                                             ),
                                     ),
@@ -441,8 +474,18 @@ class _Profile extends ConsumerWidget {
                       const SizedBox(height: AppSpace.xs),
                       Text(bio, style: AppText.note()),
                     ],
-                    const SizedBox(height: AppSpace.sm),
-                    EarnedBadgesRow(places: places),
+                    const SizedBox(height: AppSpace.md),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentSoft,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: EarnedBadgesRow(places: places),
+                    ),
                   ],
                 ),
               ),
@@ -535,132 +578,177 @@ class _AccountMenu extends ConsumerWidget {
     // Live, so a number verified here shows when coming back.
     final phone = (ref.watch(authStateProvider).value ?? user).phoneNumber;
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: ListView(
-          padding: EdgeInsets.only(bottom: bottomBarClearance(context)),
-          children: [
-            PageHeader(
-              leading: CircleIconButton(
-                icon: AppIcon('back', color: AppColors.accent),
-                semanticLabel: context.l10n.back,
-                onPressed: () => Navigator.of(context).pop(),
+      body: GoldenHour(
+        child: SafeArea(
+          bottom: false,
+          child: ListView(
+            padding: EdgeInsets.only(bottom: bottomBarClearance(context)),
+            children: [
+              PageHeader(
+                leading: CircleIconButton(
+                  icon: AppIcon('back', color: AppColors.ink),
+                  semanticLabel: context.l10n.back,
+                  background: AppColors.surface.withValues(alpha: .82),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                title: context.l10n.menu,
               ),
-              title: context.l10n.menu,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpace.page),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(context.l10n.yourSpace, style: AppText.overline()),
-                  const SizedBox(height: 9),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: AppRadius.cardAll,
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Column(
-                      children: [
-                        _SettingRow(
-                          iconWidget: Icon(
-                            phone == null || phone.isEmpty
-                                ? Icons.phone_iphone
-                                : Icons.verified_outlined,
-                            size: 18,
-                            color: phone == null || phone.isEmpty
-                                ? AppColors.muted
-                                : AppColors.success,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpace.page),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(context.l10n.yourSpace, style: AppText.overline()),
+                    const SizedBox(height: 9),
+                    Container(
+                      decoration: GoldenHour.card(),
+                      clipBehavior: Clip.antiAlias,
+                      child: Column(
+                        children: [
+                          _SettingRow(
+                            iconWidget: Icon(
+                              phone == null || phone.isEmpty
+                                  ? Icons.phone_iphone
+                                  : Icons.verified_outlined,
+                              size: 18,
+                              color: AppColors.accent,
+                            ),
+                            iconBackground: phone == null || phone.isEmpty
+                                ? AppColors.background
+                                : AppColors.successSoft,
+                            title: phone == null || phone.isEmpty
+                                ? context.l10n.phoneNumber
+                                : phone,
+                            subtitle: phone == null || phone.isEmpty
+                                ? context.l10n.verifyWithSms
+                                : context.l10n.verifiedTapToChange,
+                            onTap: () => _verifyPhone(context),
                           ),
-                          iconBackground: phone == null || phone.isEmpty
-                              ? AppColors.background
-                              : AppColors.successSoft,
-                          title: phone == null || phone.isEmpty
-                              ? context.l10n.phoneNumber
-                              : phone,
-                          subtitle: phone == null || phone.isEmpty
-                              ? context.l10n.verifyWithSms
-                              : context.l10n.verifiedTapToChange,
-                          onTap: () => _verifyPhone(context),
-                        ),
-                        const _RowDivider(),
-                        _SettingRow(
-                          icon: 'person_small',
-                          iconBackground: AppColors.background,
-                          title: context.l10n.profilePreferences,
-                          subtitle: context.l10n.makeYourselfAtHome,
-                          onTap: () => _editProfile(context, shownName),
-                        ),
-                        const _RowDivider(),
-                        _SettingRow(
-                          iconWidget: Icon(
-                            Icons.tune,
-                            size: 18,
-                            color: AppColors.muted,
+                          const _RowDivider(),
+                          _SettingRow(
+                            icon: 'person_small',
+                            iconBackground: AppColors.background,
+                            title: context.l10n.profilePreferences,
+                            subtitle: context.l10n.makeYourselfAtHome,
+                            onTap: () => _editProfile(context, shownName),
                           ),
-                          iconBackground: AppColors.background,
-                          title: context.l10n.settingsTitle,
-                          subtitle: context.l10n.settingsRowSubtitle,
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (ctx) => const SettingsScreen(),
+                          const _RowDivider(),
+                          _SettingRow(
+                            iconWidget: Icon(
+                              Icons.tune,
+                              size: 18,
+                              color: AppColors.accent,
+                            ),
+                            iconBackground: AppColors.background,
+                            title: context.l10n.settingsTitle,
+                            subtitle: context.l10n.settingsRowSubtitle,
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (ctx) => const SettingsScreen(),
+                              ),
                             ),
                           ),
-                        ),
-                        const _RowDivider(),
-                        _SettingRow(
-                          icon: 'lock',
-                          iconBackground: AppColors.accentSoft,
-                          title: context.l10n.privateByDefault,
-                          subtitle: context.l10n.placesJustForYou,
-                          onTap: () => _info(
-                            context,
-                            context.l10n.privateByDefault,
-                            context.l10n.privateBody,
+                          const _RowDivider(),
+                          _SettingRow(
+                            icon: 'lock',
+                            iconBackground: AppColors.accentSoft,
+                            title: context.l10n.privateByDefault,
+                            subtitle: context.l10n.placesJustForYou,
+                            onTap: () => _info(
+                              context,
+                              context.l10n.privateByDefault,
+                              context.l10n.privateBody,
+                            ),
                           ),
-                        ),
-                        const _RowDivider(),
-                        _SettingRow(
-                          icon: 'cloud',
-                          iconBackground: AppColors.background,
-                          title: context.l10n.backupSync,
-                          subtitle: context.l10n.memoriesKeptSafe,
-                          onTap: () => _info(
-                            context,
-                            context.l10n.backupSync,
-                            context.l10n.backupBody,
+                          const _RowDivider(),
+                          _SettingRow(
+                            icon: 'cloud',
+                            iconBackground: AppColors.background,
+                            title: context.l10n.backupSync,
+                            subtitle: context.l10n.memoriesKeptSafe,
+                            onTap: () => _info(
+                              context,
+                              context.l10n.backupSync,
+                              context.l10n.backupBody,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: AppSpace.lg),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: AppRadius.cardAll,
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: _SettingRow(
-                      icon: 'help',
-                      title: context.l10n.aLittleHelpQ,
-                      height: 56,
+                    const SizedBox(height: 14),
+                    _HelpCard(
+                      label: context.l10n.aLittleHelpQ,
                       onTap: () => _info(
                         context,
                         context.l10n.aLittleHelp,
                         context.l10n.helpBody,
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+/// "A little help?" on gradient green.
+class _HelpCard extends StatelessWidget {
+  const _HelpCard({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF2A7C13), Color(0xFF4E9E33)],
+      ),
+      borderRadius: BorderRadius.circular(22),
+      boxShadow: [
+        BoxShadow(
+          color: const Color(0xFF2A7C13).withValues(alpha: .3),
+          blurRadius: 22,
+          offset: const Offset(0, 10),
+        ),
+      ],
+    ),
+    child: Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(22),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              const AppIcon('help', size: 22, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppText.bodyStrong(color: Colors.white)
+                      .copyWith(fontSize: 15),
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_rounded,
+                size: 18,
+                color: Colors.white,
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 class _RowDivider extends StatelessWidget {
@@ -681,7 +769,6 @@ class _SettingRow extends StatelessWidget {
     required this.onTap,
     this.subtitle,
     this.iconBackground,
-    this.height = 58,
   });
 
   /// Design icon name, or [iconWidget] for one the design doesn't have.
@@ -690,7 +777,6 @@ class _SettingRow extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Color? iconBackground;
-  final double height;
   final VoidCallback onTap;
 
   @override
@@ -700,23 +786,32 @@ class _SettingRow extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: SizedBox(
-          height: height,
+          height: 64,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14),
             child: Row(
               children: [
-                SizedBox(
-                  width: 34,
-                  height: 34,
-                  child: iconBackground == null
-                      ? Center(child: iconWidget ?? AppIcon(icon!))
-                      : DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: iconBackground,
-                            borderRadius: BorderRadius.circular(11),
-                          ),
-                          child: Center(child: iconWidget ?? AppIcon(icon!)),
-                        ),
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.accentSoft,
+                        AppColors.isDark
+                            ? AppColors.surface
+                            : const Color(0xFFFFF1D6),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child:
+                        iconWidget ??
+                        AppIcon(icon!, size: 18, color: AppColors.accent),
+                  ),
                 ),
                 const SizedBox(width: AppSpace.md),
                 Expanded(

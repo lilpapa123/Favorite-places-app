@@ -12,47 +12,49 @@ class AppColors {
   /// Every token below reads it, so the whole palette flips at once.
   static bool isDark = false;
 
-  /// Text and icons on accent fills: white in both modes.
-  static const Color onAccent = Color(0xFFFFFFFF);
+  /// Text and icons on accent fills: white on the light theme's accent,
+  /// deep navy on the night theme's light green so it stays readable.
+  static Color get onAccent =>
+      isDark ? const Color(0xFF0E1A2B) : const Color(0xFFFFFFFF);
 
   static Color get background =>
-      isDark ? const Color(0xFF0E0F12) : const Color(0xFFF3F4F6);
+      isDark ? const Color(0xFF0E1A2B) : const Color(0xFFFFF8CF);
   static Color get surface =>
-      isDark ? const Color(0xFF1A1C21) : const Color(0xFFFFFFFF);
+      isDark ? const Color(0xFF18263C) : const Color(0xFFFFFBE6);
 
   static Color get ink =>
-      isDark ? const Color(0xFFF2F3F5) : const Color(0xFF15171C);
+      isDark ? const Color(0xFFF3EED6) : const Color(0xFF15171C);
   static Color get inkSoft =>
-      isDark ? const Color(0xFFD9DCE1) : const Color(0xFF2B2F37);
+      isDark ? const Color(0xFFE6E0C6) : const Color(0xFF2B2F37);
   static Color get label =>
-      isDark ? const Color(0xFFC3C7CF) : const Color(0xFF3A3F48);
+      isDark ? const Color(0xFFD9D4BC) : const Color(0xFF3A3F48);
   static Color get muted =>
-      isDark ? const Color(0xFF9EA3AD) : const Color(0xFF5B606B);
+      isDark ? const Color(0xFFA3ADBF) : const Color(0xFF5B606B);
   static Color get faint =>
-      isDark ? const Color(0xFF7A808B) : const Color(0xFF8A8F99);
+      isDark ? const Color(0xFF76819A) : const Color(0xFF8A8F99);
 
   static Color get border =>
-      isDark ? const Color(0xFF3A3F48) : const Color(0xFFC9CDD4);
+      isDark ? const Color(0xFF3A4B68) : const Color(0xFFDCCF9E);
   static Color get divider =>
-      isDark ? const Color(0xFF2A2D34) : const Color(0xFFE2E4E8);
+      isDark ? const Color(0xFF2A3B57) : const Color(0xFFEFE3B8);
   static Color get dashed =>
-      isDark ? const Color(0xFF4A505A) : const Color(0xFFA9AEB8);
+      isDark ? const Color(0xFF4A5B78) : const Color(0xFFC9BD8C);
 
   static Color get accent =>
-      isDark ? const Color(0xFFE0603F) : const Color(0xFFB8391F);
+      isDark ? const Color(0xFF76C457) : const Color(0xFF2A7C13);
   static Color get accentPressed =>
-      isDark ? const Color(0xFFC04A2C) : const Color(0xFF8F2A15);
+      isDark ? const Color(0xFF5FAE40) : const Color(0xFF1F5E0E);
   static Color get accentSoft =>
-      isDark ? const Color(0xFF3A1F19) : const Color(0xFFFBE9E5);
+      isDark ? const Color(0xFF233451) : const Color(0xFFFBE6C2);
   static Color get accentDisabled =>
-      isDark ? const Color(0xFF6B4A42) : const Color(0xFFC9A39A);
+      isDark ? const Color(0xFF3F5A3A) : const Color(0xFFB7CFAA);
 
   static Color get success =>
       isDark ? const Color(0xFF4FB58A) : const Color(0xFF1F6B4F);
   static Color get successSoft =>
       isDark ? const Color(0xFF16302A) : const Color(0xFFE7F3EE);
   static Color get navy =>
-      isDark ? const Color(0xFF6E97CC) : const Color(0xFF1E3A5F);
+      isDark ? const Color(0xFF9FC2E8) : const Color(0xFF1E3A5F);
 
   /// Soft backgrounds for places without a photo, picked by position.
   static List<Color> get tints => isDark
@@ -64,11 +66,11 @@ class AppColors {
           Color(0xFF3A3220),
         ]
       : const [
-          Color(0xFFDCE6F0),
-          Color(0xFFEFE3D6),
-          Color(0xFFE4DDEE),
-          Color(0xFFD8EAE3),
-          Color(0xFFF0E6D2),
+          Color(0xFFFBE6C2),
+          Color(0xFFEFE3B8),
+          Color(0xFFE3F2DA),
+          Color(0xFFFFF1D6),
+          Color(0xFFE8E4C4),
         ];
 
   static Color tintFor(String seed) =>
@@ -263,9 +265,15 @@ class AppTheme {
   /// the tokens resolve to the matching palette.
   static ThemeData data(Brightness brightness) {
     final base = ThemeData(brightness: brightness, useMaterial3: true);
-    const fieldBorder = OutlineInputBorder(
+    // Light, see-through fields with a faint green edge, as in the design.
+    final fieldBorder = OutlineInputBorder(
       borderRadius: AppRadius.fieldAll,
-      borderSide: BorderSide.none,
+      borderSide: BorderSide(
+        color: AppColors.isDark
+            ? Colors.white.withValues(alpha: .08)
+            : const Color(0x1F2A7C13),
+        width: 1.5,
+      ),
     );
 
     return base.copyWith(
@@ -307,7 +315,9 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: AppColors.isDark
+            ? AppColors.surface
+            : Colors.white.withValues(alpha: .7),
         hintStyle: AppText.body(color: AppColors.faint),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
@@ -324,7 +334,10 @@ class AppTheme {
         backgroundColor: AppColors.ink,
         contentTextStyle: AppText.bodyStrong(color: AppColors.surface)
             .copyWith(fontSize: 14),
-        actionTextColor: const Color(0xFFFFB4A3),
+        // Light green on the dark bar, deep green on the night theme's cream.
+        actionTextColor: AppColors.isDark
+            ? const Color(0xFF2A7C13)
+            : const Color(0xFF76C457),
         behavior: SnackBarBehavior.floating,
         elevation: 0,
         insetPadding: const EdgeInsets.fromLTRB(

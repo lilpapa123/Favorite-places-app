@@ -20,8 +20,9 @@ class PlacesGrid extends StatelessWidget {
       itemCount: places.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
-        mainAxisSpacing: 3,
-        crossAxisSpacing: 3,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: 1.1,
       ),
       itemBuilder: (context, i) {
         final place = places[i];
@@ -35,30 +36,42 @@ class PlacesGrid extends StatelessWidget {
                 builder: (ctx) => PlacesDetailScreen(placeId: place.id),
               ),
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  PlacePhoto(
-                    photo: place.photos.firstOrNull,
-                    tint: AppColors.tintFor(place.id),
-                    iconSize: 22,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x1A15171C),
+                    blurRadius: 16,
+                    offset: Offset(0, 6),
                   ),
-                  if (place.photos.length > 1)
-                    const Positioned(
-                      right: 6,
-                      top: 6,
-                      child: Icon(
-                        Icons.collections_rounded,
-                        size: 16,
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(color: Color(0x66000000), blurRadius: 3),
-                        ],
-                      ),
-                    ),
                 ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    PlacePhoto(
+                      photo: place.photos.firstOrNull,
+                      tint: AppColors.tintFor(place.id),
+                      iconSize: 22,
+                    ),
+                    if (place.photos.length > 1)
+                      const Positioned(
+                        right: 6,
+                        top: 6,
+                        child: Icon(
+                          Icons.collections_rounded,
+                          size: 16,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(color: Color(0x66000000), blurRadius: 3),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),

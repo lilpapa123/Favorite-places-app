@@ -8,6 +8,7 @@ import 'package:favorite_places/screens/chat.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/cover_post_card.dart';
 import 'package:favorite_places/widgets/pill_button.dart';
+import 'package:favorite_places/widgets/place_photo.dart';
 import 'package:favorite_places/widgets/social_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,6 +22,7 @@ void showShareSheet(BuildContext context, String owner, Place place) {
     context: context,
     useRootNavigator: true,
     isScrollControlled: true,
+    backgroundColor: AppColors.background,
     builder: (ctx) => _ShareSheet(owner: owner, place: place),
   );
 }
@@ -39,6 +41,7 @@ class _ShareSheetState extends ConsumerState<_ShareSheet> {
   /// Picked chats, by id.
   final Map<String, Chat> _picked = {};
   bool _sending = false;
+  bool _copied = false;
 
   // shortcut: posts have no web page yet, so the link opens the place on
   // Google Maps; point it at the post once there is one.
@@ -82,6 +85,8 @@ class _ShareSheetState extends ConsumerState<_ShareSheet> {
     final l10n = context.l10n;
     final me = ref.watch(authStateProvider.select((a) => a.value?.uid));
     final link = _link;
+    final place = widget.place;
+    final owner = ref.watch(profileProvider(widget.owner)).value;
     // Your chats first, then people you follow you have no chat with yet.
     final targets = <String, Chat>{};
     if (me != null) {
@@ -94,129 +99,274 @@ class _ShareSheetState extends ConsumerState<_ShareSheet> {
         targets.putIfAbsent(chat.id, () => chat);
       }
     }
-    final side = const EdgeInsets.symmetric(horizontal: AppSpace.page);
+    final picked = _picked.values.toList();
+    final sendLabel = switch (picked.length) {
+      0 => l10n.pickSomeoneToSend,
+      1 => l10n.sendToName(_firstName(chatTitle(ref, picked.first, me ?? ''))),
+      final n => l10n.sendToCount(n),
+    };
+    final city = place.location?.cityCountry ?? '';
 
     return SafeArea(
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * (me == null ? 0.3 : 0.75),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: side,
-              child: Text(l10n.share, style: AppText.title()),
-            ),
-            const SizedBox(height: AppSpace.sm),
-            Padding(
-              padding: side,
-              child: Row(
-                children: [
-                  if (link != null)
-                    Expanded(
-                      child: _ShareAction(
-                        icon: Icons.link_rounded,
-                        label: l10n.copyLink,
-                        onTap: () async {
-                          final messenger = ScaffoldMessenger.of(context);
-                          final navigator = Navigator.of(context);
-                          await Clipboard.setData(ClipboardData(text: link));
-                          navigator.pop();
-                          messenger
-                            ..hideCurrentSnackBar()
-                            ..showSnackBar(
-                              SnackBar(content: Text(l10n.linkCopied)),
-                            );
-                        },
-                      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 12, 0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.share,
+                    style: AppText.heading().copyWith(fontSize: 22),
+                  ),
+                ),
+                IconButton(
+                  tooltip: l10n.close,
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: CircleAvatar(
+                    radius: 16,
+                    backgroundColor: AppColors.accentSoft,
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 16,
+                      color: AppColors.ink,
                     ),
-                  if (link != null) const SizedBox(width: AppSpace.sm),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // What you're sharing.
+          Container(
+            margin: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: SizedBox.square(
+                    dimension: 56,
+                    child: PlacePhoto(
+                      photo: place.photos.firstOrNull,
+                      tint: AppColors.tintFor(place.id),
+                      iconSize: 20,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        place.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.bodyStrong().copyWith(fontSize: 15),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        [
+                          if (owner != null) l10n.byOwner(owner.name),
+                          if (city.isNotEmpty) city,
+                        ].join(' · '),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.meta().copyWith(fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (me != null) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+              child: Text(
+                l10n.sendTo,
+                style: AppText.label(color: AppColors.label)
+                    .copyWith(fontSize: 13),
+              ),
+            ),
+            SizedBox(
+              height: 92,
+              child: targets.isEmpty
+                  ? Center(
+                      child: Text(
+                        l10n.notFollowingAnyone,
+                        style: AppText.meta(),
+                      ),
+                    )
+                  : ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: [
+                        for (final chat in targets.values)
+                          _PickPerson(
+                            chat: chat,
+                            me: me,
+                            picked: _picked.containsKey(chat.id),
+                            onTap: () => setState(() {
+                              if (_picked.remove(chat.id) == null) {
+                                _picked[chat.id] = chat;
+                              }
+                            }),
+                          ),
+                      ],
+                    ),
+            ),
+          ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+            child: Row(
+              children: [
+                if (link != null) ...[
                   Expanded(
                     child: _ShareAction(
-                      icon: Icons.ios_share_rounded,
-                      label: l10n.shareToApps,
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        SharePlus.instance.share(
-                          ShareParams(
-                            text: [
-                              widget.place.title,
-                              if (widget.place.note.isNotEmpty)
-                                widget.place.note,
-                              ?link,
-                            ].join('\n'),
-                          ),
-                        );
+                      icon: _copied ? Icons.check_rounded : Icons.link_rounded,
+                      label: _copied ? l10n.linkCopied : l10n.copyLink,
+                      onTap: () async {
+                        await Clipboard.setData(ClipboardData(text: link));
+                        if (mounted) {
+                          setState(() => _copied = true);
+                        }
                       },
                     ),
                   ),
+                  const SizedBox(width: 10),
+                ],
+                Expanded(
+                  child: _ShareAction(
+                    icon: Icons.ios_share_rounded,
+                    label: l10n.shareToApps,
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      SharePlus.instance.share(
+                        ShareParams(
+                          text: [
+                            place.title,
+                            if (place.note.isNotEmpty) place.note,
+                            ?link,
+                          ].join('\n'),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (me != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              child: PillButton(
+                label: sendLabel,
+                icon: Icons.send_rounded,
+                expanded: true,
+                large: true,
+                onPressed: picked.isEmpty || _sending ? null : () => _send(me),
+              ),
+            )
+          else
+            const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+}
+
+String _firstName(String name) => name.split(' ').first;
+
+/// A chat to send to: its round photo, ringed and ticked when picked, and
+/// the first name (or the group's name) under it.
+class _PickPerson extends ConsumerWidget {
+  const _PickPerson({
+    required this.chat,
+    required this.me,
+    required this.picked,
+    required this.onTap,
+  });
+
+  final Chat chat;
+  final String me;
+  final bool picked;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final title = chatTitle(ref, chat, me);
+    return Semantics(
+      button: true,
+      selected: picked,
+      label: title,
+      excludeSemantics: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: SizedBox(
+          width: 72,
+          child: Column(
+            children: [
+              const SizedBox(height: 4),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: picked ? AppColors.accent : Colors.transparent,
+                        width: 2,
+                      ),
+                    ),
+                    child: ChatAvatar(chat: chat, me: me, size: 48),
+                  ),
+                  if (picked)
+                    Positioned(
+                      right: -2,
+                      bottom: -2,
+                      child: Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: AppColors.accent,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.background,
+                            width: 2,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.check_rounded,
+                          size: 12,
+                          color: AppColors.onAccent,
+                        ),
+                      ),
+                    ),
                 ],
               ),
-            ),
-            if (me != null) ...[
-              const SizedBox(height: AppSpace.lg),
-              Padding(
-                padding: side,
-                child: Text(
-                  l10n.sendTo.toUpperCase(),
-                  style: AppText.overline(),
-                ),
-              ),
-              Expanded(
-                child: targets.isEmpty
-                    ? Center(
-                        child: Text(
-                          l10n.notFollowingAnyone,
-                          style: AppText.meta(),
-                        ),
-                      )
-                    : ListView(
-                        children: [
-                          for (final chat in targets.values)
-                            ListTile(
-                              contentPadding: side,
-                              leading: ChatAvatar(chat: chat, me: me, size: 44),
-                              title: Text(
-                                chatTitle(ref, chat, me),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppText.bodyStrong(),
-                              ),
-                              trailing: Icon(
-                                _picked.containsKey(chat.id)
-                                    ? Icons.check_circle_rounded
-                                    : Icons.radio_button_unchecked_rounded,
-                                color: _picked.containsKey(chat.id)
-                                    ? AppColors.accent
-                                    : AppColors.muted,
-                              ),
-                              onTap: () => setState(() {
-                                if (_picked.remove(chat.id) == null) {
-                                  _picked[chat.id] = chat;
-                                }
-                              }),
-                            ),
-                        ],
-                      ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpace.page,
-                  AppSpace.sm,
-                  AppSpace.page,
-                  AppSpace.md,
-                ),
-                child: PillButton(
-                  label: _picked.isEmpty
-                      ? l10n.send
-                      : '${l10n.send} · ${_picked.length}',
-                  expanded: true,
-                  onPressed: _picked.isEmpty || _sending
-                      ? null
-                      : () => _send(me),
+              const SizedBox(height: 6),
+              Text(
+                chat.isGroup ? title : _firstName(title),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppText.meta(color: AppColors.ink).copyWith(
+                  fontSize: 12,
+                  fontWeight: picked ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -237,17 +387,26 @@ class _ShareAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Material(
     color: AppColors.surface,
-    borderRadius: BorderRadius.circular(16),
+    borderRadius: BorderRadius.circular(18),
     child: InkWell(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(18),
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpace.md),
+      child: Container(
+        height: 76,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        alignment: AlignmentDirectional.centerStart,
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: AppColors.accent),
-            const SizedBox(height: AppSpace.xs),
-            Text(label, style: AppText.label(), textAlign: TextAlign.center),
+            Icon(icon, size: 22, color: AppColors.accent),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppText.bodyStrong().copyWith(fontSize: 14),
+            ),
           ],
         ),
       ),

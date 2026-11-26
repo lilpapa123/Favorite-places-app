@@ -117,7 +117,7 @@ class _SplashState extends State<_Splash> {
       return;
     }
     _started = true;
-    SplashScene.precache().whenComplete(_show);
+    SplashScene.precache(night: AppColors.isDark).whenComplete(_show);
     _fallback = Timer(const Duration(milliseconds: 600), _show);
   }
 
@@ -133,9 +133,17 @@ class _SplashState extends State<_Splash> {
     final fade = MediaQuery.disableAnimationsOf(context)
         ? Duration.zero
         : _Splash.fade;
+    final night = AppColors.isDark;
     return Stack(
       children: [
-        widget.child,
+        // Status bar icons that show on the app's own background; the splash
+        // sets dark ones over itself.
+        AnnotatedRegion<SystemUiOverlayStyle>(
+          value: AppColors.isDark
+              ? SystemUiOverlayStyle.light
+              : SystemUiOverlayStyle.dark,
+          child: widget.child,
+        ),
         if (!_gone)
           IgnorePointer(
             ignoring: _fading,
@@ -143,10 +151,12 @@ class _SplashState extends State<_Splash> {
               opacity: _fading ? 0 : 1,
               duration: fade,
               onEnd: () => setState(() => _gone = true),
-              // Dark status bar icons on the light cream.
+              // Status bar icons that show on the splash's sky.
               child: AnnotatedRegion<SystemUiOverlayStyle>(
-                value: SystemUiOverlayStyle.dark,
-                child: const SplashScene(),
+                value: night
+                    ? SystemUiOverlayStyle.light
+                    : SystemUiOverlayStyle.dark,
+                child: SplashScene(night: night),
               ),
             ),
           ),

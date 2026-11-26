@@ -9,6 +9,7 @@ import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/screens/profile.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
 import 'package:favorite_places/widgets/cover_post_card.dart';
+import 'package:favorite_places/widgets/golden_hour.dart';
 import 'package:favorite_places/widgets/page_header.dart';
 import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:favorite_places/widgets/place_photo.dart';
@@ -19,6 +20,7 @@ import 'package:favorite_places/widgets/social_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// Above the tab bar, so the message box at the bottom is not hidden.
@@ -93,65 +95,277 @@ class ChatAvatar extends ConsumerWidget {
   }
 }
 
-/// The Messages tab: the signed-in user's chats, newest first, and + to
-/// start a new one.
+/// The Messages tab, from the design: new group and new message buttons, a
+/// search that starts a chat, people you follow for a quick start, then your
+/// chats on a frosted card, newest first.
 class MessagesScreen extends ConsumerWidget {
   const MessagesScreen({super.key});
+
+  void _new(BuildContext context, {bool group = false}) =>
+      Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute<void>(
+          builder: (ctx) => NewMessageScreen(startAsGroup: group),
+        ),
+      );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final me = ref.watch(authStateProvider).value?.uid;
     final chats = ref.watch(chatsProvider);
+    final following = me == null
+        ? const <UserProfile>[]
+        : ref.watch(followListProvider((me, false))).value ?? const [];
     Widget note(String text) => Padding(
       padding: const EdgeInsets.all(AppSpace.page),
       child: Center(
         child: Text(text, style: AppText.meta(), textAlign: TextAlign.center),
       ),
     );
+    Widget heading(String text) => Padding(
+      padding: const EdgeInsets.fromLTRB(AppSpace.page, 18, AppSpace.page, 10),
+      child: Text(
+        text.toUpperCase(),
+        style: AppText.overline(color: AppColors.muted),
+      ),
+    );
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: ListView(
-          padding: EdgeInsets.only(bottom: bottomBarClearance(context)),
-          children: [
-            PageHeader(
-              title: l10n.messagesTitle,
-              trailing: me == null
-                  ? null
-                  : CircleIconButton(
-                      icon: Icon(Icons.add_rounded, color: AppColors.ink),
-                      semanticLabel: l10n.newMessage,
-                      onPressed: () =>
-                          Navigator.of(context, rootNavigator: true).push(
-                            MaterialPageRoute<void>(
-                              builder: (ctx) => const NewMessageScreen(),
+      body: GoldenHour(
+        child: SafeArea(
+          bottom: false,
+          child: ListView(
+            padding: EdgeInsets.only(bottom: bottomBarClearance(context)),
+            children: [
+              PageHeader(
+                title: l10n.messagesTitle,
+                subtitle: l10n.messagesSubtitle,
+                trailing: me == null
+                    ? null
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircleIconButton(
+                            icon: AppIcon(
+                              'tab_people',
+                              size: 20,
+                              color: AppColors.ink,
+                            ),
+                            semanticLabel: l10n.newGroup,
+                            background: AppColors.surface.withValues(
+                              alpha: .82,
+                            ),
+                            onPressed: () => _new(context, group: true),
+                          ),
+                          const SizedBox(width: AppSpace.sm),
+                          _GradientCircle(
+                            label: l10n.newMessage,
+                            onTap: () => _new(context),
+                            child: AppIcon(
+                              'edit',
+                              size: 20,
+                              color: AppColors.onAccent,
                             ),
                           ),
+                        ],
+                      ),
+              ),
+              if (me == null)
+                note(l10n.signInToMessage)
+              else ...[
+                // Opens New message, where the search happens.
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpace.page,
+                  ),
+                  child: Semantics(
+                    button: true,
+                    label: l10n.searchPeopleHint,
+                    excludeSemantics: true,
+                    child: GestureDetector(
+                      onTap: () => _new(context),
+                      child: Container(
+                        height: 46,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface.withValues(alpha: .82),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: AppColors.isDark
+                                ? Colors.white.withValues(alpha: .08)
+                                : const Color(0x1F2A7C13),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            AppIcon('search', size: 18, color: AppColors.muted),
+                            const SizedBox(width: 10),
+                            Text(
+                              l10n.searchPeopleHint,
+                              style: AppText.body(color: AppColors.faint),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-            ),
-            if (me == null)
-              note(l10n.signInToMessage)
-            else
-              ...chats.when(
-                loading: () => [
-                  Center(
-                    child: CircularProgressIndicator(color: AppColors.accent),
+                  ),
+                ),
+                if (following.isNotEmpty) ...[
+                  heading(l10n.peopleYouFollow),
+                  SizedBox(
+                    height: 82,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: [
+                        for (final person in following)
+                          _QuickPerson(
+                            profile: person,
+                            onTap: () =>
+                                openChat(context, Chat.direct(me, person.uid)),
+                          ),
+                      ],
+                    ),
                   ),
                 ],
-                error: (_, _) => [note(l10n.somethingWentWrong)],
-                data: (list) => list.isEmpty
-                    ? [note(l10n.noMessagesYet)]
-                    : [
-                        for (final summary in list)
-                          _ChatTile(summary: summary, me: me),
-                      ],
-              ),
-          ],
+                heading(l10n.chats),
+                ...chats.when(
+                  loading: () => [
+                    Center(
+                      child: CircularProgressIndicator(color: AppColors.accent),
+                    ),
+                  ],
+                  error: (_, _) => [note(l10n.somethingWentWrong)],
+                  data: (list) => list.isEmpty
+                      ? [note(l10n.noMessagesYet)]
+                      : [
+                          Container(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: AppSpace.page,
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            decoration: GoldenHour.card(),
+                            child: Column(
+                              children: [
+                                for (final (i, summary) in list.indexed) ...[
+                                  if (i > 0)
+                                    Divider(
+                                      height: 1,
+                                      indent: 74,
+                                      color: AppColors.accent.withValues(
+                                        alpha: .1,
+                                      ),
+                                    ),
+                                  _ChatTile(summary: summary, me: me),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+/// A round gradient-green button, the design's main action.
+class _GradientCircle extends StatelessWidget {
+  const _GradientCircle({
+    required this.label,
+    required this.onTap,
+    required this.child,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: label,
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.accent,
+            AppColors.isDark
+                ? const Color(0xFF5FAE40)
+                : const Color(0xFF4E9E33),
+          ],
+        ),
+        boxShadow: AppColors.isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: AppColors.accent.withValues(alpha: .3),
+                  blurRadius: 22,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: SizedBox.square(dimension: 44, child: Center(child: child)),
+        ),
+      ),
+    ),
+  );
+}
+
+/// Someone you follow, as a round photo with their first name: tap to chat.
+class _QuickPerson extends StatelessWidget {
+  const _QuickPerson({required this.profile, required this.onTap});
+
+  final UserProfile profile;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: '${context.l10n.message}: ${profile.name}',
+    excludeSemantics: true,
+    child: GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: 66,
+        child: Column(
+          children: [
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.background,
+              ),
+              child: Avatar(
+                name: profile.name,
+                photoUrl: profile.photoUrl,
+                size: 50,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              profile.name.split(' ').first,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppText.meta(color: AppColors.ink).copyWith(fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 class _ChatTile extends ConsumerWidget {
@@ -163,42 +377,69 @@ class _ChatTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final chat = summary.chat;
+    // A shared post shows as a pin line.
+    final post = summary.lastText.startsWith('📍 ');
     return InkWell(
       onTap: () => openChat(context, chat),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpace.page,
-          vertical: AppSpace.sm,
-        ),
-        child: Row(
-          children: [
-            ChatAvatar(chat: chat, me: me),
-            const SizedBox(width: AppSpace.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    chatTitle(ref, chat, me),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppText.bodyStrong(),
-                  ),
-                  Text(
-                    summary.lastText,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppText.meta(),
-                  ),
-                ],
+      child: SizedBox(
+        height: 72,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Row(
+            children: [
+              ChatAvatar(chat: chat, me: me),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            chatTitle(ref, chat, me),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppText.bodyStrong().copyWith(fontSize: 15),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpace.sm),
+                        Text(
+                          timeAgo(context.l10n, summary.lastAt),
+                          style: AppText.meta(color: AppColors.faint)
+                              .copyWith(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        if (post) ...[
+                          AppIcon(
+                            'pin_small',
+                            size: 14,
+                            color: AppColors.accent,
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                        Expanded(
+                          child: Text(
+                            post
+                                ? summary.lastText.substring(3)
+                                : summary.lastText,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppText.meta().copyWith(fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: AppSpace.sm),
-            Text(
-              timeAgo(context.l10n, summary.lastAt),
-              style: AppText.meta().copyWith(fontSize: 12),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -208,7 +449,10 @@ class _ChatTile extends ConsumerWidget {
 /// Search people, or pick from those you follow, to message them or to make
 /// a group of up to [maxGroupMembers].
 class NewMessageScreen extends ConsumerStatefulWidget {
-  const NewMessageScreen({super.key});
+  const NewMessageScreen({super.key, this.startAsGroup = false});
+
+  /// Opens straight into making a group.
+  final bool startAsGroup;
 
   @override
   ConsumerState<NewMessageScreen> createState() => _NewMessageState();
@@ -219,7 +463,7 @@ class _NewMessageState extends ConsumerState<NewMessageScreen> {
   final _name = TextEditingController();
   Timer? _debounce;
   List<UserProfile>? _results;
-  bool _group = false;
+  late bool _group = widget.startAsGroup;
   bool _creating = false;
 
   /// Picked for the group, in the order picked.
@@ -509,25 +753,34 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final me = ref.watch(authStateProvider.select((a) => a.value?.uid));
     final chat = ref.watch(chatProvider(widget.chat)).value ?? widget.chat;
     final messages = ref.watch(messagesProvider(chat)).value ?? const [];
+    final other = me == null || chat.isGroup
+        ? null
+        : ref.watch(profileProvider(chat.others(me).firstOrNull ?? me)).value;
+    final frost = AppColors.background.withValues(alpha: .86);
+    final edge = BorderSide(color: AppColors.accent.withValues(alpha: .08));
     return Scaffold(
-      body: SafeArea(
+      body: GoldenHour(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpace.page,
-                AppSpace.sm,
-                AppSpace.page,
-                AppSpace.sm,
+            // Frosted header with who you're talking to.
+            Container(
+              padding: EdgeInsets.fromLTRB(
+                12,
+                MediaQuery.paddingOf(context).top + 4,
+                12,
+                10,
+              ),
+              decoration: BoxDecoration(
+                color: frost,
+                border: Border(bottom: edge),
               ),
               child: Row(
                 children: [
-                  CircleIconButton(
-                    icon: AppIcon('back', color: AppColors.accent),
-                    semanticLabel: l10n.back,
+                  IconButton(
+                    tooltip: l10n.back,
                     onPressed: () => Navigator.of(context).pop(),
+                    icon: AppIcon('back', color: AppColors.ink),
                   ),
-                  const SizedBox(width: AppSpace.md),
                   if (me != null)
                     Expanded(
                       child: InkWell(
@@ -546,14 +799,37 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               ),
                         child: Row(
                           children: [
-                            ChatAvatar(chat: chat, me: me, size: 36),
-                            const SizedBox(width: AppSpace.sm),
+                            ChatAvatar(chat: chat, me: me, size: 42),
+                            const SizedBox(width: 10),
                             Expanded(
-                              child: Text(
-                                chatTitle(ref, chat, me),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppText.title(),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    chatTitle(ref, chat, me),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppText.bodyStrong().copyWith(
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  if (chat.isGroup)
+                                    Text(
+                                      l10n.groupMembers(chat.members.length),
+                                      style: AppText.meta().copyWith(
+                                        fontSize: 12,
+                                      ),
+                                    )
+                                  else if (other?.username.isNotEmpty ?? false)
+                                    Text(
+                                      '@${other!.username}',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppText.meta().copyWith(
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                           ],
@@ -573,9 +849,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       reverse: true,
                       keyboardDismissBehavior:
                           ScrollViewKeyboardDismissBehavior.onDrag,
-                      padding: const EdgeInsets.all(AppSpace.page),
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                       children: [
-                        for (final (i, m) in messages.reversed.indexed)
+                        for (final (i, m) in messages.reversed.indexed) ...[
                           _Bubble(
                             message: m,
                             mine: m.uid == me,
@@ -596,16 +872,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     messages[messages.length - i - 2].uid !=
                                         m.uid),
                           ),
+                          // The day, above its first message (the list runs
+                          // upwards, so it comes after it here).
+                          if (i + 1 >= messages.length ||
+                              !_sameDay(
+                                messages[messages.length - i - 2].createdAt,
+                                m.createdAt,
+                              ))
+                            _DayChip(day: m.createdAt),
+                        ],
                       ],
                     ),
             ),
             if (me != null)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpace.page,
-                  AppSpace.xs,
-                  AppSpace.sm,
-                  AppSpace.sm,
+              Container(
+                padding: EdgeInsets.fromLTRB(
+                  12,
+                  10,
+                  12,
+                  10 + MediaQuery.paddingOf(context).bottom,
+                ),
+                decoration: BoxDecoration(
+                  color: frost,
+                  border: Border(top: edge),
                 ),
                 child: Row(
                   children: [
@@ -619,15 +908,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         decoration: InputDecoration(
                           hintText: l10n.writeMessage,
                           counterText: '',
+                          fillColor: AppColors.surface,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          border: _composerBorder(),
+                          enabledBorder: _composerBorder(),
+                          focusedBorder: _composerBorder(AppColors.accent),
                         ),
                       ),
                     ),
-                    IconButton(
-                      tooltip: l10n.sendComment,
-                      onPressed: _sending ? null : () => _send(me),
-                      icon: Icon(
+                    const SizedBox(width: 8),
+                    _GradientCircle(
+                      label: l10n.sendComment,
+                      onTap: () => _sending ? null : _send(me),
+                      child: Icon(
                         Icons.arrow_upward_rounded,
-                        color: AppColors.accent,
+                        size: 20,
+                        color: AppColors.onAccent,
                       ),
                     ),
                   ],
@@ -638,20 +937,72 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
     );
   }
+
+  static OutlineInputBorder _composerBorder([Color? color]) =>
+      OutlineInputBorder(
+        borderRadius: BorderRadius.circular(22),
+        borderSide: BorderSide(
+          color: color ?? AppColors.accent.withValues(alpha: .14),
+          width: 1.5,
+        ),
+      );
+}
+
+bool _sameDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
+
+/// "Today", "Yesterday" or the date, between days.
+class _DayChip extends StatelessWidget {
+  const _DayChip({required this.day});
+
+  final DateTime day;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final now = DateTime.now();
+    final label = _sameDay(day, now)
+        ? l10n.today
+        : _sameDay(day, now.subtract(const Duration(days: 1)))
+        ? l10n.yesterday
+        : DateFormat.MMMd(l10n.localeName).format(day);
+    return Center(
+      child: Container(
+        height: 26,
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.accentSoft.withValues(alpha: .8),
+          borderRadius: BorderRadius.circular(13),
+        ),
+        child: Text(
+          label,
+          style: AppText.label(color: AppColors.muted).copyWith(fontSize: 12),
+        ),
+      ),
+    );
+  }
 }
 
 enum _Avatar { none, shown, space }
 
-/// A post sent in a chat: its photo and title; opens the post.
+/// A post sent in a chat, as a little post card: the photo with its type,
+/// the title, and who shared it from where; opens the post.
 class _PostCard extends ConsumerWidget {
-  const _PostCard({required this.post});
+  const _PostCard({required this.post, required this.mine});
 
   final SharedPost post;
+  final bool mine;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final place = ref.watch(sharedPostProvider(post)).value;
     final owner = ref.watch(profileProvider(post.owner)).value;
+    final city = place?.location?.cityCountry ?? '';
+    const big = Radius.circular(20);
+    const small = Radius.circular(6);
     return GestureDetector(
       onTap: place == null
           ? null
@@ -660,46 +1011,103 @@ class _PostCard extends ConsumerWidget {
                 builder: (ctx) => PostScreen(owner: post.owner, place: place),
               ),
             ),
-      child: SizedBox(
-        width: 220,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: ColoredBox(
-            color: AppColors.background,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AspectRatio(
-                  aspectRatio: 4 / 3,
-                  child: PlacePhoto(
+      child: Container(
+        width: 236,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.only(
+            topLeft: big,
+            topRight: big,
+            bottomLeft: mine ? big : small,
+            bottomRight: mine ? small : big,
+          ),
+          boxShadow: AppColors.isDark
+              ? null
+              : const [
+                  BoxShadow(
+                    color: Color(0x38B98E7A),
+                    blurRadius: 20,
+                    offset: Offset(0, 8),
+                  ),
+                ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 120,
+              width: double.infinity,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  PlacePhoto(
                     photo: place?.photos.firstOrNull,
                     tint: AppColors.tintFor(post.id),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(AppSpace.sm),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        place?.title ?? post.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppText.bodyStrong(),
-                      ),
-                      if (owner != null)
-                        Text(
-                          owner.handle ?? owner.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppText.meta().copyWith(fontSize: 12),
+                  if (place != null)
+                    Positioned(
+                      left: 10,
+                      top: 10,
+                      child: Container(
+                        height: 24,
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xEBFFFBE6),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                    ],
-                  ),
-                ),
-              ],
+                        child: Row(
+                          children: [
+                            const AppIcon(
+                              'pin_small',
+                              size: 12,
+                              color: Color(0xFF2A7C13),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              place.category.label(l10n).toUpperCase(),
+                              style:
+                                  AppText.label(color: const Color(0xFF2A7C13))
+                                      .copyWith(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    place?.title ?? post.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppText.bodyStrong().copyWith(fontSize: 14),
+                  ),
+                  if (owner != null || city.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        [
+                          if (owner != null) l10n.byOwner(owner.name),
+                          if (city.isNotEmpty) city,
+                        ].join(' · '),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.meta().copyWith(fontSize: 12),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -739,32 +1147,54 @@ class _Bubble extends ConsumerWidget {
             ),
             child: Text(name, style: AppText.meta().copyWith(fontSize: 12)),
           ),
-        Container(
-          margin: const EdgeInsets.only(bottom: AppSpace.xs),
-          // A post alone gets a thin frame; text keeps the usual padding.
-          padding: message.text.isEmpty
-              ? const EdgeInsets.all(3)
-              : const EdgeInsets.symmetric(
-                  horizontal: AppSpace.md,
-                  vertical: AppSpace.sm,
-                ),
-          decoration: BoxDecoration(
-            color: mine ? AppColors.accent : AppColors.surface,
-            borderRadius: BorderRadius.circular(18),
+        if (message.post case final post?)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpace.xs),
+            child: _PostCard(post: post, mine: mine),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (message.post case final post?) _PostCard(post: post),
-              if (message.text.isNotEmpty)
-                Text(
-                  message.text,
-                  style: AppText.body(color: mine ? AppColors.onAccent : null),
-                ),
-            ],
+        if (message.text.isNotEmpty)
+          Container(
+            margin: const EdgeInsets.only(bottom: AppSpace.xs),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: mine ? null : AppColors.surface,
+              gradient: mine
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.accent,
+                        AppColors.isDark
+                            ? const Color(0xFF5FAE40)
+                            : const Color(0xFF4E9E33),
+                      ],
+                    )
+                  : null,
+              // The corner by the speaker is tucked in.
+              borderRadius: BorderRadius.only(
+                topLeft: const Radius.circular(20),
+                topRight: const Radius.circular(20),
+                bottomLeft: Radius.circular(mine ? 20 : 6),
+                bottomRight: Radius.circular(mine ? 6 : 20),
+              ),
+              boxShadow: AppColors.isDark
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: mine
+                            ? AppColors.accent.withValues(alpha: .25)
+                            : const Color(0x24B98E7A),
+                        blurRadius: mine ? 16 : 12,
+                        offset: Offset(0, mine ? 6 : 4),
+                      ),
+                    ],
+            ),
+            child: Text(
+              message.text,
+              style: AppText.body(color: mine ? AppColors.onAccent : null)
+                  .copyWith(fontSize: 15, height: 1.4),
+            ),
           ),
-        ),
       ],
     );
     return Align(
@@ -969,14 +1399,14 @@ class _GroupDetailsState extends ConsumerState<GroupDetailsScreen> {
                             radius: 18,
                             backgroundColor: AppColors.accent,
                             child: _saving
-                                ? const SizedBox.square(
+                                ? SizedBox.square(
                                     dimension: 16,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
                                       color: AppColors.onAccent,
                                     ),
                                   )
-                                : const Icon(
+                                : Icon(
                                     Icons.photo_camera_rounded,
                                     size: 18,
                                     color: AppColors.onAccent,

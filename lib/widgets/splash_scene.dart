@@ -7,16 +7,21 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 /// The launch splash, from the design canvas: the icon's world over the whole
-/// screen. Drawn for a 402×874 screen and scaled to the real width; the sky
-/// sits at the top and the skyline at the bottom on any height.
+/// screen, by day (sun and birds) or, in dark mode, by night (moon, stars, a
+/// shooting star, lit windows and a headlamp). Drawn for a 402×874 screen and
+/// scaled to the real width; the sky sits at the top and the skyline at the
+/// bottom on any height.
 class SplashScene extends StatefulWidget {
-  const SplashScene({super.key});
+  const SplashScene({super.key, this.night = false});
 
-  static const skyline = 'assets/splash/skyline.svg';
+  final bool night;
+
+  static String skyline({required bool night}) =>
+      night ? 'assets/splash/skyline_night.svg' : 'assets/splash/skyline.svg';
 
   /// Loads the skyline so the scene shows whole from its first frame.
-  static Future<void> precache() {
-    const loader = SvgAssetLoader(skyline);
+  static Future<void> precache({required bool night}) {
+    final loader = SvgAssetLoader(skyline(night: night));
     return svg.cache.putIfAbsent(
       loader.cacheKey(null),
       () => loader.loadBytes(null),
@@ -64,6 +69,7 @@ class _SplashSceneState extends State<SplashScene>
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final night = widget.night;
     return LayoutBuilder(
       builder: (context, box) {
         // Design px to screen px.
@@ -73,13 +79,28 @@ class _SplashSceneState extends State<SplashScene>
           curve: const Cubic(0.2, 0.8, 0.2, 1),
         );
         return DecoratedBox(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFFF3EDC8), Color(0xFFF5E3C7), Color(0xFFF6D9C6)],
-              stops: [0, 0.55, 1],
-            ),
+          decoration: BoxDecoration(
+            gradient: night
+                ? const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFF0B1526),
+                      Color(0xFF16263F),
+                      Color(0xFF2A3A55),
+                    ],
+                    stops: [0, 0.5, 1],
+                  )
+                : const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFFFFF8CF),
+                      Color(0xFFFDEFC8),
+                      Color(0xFFFBE6C2),
+                    ],
+                    stops: [0, 0.55, 1],
+                  ),
           ),
           // Text styles need a Material above them.
           child: Material(
@@ -92,7 +113,9 @@ class _SplashSceneState extends State<SplashScene>
                   width: 402 * k,
                   height: 340 * k,
                   child: CustomPaint(
-                    painter: _SkyPainter(_time, k: k, still: _still),
+                    painter: night
+                        ? _NightSkyPainter(_time, k: k, still: _still)
+                        : _SkyPainter(_time, k: k, still: _still),
                   ),
                 ),
                 Positioned(
@@ -112,20 +135,27 @@ class _SplashSceneState extends State<SplashScene>
                       children: [
                         Text(
                           l10n.appTitle,
-                          style: AppText.display(color: _ink).copyWith(
-                            fontSize: 48 * k,
-                            height: 1.1,
-                            letterSpacing: -1.5 * k,
-                          ),
+                          style: AppText.display(color: night ? _cream : _ink)
+                              .copyWith(
+                                fontSize: 48 * k,
+                                height: 1.1,
+                                letterSpacing: -1.5 * k,
+                              ),
                         ),
                         SizedBox(height: 8 * k),
                         Text(
                           l10n.splashTagline,
-                          style: AppText.body(color: _tagline).copyWith(
-                            fontSize: 15 * k,
-                            height: 1.4,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style:
+                              AppText.body(
+                                color: night
+                                    ? const Color(0xFFFBE6C2)
+                                          .withValues(alpha: .85)
+                                    : _tagline,
+                              ).copyWith(
+                                fontSize: 15 * k,
+                                height: 1.4,
+                                fontWeight: FontWeight.w500,
+                              ),
                         ),
                       ],
                     ),
@@ -137,14 +167,19 @@ class _SplashSceneState extends State<SplashScene>
                   width: 402 * k,
                   height: 256 * k,
                   child: SvgPicture.asset(
-                    SplashScene.skyline,
+                    SplashScene.skyline(night: night),
                     fit: BoxFit.cover,
                     alignment: Alignment.bottomCenter,
                   ),
                 ),
                 Positioned.fill(
                   child: CustomPaint(
-                    painter: _HikerPainter(_time, k: k, still: _still),
+                    painter: _HikerPainter(
+                      _time,
+                      k: k,
+                      still: _still,
+                      headlamp: night,
+                    ),
                   ),
                 ),
               ],
@@ -157,6 +192,7 @@ class _SplashSceneState extends State<SplashScene>
 }
 
 const _ink = Color(0xFF2B2B2B);
+const _cream = Color(0xFFFFF8CF);
 const _tagline = Color(0xFF9A7564);
 const _birdColor = Color(0xFFB98E7A);
 
@@ -322,18 +358,152 @@ class _SkyPainter extends CustomPainter {
   bool shouldRepaint(_SkyPainter old) => old.k != k || old.still != still;
 }
 
-/// The icon's hiker walking the trail along the grass, left to right.
-class _HikerPainter extends CustomPainter {
-  _HikerPainter(this.time, {required this.k, required this.still})
+/// One star: where it is, how big, and how it twinkles (as in the design).
+typedef _Star = ({double x, double y, double r, double period, double delay});
+
+const List<_Star> _stars = [
+  (x: 175, y: 97, r: 1.6, period: 3.6, delay: -0.3),
+  (x: 284, y: 68, r: 1.2, period: 3.5, delay: -3.6),
+  (x: 119, y: 39, r: 0.8, period: 3.1, delay: -0.3),
+  (x: 56, y: 302, r: 1.6, period: 2.1, delay: -2.3),
+  (x: 124, y: 318, r: 0.8, period: 3.4, delay: -1.6),
+  (x: 123, y: 43, r: 1, period: 2.7, delay: -0.6),
+  (x: 70, y: 312, r: 1.2, period: 3.4, delay: -2.7),
+  (x: 62, y: 317, r: 1, period: 2.9, delay: -2.2),
+  (x: 42, y: 308, r: 0.8, period: 3.5, delay: -2.0),
+  (x: 282, y: 238, r: 1.2, period: 3.2, delay: -3.7),
+  (x: 195, y: 173, r: 1, period: 4.0, delay: -2.8),
+  (x: 134, y: 61, r: 1.2, period: 3.3, delay: -3.5),
+  (x: 383, y: 249, r: 1.2, period: 3.5, delay: -0.3),
+  (x: 272, y: 234, r: 1, period: 3.9, delay: -0.6),
+  (x: 260, y: 235, r: 0.8, period: 4.4, delay: -0.3),
+  (x: 295, y: 313, r: 1.2, period: 2.9, delay: -1.4),
+  (x: 264, y: 316, r: 1.6, period: 2.2, delay: -0.4),
+  (x: 148, y: 262, r: 0.8, period: 2.2, delay: -2.8),
+  (x: 341, y: 315, r: 1.6, period: 2.7, delay: -1.5),
+  (x: 352, y: 197, r: 0.8, period: 4.4, delay: -1.4),
+  (x: 322, y: 79, r: 1.6, period: 2.1, delay: -3.1),
+  (x: 76, y: 146, r: 1.6, period: 3.0, delay: -3.5),
+  (x: 51, y: 105, r: 1.6, period: 3.0, delay: -1.1),
+  (x: 80, y: 240, r: 1.2, period: 3.8, delay: -3.9),
+  (x: 359, y: 214, r: 1, period: 2.4, delay: -0.7),
+  (x: 128, y: 139, r: 0.8, period: 3.2, delay: -2.4),
+  (x: 144, y: 164, r: 0.8, period: 2.4, delay: -2.1),
+  (x: 322, y: 309, r: 1.2, period: 4.4, delay: -2.8),
+  (x: 273, y: 47, r: 1.6, period: 4.2, delay: -3.1),
+  (x: 358, y: 306, r: 1.6, period: 3.0, delay: -1.6),
+  (x: 256, y: 225, r: 0.8, period: 2.5, delay: -3.9),
+  (x: 235, y: 103, r: 0.8, period: 2.9, delay: -0.2),
+  (x: 10, y: 310, r: 1, period: 3.3, delay: -3.8),
+  (x: 324, y: 33, r: 0.8, period: 4.2, delay: -2.5),
+  (x: 86, y: 149, r: 1.2, period: 3.5, delay: -1.9),
+  (x: 69, y: 269, r: 1.6, period: 3.2, delay: -1.2),
+  (x: 83, y: 72, r: 1.2, period: 3.9, delay: -1.9),
+  (x: 364, y: 102, r: 0.8, period: 2.5, delay: -3.8),
+  (x: 195, y: 95, r: 0.8, period: 3.9, delay: -1.2),
+  (x: 339, y: 66, r: 1.2, period: 3.3, delay: -3.6),
+  (x: 192, y: 134, r: 1.2, period: 3.6, delay: -2.5),
+  (x: 109, y: 142, r: 1.6, period: 3.8, delay: -0.9),
+  (x: 275, y: 272, r: 1.2, period: 3.8, delay: -4.0),
+  (x: 153, y: 261, r: 1.2, period: 2.5, delay: -2.4),
+  (x: 186, y: 248, r: 1.2, period: 4.4, delay: -1.5),
+  (x: 122, y: 72, r: 1, period: 3.2, delay: -1.4),
+];
+
+/// The crescent moon with its glow, twinkling stars, and now and then a
+/// shooting star.
+class _NightSkyPainter extends CustomPainter {
+  _NightSkyPainter(this.time, {required this.k, required this.still})
     : super(repaint: time);
 
   final ValueNotifier<double> time;
   final double k;
   final bool still;
 
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.scale(k);
+    const moon = Offset(201, 270);
+    canvas.drawCircle(
+      moon,
+      90,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [_cream.withValues(alpha: .35), _cream.withValues(alpha: 0)],
+        ).createShader(Rect.fromCircle(center: moon, radius: 90)),
+    );
+    // A full disc with a smaller one cut out up and to the right.
+    canvas.drawPath(
+      Path.combine(
+        PathOperation.difference,
+        Path()..addOval(Rect.fromCircle(center: moon, radius: 38)),
+        Path()..addOval(
+          Rect.fromCircle(center: const Offset(218, 258), radius: 34),
+        ),
+      ),
+      Paint()..color = _cream,
+    );
+
+    final t = time.value;
+    for (final star in _stars) {
+      final glow = still ? 1.0 : .25 + .75 * _swing(t, star.period, star.delay);
+      canvas.drawCircle(
+        Offset(star.x, star.y),
+        star.r,
+        Paint()..color = _cream.withValues(alpha: glow),
+      );
+    }
+
+    // Once every 7 s, starting 1.5 s in: a streak across the top 12% of the
+    // loop, fading in fast and out slower.
+    if (still || t < 1.5) {
+      return;
+    }
+    final p = _loop(t, 7, 1.5);
+    if (p >= .12) {
+      return;
+    }
+    final at = Curves.easeOut.transform(p / .12);
+    final fade = p < .03 ? p / .03 : 1 - (p - .03) / .09;
+    canvas
+      ..save()
+      ..translate(60 + 200 * at, 60 + 90 * at)
+      ..rotate(25 * math.pi / 180)
+      ..drawLine(
+        Offset.zero,
+        const Offset(46, 0),
+        Paint()
+          ..color = _cream.withValues(alpha: fade.clamp(0, 1))
+          ..strokeWidth = 1.6
+          ..strokeCap = StrokeCap.round,
+      )
+      ..restore();
+  }
+
+  @override
+  bool shouldRepaint(_NightSkyPainter old) => old.k != k || old.still != still;
+}
+
+/// The icon's hiker walking the trail along the grass, left to right.
+class _HikerPainter extends CustomPainter {
+  _HikerPainter(
+    this.time, {
+    required this.k,
+    required this.still,
+    this.headlamp = false,
+  }) : super(repaint: time);
+
+  final ValueNotifier<double> time;
+  final double k;
+  final bool still;
+
+  /// At night: a lamp on the head and its beam ahead.
+  final bool headlamp;
+
   static const _dark = Color(0xFF123F2F);
   static const _darker = Color(0xFF0D3024);
   static const _cream = Color(0xFFF3EBD8);
+  static const _lamp = Color(0xFFF6CB74);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -439,8 +609,21 @@ class _HikerPainter extends CustomPainter {
 
     leg(still ? 0 : -22 * legSwing, _dark);
 
+    if (headlamp) {
+      canvas.drawPath(
+        Path()
+          ..moveTo(119, 62)
+          ..lineTo(150, 52)
+          ..lineTo(150, 78)
+          ..close(),
+        Paint()..color = _lamp.withValues(alpha: .28),
+      );
+    }
+    canvas.drawCircle(const Offset(111, 64), 10, Paint()..color = _dark);
+    if (headlamp) {
+      canvas.drawCircle(const Offset(119, 63), 2.2, Paint()..color = _lamp);
+    }
     canvas
-      ..drawCircle(const Offset(111, 64), 10, Paint()..color = _dark)
       ..drawPath(
         Path()
           ..moveTo(110, 86)

@@ -986,4 +986,92 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get splashTagline => 'احفظ الأماكن التي تحبها';
+
+  @override
+  String get factSaved => 'حُفظ';
+
+  @override
+  String get factPhotos => 'الصور';
+
+  @override
+  String get factVisibleTo => 'يراه';
+
+  @override
+  String get visibleToEveryone => 'الجميع';
+
+  @override
+  String get directions => 'الاتجاهات';
+
+  @override
+  String get pickSomeoneToSend => 'اختر من ترسل إليه';
+
+  @override
+  String sendToName(String name) {
+    return 'أرسل إلى $name';
+  }
+
+  @override
+  String sendToCount(int count) {
+    return 'أرسل إلى $count أشخاص';
+  }
+
+  @override
+  String byOwner(String name) {
+    return 'بواسطة $name';
+  }
+
+  @override
+  String get settingsFooter => 'صُنع لمن يحبّون التجوال.';
+
+  @override
+  String get languageAutoCode => 'تلقائي';
+
+  @override
+  String placesSavedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count أماكن محفوظة',
+      one: 'مكان محفوظ واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get edit => 'تعديل';
+
+  @override
+  String get secureStep => 'خطوة آمنة';
+
+  @override
+  String get checkYourMessages => 'تحقّق من رسائلك';
+
+  @override
+  String weSentCodeTo(String number) {
+    return 'أرسلنا رمزًا من 6 أرقام إلى $number.';
+  }
+
+  @override
+  String get change => 'تغيير';
+
+  @override
+  String get enterAll6Digits => 'أدخل الأرقام الستة';
+
+  @override
+  String get deleteDigit => 'حذف رقم';
+
+  @override
+  String get messagesSubtitle => 'محادثات مع من تتابعهم.';
+
+  @override
+  String get chats => 'المحادثات';
+
+  @override
+  String get today => 'اليوم';
+
+  @override
+  String get yesterday => 'أمس';
+
+  @override
+  String get phoneLanguage => 'الهاتف';
 }

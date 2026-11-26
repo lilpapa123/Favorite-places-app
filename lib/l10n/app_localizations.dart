@@ -1857,6 +1857,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save the places you love'**
   String get splashTagline;
+
+  /// No description provided for @factSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get factSaved;
+
+  /// No description provided for @factPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get factPhotos;
+
+  /// No description provided for @factVisibleTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Visible to'**
+  String get factVisibleTo;
+
+  /// No description provided for @visibleToEveryone.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone'**
+  String get visibleToEveryone;
+
+  /// No description provided for @directions.
+  ///
+  /// In en, this message translates to:
+  /// **'Directions'**
+  String get directions;
+
+  /// No description provided for @pickSomeoneToSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick someone to send to'**
+  String get pickSomeoneToSend;
+
+  /// No description provided for @sendToName.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to {name}'**
+  String sendToName(String name);
+
+  /// No description provided for @sendToCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to {count} people'**
+  String sendToCount(int count);
+
+  /// No description provided for @byOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'by {name}'**
+  String byOwner(String name);
+
+  /// No description provided for @settingsFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Made for people who wander.'**
+  String get settingsFooter;
+
+  /// No description provided for @languageAutoCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get languageAutoCode;
+
+  /// No description provided for @placesSavedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 place saved} other{{count} places saved}}'**
+  String placesSavedCount(int count);
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// No description provided for @secureStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure step'**
+  String get secureStep;
+
+  /// No description provided for @checkYourMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your messages'**
+  String get checkYourMessages;
+
+  /// No description provided for @weSentCodeTo.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a 6-digit code to {number}.'**
+  String weSentCodeTo(String number);
+
+  /// No description provided for @change.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get change;
+
+  /// No description provided for @enterAll6Digits.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter all 6 digits'**
+  String get enterAll6Digits;
+
+  /// No description provided for @deleteDigit.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete digit'**
+  String get deleteDigit;
+
+  /// No description provided for @messagesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chats with people you follow.'**
+  String get messagesSubtitle;
+
+  /// No description provided for @chats.
+  ///
+  /// In en, this message translates to:
+  /// **'Chats'**
+  String get chats;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// No description provided for @phoneLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get phoneLanguage;
 }
 
 class _AppLocalizationsDelegate

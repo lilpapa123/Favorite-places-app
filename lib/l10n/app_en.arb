@@ -476,5 +476,64 @@
   "send": "Send",
   "postSent": "Sent",
   "filterPlaces": "Filter",
-  "splashTagline": "Save the places you love"
+  "splashTagline": "Save the places you love",
+  "factSaved": "Saved",
+  "factPhotos": "Photos",
+  "factVisibleTo": "Visible to",
+  "visibleToEveryone": "Everyone",
+  "directions": "Directions",
+  "pickSomeoneToSend": "Pick someone to send to",
+  "sendToName": "Send to {name}",
+  "sendToCount": "Send to {count} people",
+  "byOwner": "by {name}",
+  "@sendToName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@sendToCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@byOwner": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsFooter": "Made for people who wander.",
+  "languageAutoCode": "Auto",
+  "placesSavedCount": "{count, plural, =1{1 place saved} other{{count} places saved}}",
+  "edit": "Edit",
+  "@placesSavedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "secureStep": "Secure step",
+  "checkYourMessages": "Check your messages",
+  "weSentCodeTo": "We sent a 6-digit code to {number}.",
+  "change": "Change",
+  "enterAll6Digits": "Enter all 6 digits",
+  "deleteDigit": "Delete digit",
+  "@weSentCodeTo": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "messagesSubtitle": "Chats with people you follow.",
+  "chats": "Chats",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "phoneLanguage": "Phone"
 }

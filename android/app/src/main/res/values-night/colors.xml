@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Launch screen in dark mode, the top of the night splash's sky. -->
+    <color name="launch_cream">#0B1526</color>
+</resources>

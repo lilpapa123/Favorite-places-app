@@ -88,7 +88,7 @@ void main() {
     expect(find.text('No messages yet'), findsNothing);
 
     // Back on the profile, still followed.
-    await tester.tap(find.bySemanticsLabel('Back'));
+    await tester.tap(find.byTooltip('Back'));
     await tester.pumpAndSettle();
     expect(find.text('946'), findsOneWidget);
   });
@@ -262,22 +262,22 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      Color? bubble(String text) =>
+      BoxDecoration bubble(String text) =>
           (tester
-                      .widget<Container>(
-                        find
-                            .ancestor(
-                              of: find.text(text),
-                              matching: find.byType(Container),
-                            )
-                            .first,
-                      )
-                      .decoration!
-                  as BoxDecoration)
-              .color;
-      expect(bubble('From Lina'), AppColors.surface);
-      expect(bubble('From Mert'), AppColors.surface);
-      expect(bubble('From me'), AppColors.accent);
+                  .widget<Container>(
+                    find
+                        .ancestor(
+                          of: find.text(text),
+                          matching: find.byType(Container),
+                        )
+                        .first,
+                  )
+                  .decoration!
+              as BoxDecoration);
+      expect(bubble('From Lina').color, AppColors.surface);
+      expect(bubble('From Mert').color, AppColors.surface);
+      // Yours: the green gradient.
+      expect(bubble('From me').gradient!.colors.first, AppColors.accent);
       // One photo beside each of theirs (letter avatars), none beside yours.
       expect(find.text('L'), findsOneWidget);
       expect(find.text('M'), findsOneWidget);
@@ -325,11 +325,12 @@ void main() {
     await tester.tap(find.text('open share'));
     await tester.pumpAndSettle();
     expect(find.text('Copy link'), findsOneWidget);
-    expect(find.text('SEND TO'), findsOneWidget);
+    expect(find.text('Send to'), findsOneWidget);
+    expect(find.text('Pick someone to send to'), findsOneWidget);
 
-    await tester.tap(find.text('Lina Haddad'));
+    await tester.tap(find.text('Lina'));
     await tester.pump();
-    await tester.tap(find.text('Send · 1'));
+    await tester.tap(find.text('Send to Lina'));
     await tester.pumpAndSettle();
     expect(find.text('Sent'), findsOneWidget);
 

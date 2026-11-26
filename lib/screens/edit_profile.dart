@@ -5,6 +5,7 @@ import 'package:favorite_places/services/profile_photo.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
 import 'package:favorite_places/widgets/app_text_field.dart';
+import 'package:favorite_places/widgets/golden_hour.dart';
 import 'package:favorite_places/widgets/page_header.dart';
 import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:favorite_places/widgets/profile_photo_picker.dart';
@@ -153,108 +154,161 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         changeProfilePhoto(context, uid: uid, hasPhoto: photo != null);
 
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: ListView(
-          padding: EdgeInsets.only(bottom: bottomBarClearance(context)),
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          children: [
-            PageHeader(
-              title: widget.setup
-                  ? l10n.chooseUsername
-                  : l10n.profilePreferences,
-              subtitle: widget.setup
-                  ? l10n.chooseUsernameBody
-                  : l10n.makeYourselfAtHome,
-              trailing: widget.setup
-                  ? null
-                  : CircleIconButton(
-                      icon: AppIcon('close', color: AppColors.accent),
-                      semanticLabel: l10n.close,
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpace.page),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Center(
-                    child: GestureDetector(
-                      onTap: changePhoto,
-                      // The button below is the accessible way to do this.
-                      excludeFromSemantics: true,
-                      child: Avatar(
-                        name: widget.shownName,
-                        image: photo,
-                        photoUrl: widget.user.photoURL,
-                        size: 96,
+      body: GoldenHour(
+        child: SafeArea(
+          bottom: false,
+          child: ListView(
+            padding: EdgeInsets.only(bottom: bottomBarClearance(context)),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            children: [
+              PageHeader(
+                title: widget.setup
+                    ? l10n.chooseUsername
+                    : l10n.profilePreferences,
+                subtitle: widget.setup
+                    ? l10n.chooseUsernameBody
+                    : l10n.makeYourselfAtHome,
+                trailing: widget.setup
+                    ? null
+                    : CircleIconButton(
+                        icon: AppIcon('close', color: AppColors.ink),
+                        background: AppColors.surface.withValues(alpha: .82),
+                        semanticLabel: l10n.close,
+                        onPressed: () => Navigator.of(context).pop(),
                       ),
-                    ),
-                  ),
-                  Center(
-                    child: TextButton(
-                      onPressed: changePhoto,
-                      child: Text(
-                        l10n.changePhoto,
-                        style: AppText.label(color: AppColors.accent),
-                      ),
-                    ),
-                  ),
-                  Text(
-                    l10n.photoOnThisPhone,
-                    textAlign: TextAlign.center,
-                    style: AppText.meta().copyWith(fontSize: 12),
-                  ),
-                  const SizedBox(height: AppSpace.xxl),
-                  AppTextField(
-                    label: l10n.yourName,
-                    trailingLabel: l10n.optional,
-                    controller: _name,
-                    hintText: l10n.yourNameHint,
-                    textInputAction: TextInputAction.next,
-                    textCapitalization: TextCapitalization.words,
-                  ),
-                  const SizedBox(height: AppSpace.lg),
-                  AppTextField(
-                    label: l10n.username,
-                    controller: _username,
-                    hintText: l10n.usernameHint,
-                    autocorrect: false,
-                    textInputAction: TextInputAction.next,
-                  ),
-                  const SizedBox(height: AppSpace.lg),
-                  AppTextField(
-                    label: l10n.bio,
-                    trailingLabel: l10n.optional,
-                    controller: _bio,
-                    hintText: l10n.bioHint,
-                    maxLines: 3,
-                    maxLength: maxBioLength,
-                    textCapitalization: TextCapitalization.sentences,
-                  ),
-                  const SizedBox(height: AppSpace.xxl),
-                  PillButton(
-                    label: _saving ? l10n.pleaseWait : l10n.saveChanges,
-                    large: true,
-                    expanded: true,
-                    onPressed: _saving ? null : _save,
-                  ),
-                  if (widget.setup) ...[
-                    const SizedBox(height: AppSpace.md),
-                    PillButton(
-                      label: l10n.signOut,
-                      variant: PillButtonVariant.outlined,
-                      expanded: true,
-                      onPressed: _saving
-                          ? null
-                          : () => ref.read(firebaseAuthProvider).signOut(),
-                    ),
-                  ],
-                ],
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpace.page),
+                child: Container(
+                  padding: const EdgeInsets.all(AppSpace.lg),
+                  decoration: GoldenHour.card(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: changePhoto,
+                            // The button beside it is the accessible way.
+                            excludeFromSemantics: true,
+                            child: Container(
+                              // A cream ring inside a light-green one.
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF2A7C13)
+                                        .withValues(alpha: .3),
+                                    blurRadius: 24,
+                                    offset: const Offset(0, 12),
+                                  ),
+                                  const BoxShadow(
+                                    color: Color(0xFF76C457),
+                                    spreadRadius: 5,
+                                  ),
+                                  BoxShadow(
+                                    color: AppColors.surface,
+                                    spreadRadius: 3,
+                                  ),
+                                ],
+                              ),
+                              child: Avatar(
+                                name: widget.shownName,
+                                image: photo,
+                                photoUrl: widget.user.photoURL,
+                                size: 84,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                OutlinedButton.icon(
+                                  onPressed: changePhoto,
+                                  icon: Icon(
+                                    Icons.photo_camera_outlined,
+                                    size: 16,
+                                    color: AppColors.accent,
+                                  ),
+                                  label: Text(
+                                    l10n.changePhoto,
+                                    style: AppText.label(
+                                      color: AppColors.accent,
+                                    ).copyWith(fontSize: 13),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    side: BorderSide(
+                                      color: AppColors.accent,
+                                      width: 1.5,
+                                    ),
+                                    shape: const StadiumBorder(),
+                                    minimumSize: const Size(0, 36),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  l10n.photoOnThisPhone,
+                                  style: AppText.meta().copyWith(fontSize: 11),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpace.lg),
+                      AppTextField(
+                        label: l10n.yourName,
+                        trailingLabel: l10n.optional,
+                        controller: _name,
+                        hintText: l10n.yourNameHint,
+                        textInputAction: TextInputAction.next,
+                        textCapitalization: TextCapitalization.words,
+                      ),
+                      const SizedBox(height: AppSpace.lg),
+                      AppTextField(
+                        label: l10n.username,
+                        controller: _username,
+                        hintText: l10n.usernameHint,
+                        autocorrect: false,
+                        textInputAction: TextInputAction.next,
+                      ),
+                      const SizedBox(height: AppSpace.lg),
+                      AppTextField(
+                        label: l10n.bio,
+                        trailingLabel: l10n.optional,
+                        controller: _bio,
+                        hintText: l10n.bioHint,
+                        maxLines: 3,
+                        maxLength: maxBioLength,
+                        textCapitalization: TextCapitalization.sentences,
+                      ),
+                      const SizedBox(height: AppSpace.xxl),
+                      PillButton(
+                        label: _saving ? l10n.pleaseWait : l10n.saveChanges,
+                        large: true,
+                        expanded: true,
+                        glow: true,
+                        onPressed: _saving ? null : _save,
+                      ),
+                      if (widget.setup) ...[
+                        const SizedBox(height: AppSpace.md),
+                        PillButton(
+                          label: l10n.signOut,
+                          variant: PillButtonVariant.outlined,
+                          expanded: true,
+                          onPressed: _saving
+                              ? null
+                              : () => ref.read(firebaseAuthProvider).signOut(),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

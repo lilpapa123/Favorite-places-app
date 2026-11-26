@@ -118,7 +118,8 @@ class AppMap {
                 text,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppText.label(color: Colors.white).copyWith(fontSize: 12),
+                style: AppText.label(color: AppColors.onAccent)
+                    .copyWith(fontSize: 12),
               ),
             ),
           ),
@@ -198,7 +199,7 @@ class CategoryPin extends StatelessWidget {
           child: AppIcon(
             category.icon,
             size: 20,
-            color: selected ? Colors.white : AppColors.accent,
+            color: selected ? AppColors.onAccent : AppColors.accent,
           ),
         ),
       ),

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#F3EDC8</color>
+    <!-- Launch screen, the top of the splash's sky. -->
+    <color name="launch_cream">#FFF8CF</color>
 </resources>

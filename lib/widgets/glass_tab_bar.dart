@@ -16,7 +16,7 @@ class GlassTab {
 }
 
 /// Floating "liquid glass" tab bar from the design: a frosted white capsule
-/// with icon-only tabs, a soft pink pill behind the selected one, and an
+/// with icon-only tabs, a soft peach pill behind the selected one, and an
 /// Add button in the middle.
 ///
 /// [tabs] are split around the Add button: the first half on its left, the
@@ -242,7 +242,9 @@ class _TabButton extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 82),
             decoration: BoxDecoration(
               color: selected
-                  ? AppColors.accentSoft.withValues(alpha: 0.6)
+                  ? (AppColors.isDark
+                        ? AppColors.accent.withValues(alpha: 0.22)
+                        : AppColors.accentSoft.withValues(alpha: 0.6))
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(27),
             ),

@@ -3,7 +3,6 @@ import 'package:favorite_places/screens/home_shell.dart';
 import 'package:favorite_places/screens/palces.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/glass_tab_bar.dart';
-import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -171,9 +170,9 @@ void main() {
     await tester.tap(find.text('Galata Tower view'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Saved place'), findsOneWidget);
+    expect(find.text('SAVED'), findsOneWidget);
 
-    await tester.tap(find.text('Edit place'));
+    await tester.tap(find.byTooltip('Edit place'));
     await tester.pumpAndSettle();
     // The first field on the edit form is the place name.
     await tester.enterText(find.byType(TextField).first, 'Galata at dusk');
@@ -185,13 +184,8 @@ void main() {
     await tester.pump(const Duration(seconds: 5));
     await tester.pumpAndSettle();
 
-    // The heart sits on the photo, whose list item merges its label.
-    await tester.tap(
-      find.byWidgetPredicate(
-        (w) =>
-            w is CircleIconButton && w.semanticLabel == 'Remove from my places',
-      ),
-    );
+    // The big heart on the sheet's edge removes it.
+    await tester.tap(find.byIcon(Icons.favorite_rounded));
     await tester.pumpAndSettle();
     expect(find.text('Galata at dusk'), findsNothing);
 
