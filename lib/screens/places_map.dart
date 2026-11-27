@@ -1,6 +1,9 @@
 import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/models/place.dart';
+import 'package:favorite_places/providers/auth_provider.dart';
+import 'package:favorite_places/providers/social_provider.dart';
 import 'package:favorite_places/providers/user_palces.dart';
+import 'package:favorite_places/screens/profile.dart';
 import 'package:favorite_places/screens/places_detail.dart';
 import 'package:favorite_places/services/address_lookup.dart';
 import 'package:favorite_places/theme/app_theme.dart';
@@ -10,6 +13,7 @@ import 'package:favorite_places/widgets/glass_tab_bar.dart';
 import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:favorite_places/widgets/place_photo.dart';
 import 'package:favorite_places/widgets/search_field.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -18,9 +22,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
-/// The Map tab: every place with a location as a round category pin.
-/// Tapping a pin selects it (terracotta, with its name underneath) and shows
-/// a preview card with "View place".
+/// The Map tab: every shared place with a location, from anyone (the posts
+/// on Discover) and your own, as round category pins. Tapping a pin selects
+/// it, with its name underneath, and shows a preview card: yours open your
+/// place, other people's open their post.
 class PlacesMapScreen extends ConsumerStatefulWidget {
   const PlacesMapScreen({super.key});
 
@@ -35,7 +40,6 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
   /// Height of the gray title area; the map starts right under the
   /// subtitle and the search box floats on top of the map.
   static const double _headerHeight = 50;
-
 
   final MapController _map = MapController();
   late final AnimationController _flight = AnimationController(vsync: this);
@@ -85,10 +89,7 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
 
     // Zoom out mid-flight by up to ~4 levels on long trips, never below 2.
     final dip = (math.log(1 + screens) / math.ln2).clamp(0.0, 4.0);
-    final midZoom = math.max(
-      AppMap.minZoom,
-      math.min(startZoom, zoom) - dip,
-    );
+    final midZoom = math.max(AppMap.minZoom, math.min(startZoom, zoom) - dip);
 
     final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     if (reduceMotion) {
@@ -102,7 +103,10 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
         milliseconds: (700 + 300 * math.min(dip, 3.0)).round(),
       );
 
-    final curve = CurvedAnimation(parent: _flight, curve: Curves.easeInOutCubic);
+    final curve = CurvedAnimation(
+      parent: _flight,
+      curve: Curves.easeInOutCubic,
+    );
     void tick() {
       final t = curve.value;
       final lat = start.latitude + (target.latitude - start.latitude) * t;
@@ -234,8 +238,22 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
 
   @override
   Widget build(BuildContext context) {
-    final places = ref.watch(userPlacesProvider);
-    final pinned = places.where((place) => place.location != null).toList();
+    final me = ref.watch(authStateProvider).value?.uid;
+    // Yours first (also the ones not synced yet), then everyone's posts.
+    final owners = <String, String>{
+      for (final place in ref.watch(userPlacesProvider)) place.id: me ?? '',
+    };
+    final places = <String, Place>{
+      for (final place in ref.watch(userPlacesProvider)) place.id: place,
+    };
+    for (final (owner, place)
+        in ref.watch(discoverProvider).value ?? const <(String, Place)>[]) {
+      owners.putIfAbsent(place.id, () => owner);
+      places.putIfAbsent(place.id, () => place);
+    }
+    final pinned = places.values
+        .where((place) => place.location != null)
+        .toList();
     final shown = _matching(pinned);
     final selected = shown.where((p) => p.id == _selectedId).firstOrNull;
     final topInset = MediaQuery.paddingOf(context).top;
@@ -379,7 +397,10 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
                               crossAxisAlignment: CrossAxisAlignment.baseline,
                               textBaseline: TextBaseline.alphabetic,
                               children: [
-                                Text(context.l10n.tabMap, style: AppText.heading()),
+                                Text(
+                                  context.l10n.tabMap,
+                                  style: AppText.heading(),
+                                ),
                                 const SizedBox(width: AppSpace.md),
                                 Expanded(
                                   child: Text(
@@ -397,8 +418,7 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
                             size: 42,
                             icon: const AppIcon('search'),
                             semanticLabel: context.l10n.searchPlacesOrCities,
-                            onPressed: () =>
-                                setState(() => _searchOpen = true),
+                            onPressed: () => setState(() => _searchOpen = true),
                           ),
                         ],
                       ),
@@ -483,12 +503,19 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
                   ? const SizedBox(height: 148)
                   : _PreviewCard(
                       place: selected,
-                      onOpen: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (ctx) =>
-                              PlacesDetailScreen(placeId: selected.id),
-                        ),
-                      ),
+                      owner: owners[selected.id] ?? '',
+                      onOpen: () {
+                        final owner = owners[selected.id] ?? '';
+                        // Yours open your place; anyone else's, their post.
+                        final mine = owner.isEmpty || owner == me;
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (ctx) => mine
+                                ? PlacesDetailScreen(placeId: selected.id)
+                                : PostScreen(owner: owner, place: selected),
+                          ),
+                        );
+                      },
                     ),
             ),
           ),
@@ -498,19 +525,32 @@ class _PlacesMapScreenState extends ConsumerState<PlacesMapScreen>
   }
 }
 
-class _PreviewCard extends StatelessWidget {
-  const _PreviewCard({required this.place, required this.onOpen});
+class _PreviewCard extends ConsumerWidget {
+  const _PreviewCard({
+    required this.place,
+    required this.owner,
+    required this.onOpen,
+  });
 
   final Place place;
+
+  /// Who shared it; empty for your own places while signed out.
+  final String owner;
   final VoidCallback onOpen;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final location = place.location!;
+    final name = owner.isEmpty
+        ? ''
+        : ref.watch(profileProvider(owner)).value?.name ?? '';
     final meta = [
       place.category.label(context.l10n),
-      if (location.area.isNotEmpty) location.area
-      else if (location.city.isNotEmpty) location.city,
+      if (location.area.isNotEmpty)
+        location.area
+      else if (location.city.isNotEmpty)
+        location.city,
+      if (name.isNotEmpty) context.l10n.byOwner(name),
     ].join(' · ');
 
     return Container(
@@ -582,7 +622,10 @@ class _PreviewCard extends StatelessWidget {
                       child: SizedBox(
                         height: 36,
                         child: Padding(
-                          padding: const EdgeInsetsDirectional.only(start: 16, end: 20),
+                          padding: const EdgeInsetsDirectional.only(
+                            start: 16,
+                            end: 20,
+                          ),
                           child: Row(
                             children: [
                               Expanded(

@@ -571,7 +571,7 @@ abstract class AppLocalizations {
   /// No description provided for @mapSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Your favorites, a little closer.'**
+  /// **'Favorite places from everyone.'**
   String get mapSubtitle;
 
   /// No description provided for @noPinsYet.

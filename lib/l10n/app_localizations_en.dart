@@ -269,7 +269,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get closeSearch => 'Close search';
 
   @override
-  String get mapSubtitle => 'Your favorites, a little closer.';
+  String get mapSubtitle => 'Favorite places from everyone.';
 
   @override
   String get noPinsYet => 'No pins yet';

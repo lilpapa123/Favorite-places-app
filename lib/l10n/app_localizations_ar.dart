@@ -269,7 +269,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get closeSearch => 'إغلاق البحث';
 
   @override
-  String get mapSubtitle => 'مفضلاتك، أقرب قليلاً.';
+  String get mapSubtitle => 'أماكن مفضلة من الجميع.';
 
   @override
   String get noPinsYet => 'لا توجد دبابيس بعد';

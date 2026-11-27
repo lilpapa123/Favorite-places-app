@@ -267,7 +267,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get closeSearch => 'Aramayı kapat';
 
   @override
-  String get mapSubtitle => 'Favorileriniz, biraz daha yakın.';
+  String get mapSubtitle => 'Herkesin favori yerleri.';
 
   @override
   String get noPinsYet => 'Henüz iğne yok';
