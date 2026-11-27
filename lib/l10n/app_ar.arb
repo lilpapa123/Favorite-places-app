@@ -316,5 +316,15 @@
   "chats": "المحادثات",
   "today": "اليوم",
   "yesterday": "أمس",
-  "phoneLanguage": "الهاتف"
+  "phoneLanguage": "الهاتف",
+  "europeMap": "خريطة أوروبا",
+  "europeTitle": "أوروبا",
+  "europeSubtitleMine": "أماكنك في أنحاء القارة",
+  "europeSubtitleOf": "أماكن {name} في أنحاء القارة",
+  "regionsOf": "من {total} منطقة",
+  "countriesAndPlaces": "{countries} دول · {places} أماكن",
+  "europeEmpty": "الأماكن المحفوظة في أوروبا تضيء منطقتها هنا.",
+  "newRegion": "منطقة جديدة في {country}! أصبحت خضراء على خريطتك.",
+  "legendSaved": "حفظت مكانًا",
+  "legendBeen": "زرتها"
 }

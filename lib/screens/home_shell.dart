@@ -1,11 +1,15 @@
 import 'package:favorite_places/l10n/l10n.dart';
+import 'package:favorite_places/models/europe_map.dart';
 import 'package:favorite_places/models/place.dart';
+import 'package:favorite_places/providers/auth_provider.dart';
+import 'package:favorite_places/providers/social_provider.dart';
 import 'package:favorite_places/screens/account.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/screens/add_place.dart';
 import 'package:favorite_places/screens/chat.dart';
 import 'package:favorite_places/screens/discover.dart';
 import 'package:favorite_places/screens/places_map.dart';
+import 'package:favorite_places/services/region_tracker.dart';
 import 'package:favorite_places/widgets/glass_tab_bar.dart';
 import 'package:favorite_places/widgets/image_input.dart';
 import 'package:flutter/material.dart';
@@ -45,6 +49,40 @@ class _HomeShellState extends State<HomeShell> {
   final List<GlobalKey<NavigatorState>> _navigators = [
     for (var i = 0; i < _addPage; i++) GlobalKey<NavigatorState>(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _markHere());
+  }
+
+  /// At launch, marks the Europe map region the phone is in when location
+  /// is already allowed (no prompt here; the Europe map asks).
+  Future<void> _markHere() async {
+    final container = ProviderScope.containerOf(context, listen: false);
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
+    try {
+      final uid = (await container.read(authStateProvider.future))?.uid;
+      if (uid == null) {
+        return;
+      }
+      final profile = await container.read(profileProvider(uid).future);
+      final country = await markCurrentRegion(
+        map: await container.read(europeMapProvider.future),
+        social: container.read(socialProvider),
+        uid: uid,
+        known: profile?.visitedRegions ?? const {},
+      );
+      if (country != null) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.newRegion(country.name))),
+        );
+      }
+    } catch (error) {
+      debugPrint('Launch region check failed: $error');
+    }
+  }
 
   int _page = 0;
   int _pageBeforeAdd = 0;

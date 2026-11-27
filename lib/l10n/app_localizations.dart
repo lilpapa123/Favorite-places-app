@@ -2001,6 +2001,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Phone'**
   String get phoneLanguage;
+
+  /// No description provided for @europeMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Europe map'**
+  String get europeMap;
+
+  /// No description provided for @europeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Europe'**
+  String get europeTitle;
+
+  /// No description provided for @europeSubtitleMine.
+  ///
+  /// In en, this message translates to:
+  /// **'Your places across the continent'**
+  String get europeSubtitleMine;
+
+  /// No description provided for @europeSubtitleOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s places across the continent'**
+  String europeSubtitleOf(String name);
+
+  /// No description provided for @regionsOf.
+  ///
+  /// In en, this message translates to:
+  /// **'of {total} regions'**
+  String regionsOf(int total);
+
+  /// No description provided for @countriesAndPlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'{countries, plural, =1{1 country} other{{countries} countries}} · {places, plural, =1{1 place} other{{places} places}}'**
+  String countriesAndPlaces(int countries, int places);
+
+  /// No description provided for @europeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Places saved in Europe light up their region here.'**
+  String get europeEmpty;
+
+  /// No description provided for @newRegion.
+  ///
+  /// In en, this message translates to:
+  /// **'New region in {country}! It is green on your map now.'**
+  String newRegion(String country);
+
+  /// No description provided for @legendSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved a place'**
+  String get legendSaved;
+
+  /// No description provided for @legendBeen.
+  ///
+  /// In en, this message translates to:
+  /// **'Been there'**
+  String get legendBeen;
 }
 
 class _AppLocalizationsDelegate

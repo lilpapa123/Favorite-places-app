@@ -18,6 +18,7 @@ class UserProfile {
     required this.displayName,
     this.bio = '',
     this.photoUrl,
+    this.visitedRegions = const {},
   });
 
   factory UserProfile.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -28,6 +29,10 @@ class UserProfile {
       displayName: data['displayName'] as String? ?? '',
       bio: data['bio'] as String? ?? '',
       photoUrl: data['photoUrl'] as String?,
+      visitedRegions: {
+        for (final key in data['visitedRegions'] as List? ?? const [])
+          if (key is String) key,
+      },
     );
   }
 
@@ -36,6 +41,10 @@ class UserProfile {
   final String displayName;
   final String bio;
   final String? photoUrl;
+
+  /// Europe map regions this person has been to, from their phone's
+  /// location: `"<country>#<region>"` (see EuropeMap).
+  final Set<String> visitedRegions;
 
   /// Display name, or the username when there is none.
   String get name => displayName.isNotEmpty ? displayName : username;
@@ -302,6 +311,12 @@ class Social {
       await _db.doc(old.substring(firestorePhotoScheme.length)).delete();
     }
   }
+
+  /// Records that [uid] has been to the Europe map region [key].
+  Future<void> markVisitedRegion(String uid, String key) =>
+      _db.doc('users/$uid').set({
+        'visitedRegions': FieldValue.arrayUnion([key]),
+      }, SetOptions(merge: true));
 
   /// People whose username or name starts with [query].
   Future<List<UserProfile>> search(String query, {String? exclude}) async {

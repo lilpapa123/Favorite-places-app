@@ -535,5 +535,46 @@
   "chats": "Chats",
   "today": "Today",
   "yesterday": "Yesterday",
-  "phoneLanguage": "Phone"
+  "phoneLanguage": "Phone",
+  "europeMap": "Europe map",
+  "europeTitle": "Europe",
+  "europeSubtitleMine": "Your places across the continent",
+  "europeSubtitleOf": "{name}'s places across the continent",
+  "@europeSubtitleOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "regionsOf": "of {total} regions",
+  "@regionsOf": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "countriesAndPlaces": "{countries, plural, =1{1 country} other{{countries} countries}} · {places, plural, =1{1 place} other{{places} places}}",
+  "@countriesAndPlaces": {
+    "placeholders": {
+      "countries": {
+        "type": "int"
+      },
+      "places": {
+        "type": "int"
+      }
+    }
+  },
+  "europeEmpty": "Places saved in Europe light up their region here.",
+  "newRegion": "New region in {country}! It is green on your map now.",
+  "legendSaved": "Saved a place",
+  "legendBeen": "Been there",
+  "@newRegion": {
+    "placeholders": {
+      "country": {
+        "type": "String"
+      }
+    }
+  }
 }

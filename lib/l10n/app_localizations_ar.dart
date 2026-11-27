@@ -1074,4 +1074,42 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get phoneLanguage => 'الهاتف';
+
+  @override
+  String get europeMap => 'خريطة أوروبا';
+
+  @override
+  String get europeTitle => 'أوروبا';
+
+  @override
+  String get europeSubtitleMine => 'أماكنك في أنحاء القارة';
+
+  @override
+  String europeSubtitleOf(String name) {
+    return 'أماكن $name في أنحاء القارة';
+  }
+
+  @override
+  String regionsOf(int total) {
+    return 'من $total منطقة';
+  }
+
+  @override
+  String countriesAndPlaces(int countries, int places) {
+    return '$countries دول · $places أماكن';
+  }
+
+  @override
+  String get europeEmpty => 'الأماكن المحفوظة في أوروبا تضيء منطقتها هنا.';
+
+  @override
+  String newRegion(String country) {
+    return 'منطقة جديدة في $country! أصبحت خضراء على خريطتك.';
+  }
+
+  @override
+  String get legendSaved => 'حفظت مكانًا';
+
+  @override
+  String get legendBeen => 'زرتها';
 }

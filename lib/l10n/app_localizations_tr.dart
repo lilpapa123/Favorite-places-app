@@ -1076,4 +1076,43 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get phoneLanguage => 'Telefon';
+
+  @override
+  String get europeMap => 'Avrupa haritası';
+
+  @override
+  String get europeTitle => 'Avrupa';
+
+  @override
+  String get europeSubtitleMine => 'Kıtadaki yerlerin';
+
+  @override
+  String europeSubtitleOf(String name) {
+    return '$name kişisinin kıtadaki yerleri';
+  }
+
+  @override
+  String regionsOf(int total) {
+    return '/ $total bölge';
+  }
+
+  @override
+  String countriesAndPlaces(int countries, int places) {
+    return '$countries ülke · $places yer';
+  }
+
+  @override
+  String get europeEmpty =>
+      'Avrupa\'da kaydedilen yerler bölgesini burada aydınlatır.';
+
+  @override
+  String newRegion(String country) {
+    return '$country içinde yeni bölge! Haritanda artık yeşil.';
+  }
+
+  @override
+  String get legendSaved => 'Yer kaydedildi';
+
+  @override
+  String get legendBeen => 'Gidildi';
 }

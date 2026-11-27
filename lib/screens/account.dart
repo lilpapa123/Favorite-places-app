@@ -8,6 +8,7 @@ import 'package:favorite_places/providers/user_palces.dart';
 import 'package:favorite_places/widgets/badge_widgets.dart';
 import 'package:favorite_places/widgets/social_widgets.dart';
 import 'package:favorite_places/screens/edit_profile.dart';
+import 'package:favorite_places/screens/europe_map.dart';
 import 'package:favorite_places/screens/phone_verify.dart';
 import 'package:favorite_places/screens/settings.dart';
 import 'package:favorite_places/services/profile_photo.dart';
@@ -489,6 +490,8 @@ class _Profile extends ConsumerWidget {
                       ),
                       child: EarnedBadgesRow(places: places),
                     ),
+                    const SizedBox(height: AppSpace.sm),
+                    EuropeMapTile(uid: user.uid),
                   ],
                 ),
               ),

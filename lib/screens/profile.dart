@@ -4,6 +4,7 @@ import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/auth_provider.dart';
 import 'package:favorite_places/providers/chat_provider.dart';
 import 'package:favorite_places/providers/social_provider.dart';
+import 'package:favorite_places/screens/europe_map.dart';
 import 'package:favorite_places/screens/chat.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
@@ -89,6 +90,8 @@ class ProfileScreen extends ConsumerWidget {
                     const SizedBox(height: AppSpace.sm),
                     EarnedBadgesRow(places: places, showNext: false),
                   ],
+                  const SizedBox(height: AppSpace.sm),
+                  EuropeMapTile(uid: uid),
                   const SizedBox(height: AppSpace.lg),
                   if (me != null && me != uid)
                     Row(
@@ -100,7 +103,8 @@ class ProfileScreen extends ConsumerWidget {
                             label: context.l10n.message,
                             variant: PillButtonVariant.soft,
                             expanded: true,
-                            onPressed: () => openChat(context, Chat.direct(me, uid)),
+                            onPressed: () =>
+                                openChat(context, Chat.direct(me, uid)),
                           ),
                         ),
                       ],

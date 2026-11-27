@@ -1074,4 +1074,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get phoneLanguage => 'Phone';
+
+  @override
+  String get europeMap => 'Europe map';
+
+  @override
+  String get europeTitle => 'Europe';
+
+  @override
+  String get europeSubtitleMine => 'Your places across the continent';
+
+  @override
+  String europeSubtitleOf(String name) {
+    return '$name\'s places across the continent';
+  }
+
+  @override
+  String regionsOf(int total) {
+    return 'of $total regions';
+  }
+
+  @override
+  String countriesAndPlaces(int countries, int places) {
+    String _temp0 = intl.Intl.pluralLogic(
+      countries,
+      locale: localeName,
+      other: '$countries countries',
+      one: '1 country',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      places,
+      locale: localeName,
+      other: '$places places',
+      one: '1 place',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get europeEmpty =>
+      'Places saved in Europe light up their region here.';
+
+  @override
+  String newRegion(String country) {
+    return 'New region in $country! It is green on your map now.';
+  }
+
+  @override
+  String get legendSaved => 'Saved a place';
+
+  @override
+  String get legendBeen => 'Been there';
 }
