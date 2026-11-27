@@ -631,12 +631,31 @@ class EuropeMapButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CircleIconButton(
-      icon: AppIcon('tab_map', size: 20, color: AppColors.accent),
-      semanticLabel: context.l10n.europeMap,
-      background: AppColors.accentSoft,
-      onPressed: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => EuropeMapScreen(uid: uid)),
+    // The design's Globe icon, swapped for contrast: navy sea on the light
+    // theme, green sea on the dark one.
+    return Semantics(
+      button: true,
+      label: context.l10n.europeMap,
+      child: GestureDetector(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => EuropeMapScreen(uid: uid)),
+        ),
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x2E000000),
+                blurRadius: 18,
+                offset: Offset(0, 10),
+              ),
+            ],
+          ),
+          child: AppIcon(
+            AppColors.isDark ? 'globe_day' : 'globe_night',
+            size: 48,
+          ),
+        ),
       ),
     );
   }
