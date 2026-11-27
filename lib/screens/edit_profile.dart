@@ -218,7 +218,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               ),
                               child: Avatar(
                                 name: widget.shownName,
-                                image: photo,
+                                // The shared photo wins: it is the same
+                                // on every phone.
+                                image: shared == null ? photo : null,
                                 photoUrl: shared,
                                 size: 84,
                               ),

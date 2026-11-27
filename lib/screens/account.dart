@@ -407,16 +407,19 @@ class _Profile extends ConsumerWidget {
                                     child: SizedBox(
                                       width: 72,
                                       height: 72,
-                                      child: localPhoto != null
+                                      // The shared photo is the same on
+                                      // every phone; this phone's file is
+                                      // only for when there is none yet.
+                                      child: photo != null
+                                          ? Image(
+                                              image: sharedPhoto(photo),
+                                              fit: BoxFit.cover,
+                                            )
+                                          : localPhoto != null
                                           ? Image.file(
                                               localPhoto,
                                               fit: BoxFit.cover,
                                               cacheWidth: 216,
-                                            )
-                                          : photo != null
-                                          ? Image(
-                                              image: sharedPhoto(photo),
-                                              fit: BoxFit.cover,
                                             )
                                           : Container(
                                               decoration: const BoxDecoration(

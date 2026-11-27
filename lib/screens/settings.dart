@@ -218,7 +218,8 @@ class _ProfileCard extends ConsumerWidget {
                 child: localPhoto != null || shared != null
                     ? Avatar(
                         name: name,
-                        image: localPhoto,
+                        // The shared photo wins: it is the same everywhere.
+                        image: shared == null ? localPhoto : null,
                         photoUrl: shared,
                         size: 52,
                       )

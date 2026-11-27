@@ -52,6 +52,7 @@ Future<void> changeProfilePhoto(
       await container.read(socialProvider).setProfilePhoto(uid, shared);
     } catch (error) {
       debugPrint('Sharing the profile photo failed: $error');
+      messenger.showSnackBar(SnackBar(content: Text(l10n.somethingWentWrong)));
     }
   } on PlatformException catch (error) {
     messenger.showSnackBar(
