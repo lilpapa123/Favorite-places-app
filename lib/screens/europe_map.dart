@@ -622,66 +622,21 @@ class _LegendDot extends StatelessWidget {
   }
 }
 
-/// The way into someone's Europe map from their account details: a peach
-/// row like the badges strip.
-class EuropeMapTile extends ConsumerWidget {
-  const EuropeMapTile({super.key, required this.uid});
+/// The way into someone's Europe map: a round map button beside their name
+/// in the account details.
+class EuropeMapButton extends StatelessWidget {
+  const EuropeMapButton({super.key, required this.uid});
 
   final String uid;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final mine = ref.watch(authStateProvider).value?.uid == uid;
-    final name = ref.watch(profileProvider(uid)).value?.name ?? '';
-    return Material(
-      color: AppColors.accentSoft,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (_) => EuropeMapScreen(uid: uid)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: AppIcon('tab_map', size: 20, color: AppColors.accent),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.europeMap,
-                      style: AppText.labelMedium(color: AppColors.ink)
-                          .copyWith(fontWeight: FontWeight.w700),
-                    ),
-                    Text(
-                      mine
-                          ? l10n.europeSubtitleMine
-                          : l10n.europeSubtitleOf(name),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppText.labelMedium(color: AppColors.muted)
-                          .copyWith(fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-              AppIcon('chevron_small', size: 16, color: AppColors.muted),
-            ],
-          ),
-        ),
+  Widget build(BuildContext context) {
+    return CircleIconButton(
+      icon: AppIcon('tab_map', size: 20, color: AppColors.accent),
+      semanticLabel: context.l10n.europeMap,
+      background: AppColors.accentSoft,
+      onPressed: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => EuropeMapScreen(uid: uid)),
       ),
     );
   }

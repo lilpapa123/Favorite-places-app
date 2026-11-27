@@ -459,20 +459,33 @@ class _Profile extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: AppSpace.md),
-                    if (name.isNotEmpty) ...[
-                      Text(
-                        name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppText.title().copyWith(height: 1.4),
-                      ),
-                      const SizedBox(height: 4),
-                    ],
-                    Text(
-                      user.email ?? '',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppText.meta().copyWith(height: 1.4),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (name.isNotEmpty) ...[
+                                Text(
+                                  name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppText.title().copyWith(height: 1.4),
+                                ),
+                                const SizedBox(height: 4),
+                              ],
+                              Text(
+                                user.email ?? '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppText.meta().copyWith(height: 1.4),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: AppSpace.sm),
+                        EuropeMapButton(uid: user.uid),
+                      ],
                     ),
                     if (bio.isNotEmpty) ...[
                       const SizedBox(height: AppSpace.xs),
@@ -490,8 +503,6 @@ class _Profile extends ConsumerWidget {
                       ),
                       child: EarnedBadgesRow(places: places),
                     ),
-                    const SizedBox(height: AppSpace.sm),
-                    EuropeMapTile(uid: user.uid),
                   ],
                 ),
               ),
