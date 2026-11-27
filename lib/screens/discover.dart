@@ -1,3 +1,4 @@
+import 'package:favorite_places/data/sample_posts.dart';
 import 'package:favorite_places/l10n/l10n.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/auth_provider.dart';
@@ -137,78 +138,89 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
     return Scaffold(
       body: SafeArea(
         bottom: false,
-        child: ListView(
-          padding: EdgeInsets.only(bottom: bottomBarClearance(context)),
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          children: [
-            PageHeader(
-              title: l10n.tabDiscover,
-              subtitle: l10n.discoverSubtitle,
-              trailing: shared.isEmpty || _searching
-                  ? null
-                  : CircleIconButton(
-                      icon: const AppIcon('search'),
-                      semanticLabel: l10n.findFavoritePlace,
-                      onPressed: () => setState(() => _searching = true),
-                    ),
-            ),
-            if (!signedIn && shared.isEmpty)
-              message(l10n.tabDiscover, l10n.signInForDiscover)
-            else if (shared.isEmpty)
-              message(l10n.discoverEmptyTitle, l10n.discoverEmptyBody)
-            else ...[
-              AnimatedSize(
-                duration: MediaQuery.disableAnimationsOf(context)
-                    ? Duration.zero
-                    : AppMotion.fast,
-                curve: AppMotion.ease,
-                alignment: Alignment.topCenter,
-                child: !_searching
-                    ? const SizedBox(width: double.infinity)
-                    : Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpace.page,
-                        ),
-                        child: TapRegion(
-                          onTapOutside: (_) => _tapOutside(),
-                          child: SearchField(
-                            controller: _search,
-                            hintText: l10n.findFavoritePlace,
-                            autofocus: true,
-                            onChanged: (_) => setState(() {}),
-                            trailing: IconButton(
-                              tooltip: l10n.filterPlaces,
-                              onPressed: () =>
-                                  _showFilters(filters, shared.length),
-                              // Orange while a filter is on.
-                              icon: AppIcon(
-                                'sliders',
-                                color: _filter == null
-                                    ? null
-                                    : AppColors.accent,
+        // Near the end of the list, ask for the next page of places.
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (n) {
+            if (n.metrics.extentAfter < 800) {
+              ref
+                  .read(discoverLimitProvider.notifier)
+                  .more(shared.where((e) => !isSampleUid(e.$1)).length);
+            }
+            return false;
+          },
+          child: ListView(
+            padding: EdgeInsets.only(bottom: bottomBarClearance(context)),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            children: [
+              PageHeader(
+                title: l10n.tabDiscover,
+                subtitle: l10n.discoverSubtitle,
+                trailing: shared.isEmpty || _searching
+                    ? null
+                    : CircleIconButton(
+                        icon: const AppIcon('search'),
+                        semanticLabel: l10n.findFavoritePlace,
+                        onPressed: () => setState(() => _searching = true),
+                      ),
+              ),
+              if (!signedIn && shared.isEmpty)
+                message(l10n.tabDiscover, l10n.signInForDiscover)
+              else if (shared.isEmpty)
+                message(l10n.discoverEmptyTitle, l10n.discoverEmptyBody)
+              else ...[
+                AnimatedSize(
+                  duration: MediaQuery.disableAnimationsOf(context)
+                      ? Duration.zero
+                      : AppMotion.fast,
+                  curve: AppMotion.ease,
+                  alignment: Alignment.topCenter,
+                  child: !_searching
+                      ? const SizedBox(width: double.infinity)
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpace.page,
+                          ),
+                          child: TapRegion(
+                            onTapOutside: (_) => _tapOutside(),
+                            child: SearchField(
+                              controller: _search,
+                              hintText: l10n.findFavoritePlace,
+                              autofocus: true,
+                              onChanged: (_) => setState(() {}),
+                              trailing: IconButton(
+                                tooltip: l10n.filterPlaces,
+                                onPressed: () =>
+                                    _showFilters(filters, shared.length),
+                                // Orange while a filter is on.
+                                icon: AppIcon(
+                                  'sliders',
+                                  color: _filter == null
+                                      ? null
+                                      : AppColors.accent,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-              ),
-              const SizedBox(height: AppSpace.lg),
-              if (visible.isEmpty)
-                NoMatches(
-                  onClear: () => setState(() {
-                    _filter = null;
-                    _search.clear();
-                  }),
                 ),
-              for (final (owner, place) in visible)
-                CoverPostCard(
-                  key: ValueKey(place.id),
-                  owner: owner,
-                  place: place,
-                  onTap: () => openProfile(context, owner),
-                ),
+                const SizedBox(height: AppSpace.lg),
+                if (visible.isEmpty)
+                  NoMatches(
+                    onClear: () => setState(() {
+                      _filter = null;
+                      _search.clear();
+                    }),
+                  ),
+                for (final (owner, place) in visible)
+                  CoverPostCard(
+                    key: ValueKey(place.id),
+                    owner: owner,
+                    place: place,
+                    onTap: () => openProfile(context, owner),
+                  ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

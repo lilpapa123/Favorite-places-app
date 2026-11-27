@@ -113,7 +113,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         displayName: name,
         username: usernameChanged ? username : null,
         bio: bioChanged ? bio : null,
-        photoUrl: user.photoURL,
       );
       if (!saved) {
         say(l10n.usernameTaken);
@@ -150,8 +149,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final l10n = context.l10n;
     final uid = widget.user.uid;
     final photo = ref.watch(profilePhotoProvider(uid)).value;
-    void changePhoto() =>
-        changeProfilePhoto(context, uid: uid, hasPhoto: photo != null);
+    final shared =
+        ref.watch(myProfileProvider).value?.photoUrl ?? widget.user.photoURL;
+    void changePhoto() => changeProfilePhoto(
+      context,
+      uid: uid,
+      hasPhoto: photo != null || shared != null,
+    );
 
     return Scaffold(
       body: GoldenHour(
@@ -215,7 +219,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               child: Avatar(
                                 name: widget.shownName,
                                 image: photo,
-                                photoUrl: widget.user.photoURL,
+                                photoUrl: shared,
                                 size: 84,
                               ),
                             ),

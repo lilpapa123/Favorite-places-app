@@ -331,7 +331,7 @@ class _Profile extends ConsumerWidget {
     // account can still hold a name that was removed.
     final name = profile?.displayName ?? '';
     final shownName = _shownName(context, user, name, username);
-    final photo = user.photoURL;
+    final photo = profile?.photoUrl ?? user.photoURL;
     final localPhoto = ref.watch(profilePhotoProvider(user.uid)).value;
     return ListView(
       padding: EdgeInsets.only(bottom: bottomBarClearance(context)),
@@ -375,7 +375,7 @@ class _Profile extends ConsumerWidget {
                             onTap: () => changeProfilePhoto(
                               context,
                               uid: user.uid,
-                              hasPhoto: localPhoto != null,
+                              hasPhoto: localPhoto != null || photo != null,
                             ),
                             child: Container(
                               width: 72,
@@ -414,8 +414,8 @@ class _Profile extends ConsumerWidget {
                                               cacheWidth: 216,
                                             )
                                           : photo != null
-                                          ? Image.network(
-                                              photo,
+                                          ? Image(
+                                              image: sharedPhoto(photo),
                                               fit: BoxFit.cover,
                                             )
                                           : Container(

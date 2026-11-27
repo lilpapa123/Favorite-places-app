@@ -56,7 +56,6 @@ class _Social extends Fake implements Social {
     required String displayName,
     String? username,
     String? bio,
-    String? photoUrl,
   }) {
     call = (name: displayName, username: username, bio: bio);
     onSave?.call();

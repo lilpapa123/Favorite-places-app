@@ -3,6 +3,7 @@ import 'package:favorite_places/data/sample_posts.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/auth_provider.dart';
 import 'package:favorite_places/providers/user_palces.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Firestore layout:
@@ -177,19 +178,40 @@ final placesOfUserProvider = StreamProvider.family<List<Place>, String>(
 
 /// Newest places shared by everyone, your own included, with the owner. Signed out it has only the sample posts (the rules only let
 /// signed-in users read), which debug and profile builds add at the end.
+/// How many of the newest places Discover asks Firestore for. It grows by a
+/// page as the list is scrolled to the end ([DiscoverLimit.more]).
+class DiscoverLimit extends Notifier<int> {
+  static const page = 30;
+
+  @override
+  int build() => page;
+
+  /// Asks for the next page once all [loaded] places so far have come in.
+  void more(int loaded) {
+    if (loaded >= state) {
+      state += page;
+    }
+  }
+}
+
+final discoverLimitProvider = NotifierProvider<DiscoverLimit, int>(
+  DiscoverLimit.new,
+);
+
 final discoverProvider = StreamProvider<List<(String, Place)>>((ref) {
   final me = ref.watch(_myUid);
+  final limit = ref.watch(discoverLimitProvider);
   final samples = showSamplePosts ? samplePosts() : const <(String, Place)>[];
   if (me == null) {
     return Stream.value(samples);
   }
-  // shortcut: newest 100 only, no ranking or paging; add a score field and
-  // paging once there are many places.
+  // shortcut: a growing live window, so each page re-listens to the ones
+  // before it; switch to startAfterDocument cursors if reads cost too much.
   return ref
       .watch(firestoreProvider)
       .collection('places')
       .orderBy('createdAt', descending: true)
-      .limit(100)
+      .limit(limit)
       .snapshots()
       .map(
         (snap) => [
@@ -230,7 +252,6 @@ class Social {
     required String displayName,
     String? username,
     String? bio,
-    String? photoUrl,
   }) {
     // A transaction, so that it fails when offline instead of waiting forever.
     return _db.runTransaction((tx) async {
@@ -254,15 +275,32 @@ class Social {
       tx.set(userRef, {
         'displayName': displayName,
         'displayNameLower': displayName.toLowerCase(),
-        if (username != null) ...{
-          'username': username,
-          'usernameLower': key,
-          'photoUrl': photoUrl,
-        },
+        if (username != null) ...{'username': username, 'usernameLower': key},
         'bio': ?bio,
       }, SetOptions(merge: true));
       return true;
     }, timeout: const Duration(seconds: 15));
+  }
+
+  /// Shares [bytes] (a small JPEG) as [uid]'s profile photo so everyone sees
+  /// it; null removes it. Kept in `photos/` like place photos.
+  Future<void> setProfilePhoto(String uid, Uint8List? bytes) async {
+    final userRef = _db.doc('users/$uid');
+    final old = (await userRef.get()).data()?['photoUrl'] as String?;
+    String? url;
+    if (bytes != null) {
+      final doc = _db.collection('photos').doc();
+      await doc.set({
+        'ownerUid': uid,
+        'placeId': 'profile',
+        'data': Blob(bytes),
+      });
+      url = '$firestorePhotoScheme${doc.path}';
+    }
+    await userRef.set({'photoUrl': url}, SetOptions(merge: true));
+    if (old != null && old.startsWith(firestorePhotoScheme)) {
+      await _db.doc(old.substring(firestorePhotoScheme.length)).delete();
+    }
   }
 
   /// People whose username or name starts with [query].

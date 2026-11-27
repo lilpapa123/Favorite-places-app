@@ -171,6 +171,7 @@ class _ProfileCard extends ConsumerWidget {
     final profile = ref.watch(myProfileProvider).value;
     final places = ref.watch(userPlacesProvider).length;
     final localPhoto = ref.watch(profilePhotoProvider(user.uid)).value;
+    final shared = profile?.photoUrl ?? user.photoURL;
     final name = (profile?.name ?? '').isNotEmpty
         ? profile!.name
         : (user.displayName ?? '');
@@ -214,11 +215,11 @@ class _ProfileCard extends ConsumerWidget {
                   shape: BoxShape.circle,
                   color: Colors.white.withValues(alpha: .7),
                 ),
-                child: localPhoto != null || user.photoURL != null
+                child: localPhoto != null || shared != null
                     ? Avatar(
                         name: name,
                         image: localPhoto,
-                        photoUrl: user.photoURL,
+                        photoUrl: shared,
                         size: 52,
                       )
                     : CircleAvatar(

@@ -11,15 +11,19 @@ import 'package:mapcn_flutter/mapcn_flutter.dart' show MapcnThemes;
 class AppMap {
   const AppMap._();
 
-  /// Standard OpenStreetMap tiles: free and keyless. Fine for building and
-  /// testing; flutter_map prints a reminder in the console that the public
-  /// OSM servers aren't meant for apps with lots of users. Before a public
-  /// launch, switch [urlTemplate] to a provider with a free API key (e.g.
-  /// MapTiler or Stadia Maps). OSM's policy also requires a real user agent.
-  /// In dark mode the tiles are tinted with the mapcn_flutter dark theme.
+  /// MapTiler key, passed at build time:
+  /// `flutter run --dart-define=MAPTILER_KEY=...`.
+  static const _mapTilerKey = String.fromEnvironment('MAPTILER_KEY');
+
+  /// MapTiler street tiles (free tier, 100k loads a month) when a key is
+  /// given; otherwise the public OpenStreetMap tiles, which are fine for
+  /// testing but not allowed for a published app. In dark mode the tiles are
+  /// tinted with the mapcn_flutter dark theme.
   static Widget tiles() {
     final layer = TileLayer(
-      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      urlTemplate: _mapTilerKey.isEmpty
+          ? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+          : 'https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=$_mapTilerKey',
       userAgentPackageName: 'com.khaledwaled.favoriteplaces',
       maxNativeZoom: 19,
     );
@@ -48,12 +52,16 @@ class AppMap {
   /// tall, so it always covers a phone screen.
   static const double minZoom = 2;
 
-  /// Map data is from OpenStreetMap (ODbL): the credit must stay visible on
-  /// every map.
+  /// Map data is from OpenStreetMap (ODbL), and MapTiler's terms ask for
+  /// their credit too: both must stay visible on every map.
   static Widget attribution(BuildContext context) {
+    final credit = context.l10n.osmCredit;
     return SimpleAttributionWidget(
       backgroundColor: AppColors.surface.withValues(alpha: 0.85),
-      source: Text(context.l10n.osmCredit, style: AppText.meta()),
+      source: Text(
+        _mapTilerKey.isEmpty ? credit : '© MapTiler  $credit',
+        style: AppText.meta(),
+      ),
     );
   }
 

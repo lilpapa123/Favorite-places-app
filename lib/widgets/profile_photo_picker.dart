@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:favorite_places/l10n/l10n.dart';
+import 'package:favorite_places/providers/social_provider.dart';
 import 'package:favorite_places/services/profile_photo.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/image_input.dart';
@@ -29,6 +30,7 @@ Future<void> changeProfilePhoto(
     return;
   }
   try {
+    Uint8List? shared;
     if (choice == 'remove') {
       await store.remove(uid);
     } else {
@@ -42,8 +44,15 @@ Future<void> changeProfilePhoto(
         return;
       }
       await store.save(uid, File(picked.path));
+      shared = await picked.readAsBytes();
     }
     container.invalidate(profilePhotoProvider(uid));
+    // Others see the shared copy; this phone keeps showing its own file.
+    try {
+      await container.read(socialProvider).setProfilePhoto(uid, shared);
+    } catch (error) {
+      debugPrint('Sharing the profile photo failed: $error');
+    }
   } on PlatformException catch (error) {
     messenger.showSnackBar(
       SnackBar(content: Text(photoErrorMessage(l10n, error))),
