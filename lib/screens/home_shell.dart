@@ -10,6 +10,7 @@ import 'package:favorite_places/widgets/glass_tab_bar.dart';
 import 'package:favorite_places/widgets/image_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// The app's root: Discover / Map / Feed / Account under the floating glass bar,
@@ -85,8 +86,16 @@ class _HomeShellState extends State<HomeShell> {
 
   void _openTab(int page) {
     if (page == _page) {
-      // Second tap on the current tab: back to its first screen.
-      _navigators[page].currentState?.popUntil((route) => route.isFirst);
+      // Second tap on the current tab: back to its first screen; on
+      // Discover's first screen, scroll up and refresh.
+      final navigator = _navigators[page].currentState;
+      if (page == 0 && !(navigator?.canPop() ?? false)) {
+        ProviderScope.containerOf(
+          context,
+          listen: false,
+        ).read(discoverRefreshProvider.notifier).request();
+      }
+      navigator?.popUntil((route) => route.isFirst);
       return;
     }
     setState(() {

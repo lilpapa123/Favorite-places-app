@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:favorite_places/data/sample_posts.dart';
 import 'package:favorite_places/l10n/app_localizations.dart';
 import 'package:favorite_places/models/place.dart';
@@ -78,5 +80,46 @@ void main() {
     await tester.pumpAndSettle();
     expect(searchBox, findsNothing);
     expect(find.text(posts.first.$2.title), findsOneWidget);
+  });
+
+  test('a reshuffle never keeps the same order', () {
+    final ids = ['a', 'b'];
+    for (var seed = 0; seed < 20; seed++) {
+      final shuffled = reshuffle(ids, Random(seed));
+      expect(shuffled, unorderedEquals(ids));
+      expect(shuffled, isNot(ids));
+    }
+    expect(reshuffle(['a']), ['a']);
+  });
+
+  testWidgets('pulling down with no new posts shows them in another order', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final posts = samplePosts().take(2).toList();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          discoverProvider.overrideWith((ref) => Stream.value(posts)),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.data(Brightness.light),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const DiscoverScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    double top(String title) => tester.getTopLeft(find.text(title)).dy;
+    final first = posts[0].$2.title;
+    final second = posts[1].$2.title;
+    expect(top(first), lessThan(top(second)));
+
+    await tester.fling(find.byType(ListView), const Offset(0, 400), 1000);
+    await tester.pumpAndSettle();
+    expect(top(second), lessThan(top(first)));
   });
 }
