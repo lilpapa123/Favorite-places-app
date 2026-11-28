@@ -30,7 +30,7 @@ class UserProfile {
       bio: data['bio'] as String? ?? '',
       photoUrl: data['photoUrl'] as String?,
       visitedRegions: {
-        for (final key in data['visitedRegions'] as List? ?? const [])
+        for (final key in data['worldRegions'] as List? ?? const [])
           if (key is String) key,
       },
     );
@@ -42,8 +42,10 @@ class UserProfile {
   final String bio;
   final String? photoUrl;
 
-  /// Europe map regions this person has been to, from their phone's
-  /// location: `"<country>#<region>"` (see EuropeMap).
+  /// World map regions this person has been to, from their phone's
+  /// location: `"<country>#<region>"` (see WorldMap). Stored as
+  /// `worldRegions`; the older Europe map's `visitedRegions` used other
+  /// region numbers, so it is left alone.
   final Set<String> visitedRegions;
 
   /// Display name, or the username when there is none.
@@ -312,10 +314,10 @@ class Social {
     }
   }
 
-  /// Records that [uid] has been to the Europe map region [key].
+  /// Records that [uid] has been to the world map region [key].
   Future<void> markVisitedRegion(String uid, String key) =>
       _db.doc('users/$uid').set({
-        'visitedRegions': FieldValue.arrayUnion([key]),
+        'worldRegions': FieldValue.arrayUnion([key]),
       }, SetOptions(merge: true));
 
   /// People whose username or name starts with [query].

@@ -1,5 +1,5 @@
 import 'package:favorite_places/l10n/l10n.dart';
-import 'package:favorite_places/models/europe_map.dart';
+import 'package:favorite_places/models/world_map.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/auth_provider.dart';
 import 'package:favorite_places/providers/social_provider.dart';
@@ -56,7 +56,7 @@ class _HomeShellState extends State<HomeShell> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _markHere());
   }
 
-  /// At launch, marks the Europe map region the phone is in when location
+  /// At launch, marks the world map region the phone is in when location
   /// is already allowed (no prompt here; the Europe map asks).
   Future<void> _markHere() async {
     final container = ProviderScope.containerOf(context, listen: false);
@@ -69,7 +69,7 @@ class _HomeShellState extends State<HomeShell> {
       }
       final profile = await container.read(profileProvider(uid).future);
       final country = await markCurrentRegion(
-        map: await container.read(europeMapProvider.future),
+        map: await container.read(worldMapProvider.future),
         social: container.read(socialProvider),
         uid: uid,
         known: profile?.visitedRegions ?? const {},

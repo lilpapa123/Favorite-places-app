@@ -1,5 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:favorite_places/l10n/l10n.dart';
-import 'package:favorite_places/models/europe_map.dart';
+import 'package:favorite_places/models/world_map.dart';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/auth_provider.dart';
 import 'package:favorite_places/providers/social_provider.dart';
@@ -15,25 +17,30 @@ import 'package:favorite_places/widgets/pill_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// One person's places on the design's drawn Europe map: countries they
+/// One person's places on the design's drawn world map: countries they
 /// have been to in light green, regions with a saved place in deep green
 /// and regions they have only been to (from their phone's location) in a
-/// lighter green, a pin per place, and how much of Europe that is. Opening
-/// your own map marks the region you are in. Drawn from a bundled asset, so it
-/// needs no map service. Pinch to zoom; tap a pin for its name, tap the name
-/// to open the place.
-class EuropeMapScreen extends ConsumerStatefulWidget {
-  const EuropeMapScreen({super.key, required this.uid});
+/// lighter green, a pin per place, and how many of the world's countries
+/// that is. It fills the screen and opens on Europe; pinch or drag to move.
+/// Zoomed out, nearby pins join into one with a count. Opening your own map
+/// marks the region you are in. Drawn from a bundled asset, so it needs no
+/// map service. Tap a pin for its name, tap the name to open the place.
+class WorldMapScreen extends ConsumerStatefulWidget {
+  const WorldMapScreen({super.key, required this.uid});
 
   final String uid;
 
   @override
-  ConsumerState<EuropeMapScreen> createState() => _EuropeMapScreenState();
+  ConsumerState<WorldMapScreen> createState() => _WorldMapScreenState();
 }
 
-class _EuropeMapScreenState extends ConsumerState<EuropeMapScreen> {
+class _WorldMapScreenState extends ConsumerState<WorldMapScreen> {
   final TransformationController _zoom = TransformationController();
+  bool _placed = false;
   String? _selectedId;
+
+  /// Below this zoom, nearby pins show as one, as in the design.
+  static const double _clusterBelow = 1.8;
 
   @override
   void initState() {
@@ -49,7 +56,7 @@ class _EuropeMapScreenState extends ConsumerState<EuropeMapScreen> {
     }
     final messenger = ScaffoldMessenger.of(context);
     final l10n = context.l10n;
-    final map = await ref.read(europeMapProvider.future);
+    final map = await ref.read(worldMapProvider.future);
     final profile = await ref.read(profileProvider(me).future);
     final country = await markCurrentRegion(
       map: map,
@@ -67,6 +74,9 @@ class _EuropeMapScreenState extends ConsumerState<EuropeMapScreen> {
 
   @override
   void dispose() {
+    for (final name in _nameCache.values) {
+      name.dispose();
+    }
     _zoom.dispose();
     super.dispose();
   }
@@ -81,6 +91,30 @@ class _EuropeMapScreenState extends ConsumerState<EuropeMapScreen> {
     );
   }
 
+  /// Each country's name, laid out once per theme.
+  final Map<String, TextPainter> _nameCache = {};
+  bool? _namesDark;
+
+  Map<String, TextPainter> _names(bool dark) {
+    if (_namesDark != dark) {
+      _namesDark = dark;
+      for (final name in _nameCache.values) {
+        name.dispose();
+      }
+      _nameCache.clear();
+    }
+    return _nameCache;
+  }
+
+  /// Zooms in twice as far around [at], to open a group of pins.
+  void _zoomInAt(Offset at) {
+    final factor = (10 / _zoom.value.getMaxScaleOnAxis()).clamp(1.0, 2.2);
+    _zoom.value = Matrix4.translationValues(at.dx, at.dy, 0)
+      ..multiply(Matrix4.diagonal3Values(factor, factor, 1))
+      ..multiply(Matrix4.translationValues(-at.dx, -at.dy, 0))
+      ..multiply(_zoom.value);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -93,48 +127,53 @@ class _EuropeMapScreenState extends ConsumerState<EuropeMapScreen> {
     final profile = ref.watch(profileProvider(widget.uid)).value;
     final name = profile?.name ?? '';
     final been = profile?.visitedRegions ?? const <String>{};
-    final map = ref.watch(europeMapProvider).value;
+    final map = ref.watch(worldMapProvider).value;
     final dark = AppColors.isDark;
 
     return Scaffold(
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: dark
-                ? const [Color(0xFF0E1A2B), Color(0xFF132239)]
-                : const [Color(0xFFDCEAD3), Color(0xFFE9F1DE)],
-          ),
-        ),
-        child: map == null
-            ? const SizedBox.expand()
-            : LayoutBuilder(
-                builder: (context, box) {
-                  final visit = _Visit.of(map, places, been);
-                  // The artboard fills the width; its map band stays centred.
-                  final scale = box.maxWidth / map.size.width;
-                  final top = (box.maxHeight - map.size.height * scale) / 2;
-                  Offset toScreen(Offset p) =>
-                      Offset(p.dx * scale, top + p.dy * scale);
-                  return Stack(
-                    children: [
-                      Positioned.fill(
-                        child: InteractiveViewer(
-                          transformationController: _zoom,
-                          maxScale: 6,
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () => setState(() => _selectedId = null),
-                            child: RepaintBoundary(
-                              child: CustomPaint(
-                                size: box.biggest,
+      backgroundColor: dark ? const Color(0xFF0E1A2B) : const Color(0xFFDCEAD3),
+      body: map == null
+          ? const SizedBox.expand()
+          : LayoutBuilder(
+              builder: (context, box) {
+                final visit = _Visit.of(map, places, been);
+                // The map fills the screen's height, as in the design.
+                final scale = box.maxHeight / map.size.height;
+                final content = map.size * scale;
+                if (!_placed) {
+                  _placed = true;
+                  final x = math.min(
+                    map.startX * scale,
+                    math.max(0.0, content.width - box.maxWidth),
+                  );
+                  _zoom.value = Matrix4.translationValues(-x, 0, 0);
+                }
+                return Stack(
+                  children: [
+                    Positioned.fill(
+                      child: InteractiveViewer(
+                        transformationController: _zoom,
+                        constrained: false,
+                        minScale: 1,
+                        maxScale: 10,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => setState(() => _selectedId = null),
+                          child: RepaintBoundary(
+                            child: ValueListenableBuilder(
+                              valueListenable: _zoom,
+                              builder: (context, matrix, _) => CustomPaint(
+                                size: content,
                                 isComplex: true,
-                                painter: _EuropePainter(
+                                painter: _WorldPainter(
                                   map: map,
                                   visit: visit,
                                   scale: scale,
-                                  top: top,
+                                  // Lines stay thin as the map zooms; repainted
+                                  // in steps, not on every frame.
+                                  zoom:
+                                      (matrix.getMaxScaleOnAxis() * 2).round() /
+                                      2,
                                   dark: dark,
                                 ),
                               ),
@@ -142,43 +181,110 @@ class _EuropeMapScreenState extends ConsumerState<EuropeMapScreen> {
                           ),
                         ),
                       ),
-                      // Pins stay the same size while the map zooms.
-                      AnimatedBuilder(
-                        animation: _zoom,
-                        builder: (context, _) => Stack(
-                          children: [
-                            for (final (place, point) in visit.pins)
-                              _pin(
-                                place,
-                                MatrixUtils.transformPoint(
-                                  _zoom.value,
-                                  toScreen(point),
-                                ),
-                                mine,
-                              ),
-                          ],
+                    ),
+                    // Country names, sized for the screen, where they fit.
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: RepaintBoundary(
+                          child: CustomPaint(
+                            painter: _NamesPainter(
+                              map: map,
+                              zoom: _zoom,
+                              scale: scale,
+                              names: _names(dark),
+                            ),
+                          ),
                         ),
                       ),
-                      Positioned(
-                        left: 12,
-                        right: 12,
-                        top: MediaQuery.paddingOf(context).top + 8,
-                        child: _Header(
-                          subtitle: mine
-                              ? l10n.europeSubtitleMine
-                              : l10n.europeSubtitleOf(name),
-                        ),
+                    ),
+                    // Pins stay the same size while the map zooms.
+                    AnimatedBuilder(
+                      animation: _zoom,
+                      builder: (context, _) =>
+                          Stack(children: _pins(visit, scale, mine)),
+                    ),
+                    Positioned(
+                      left: 12,
+                      right: 12,
+                      top: MediaQuery.paddingOf(context).top + 8,
+                      child: _Header(
+                        title: name.isEmpty
+                            ? l10n.worldTitleMine
+                            : l10n.worldTitle(name),
+                        subtitle: mine
+                            ? l10n.worldSubtitleMine
+                            : l10n.worldSubtitleOf,
                       ),
-                      Positioned(
-                        left: AppSpace.page - 4,
-                        right: AppSpace.page - 4,
-                        bottom: bottomBarClearance(context) + 52,
-                        child: _Progress(map: map, visit: visit),
-                      ),
-                    ],
-                  );
-                },
-              ),
+                    ),
+                    Positioned(
+                      left: AppSpace.page - 4,
+                      right: AppSpace.page - 4,
+                      bottom: bottomBarClearance(context) + 52,
+                      child: _Progress(map: map, visit: visit),
+                    ),
+                  ],
+                );
+              },
+            ),
+    );
+  }
+
+  /// Each place's pin on screen; zoomed out, pins closer than a finger
+  /// join into one that zooms in when tapped.
+  List<Widget> _pins(_Visit visit, double scale, bool mine) {
+    final matrix = _zoom.value;
+    final points = [
+      for (final (place, point) in visit.pins)
+        (place, MatrixUtils.transformPoint(matrix, point * scale)),
+    ];
+    if (matrix.getMaxScaleOnAxis() >= _clusterBelow) {
+      return [for (final (place, at) in points) _pin(place, at, mine)];
+    }
+    final groups = <List<(Place, Offset)>>[];
+    for (final pin in points) {
+      final near = groups.where((g) => (g.first.$2 - pin.$2).distance < 44);
+      near.isEmpty ? groups.add([pin]) : near.first.add(pin);
+    }
+    return [
+      for (final group in groups)
+        group.length == 1
+            ? _pin(group.first.$1, group.first.$2, mine)
+            : _cluster(group),
+    ];
+  }
+
+  Widget _cluster(List<(Place, Offset)> group) {
+    final at =
+        group.fold(Offset.zero, (sum, pin) => sum + pin.$2) /
+        group.length.toDouble();
+    const size = 34.0;
+    return Positioned(
+      left: at.dx - size / 2,
+      top: at.dy - size / 2,
+      child: Semantics(
+        button: true,
+        label: '${group.length}',
+        child: GestureDetector(
+          onTap: () => _zoomInAt(at),
+          child: Container(
+            width: size,
+            height: size,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2A7C13),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2.5),
+              boxShadow: const [
+                BoxShadow(color: Color(0x33000000), blurRadius: 8),
+              ],
+            ),
+            child: Text(
+              '${group.length}',
+              style: AppText.stat(color: Colors.white)
+                  .copyWith(fontSize: 13, height: 1),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -245,29 +351,18 @@ class _EuropeMapScreenState extends ConsumerState<EuropeMapScreen> {
 
 /// Where one person's places and visits fall on the map.
 class _Visit {
-  _Visit._(
-    this.pins,
-    this.countries,
-    this.saved,
-    this.been,
-    this.placesInEurope,
-  );
+  _Visit._(this.pins, this.countries, this.saved, this.been);
 
-  factory _Visit.of(EuropeMap map, List<Place> places, Set<String> beenKeys) {
+  factory _Visit.of(WorldMap map, List<Place> places, Set<String> beenKeys) {
     final pins = <(Place, Offset)>[];
     final countries = <MapCountry>{};
     final saved = <MapCountry, Set<int>>{};
-    var inEurope = 0;
-    final bounds = Offset.zero & map.size;
     for (final place in places) {
       final location = place.location;
       if (location == null) {
         continue;
       }
       final point = map.project(location.latitude, location.longitude);
-      if (!bounds.contains(point)) {
-        continue;
-      }
       pins.add((place, point));
       final country = map.countryAt(point);
       if (country == null) {
@@ -276,7 +371,6 @@ class _Visit {
       countries.add(country);
       final region = country.regionAt(point);
       if (region != null) {
-        inEurope++;
         saved.putIfAbsent(country, () => {}).add(region);
       }
     }
@@ -291,7 +385,7 @@ class _Visit {
         }
       }
     }
-    return _Visit._(pins, countries, saved, been, inEurope);
+    return _Visit._(pins, countries, saved, been);
   }
 
   final List<(Place, Offset)> pins;
@@ -305,33 +399,26 @@ class _Visit {
   /// Regions only been to, by country.
   final Map<MapCountry, Set<int>> been;
 
-  /// Places that landed in one of the regions.
-  final int placesInEurope;
-
   int get regionCount =>
       [...saved.values, ...been.values].fold(0, (sum, r) => sum + r.length);
 
-  /// Countries with a place or visit that are split into regions, for the
-  /// chips.
-  List<MapCountry> get europeanCountries => [
-    for (final c in countries)
-      if (c.regions.isNotEmpty) c,
-  ];
+  /// The countries' codes, once each (Northern Cyprus counts as Cyprus).
+  List<String> get codes => {for (final c in countries) c.code}.toList();
 }
 
-class _EuropePainter extends CustomPainter {
-  _EuropePainter({
+class _WorldPainter extends CustomPainter {
+  _WorldPainter({
     required this.map,
     required this.visit,
     required this.scale,
-    required this.top,
+    required this.zoom,
     required this.dark,
   });
 
-  final EuropeMap map;
+  final WorldMap map;
   final _Visit visit;
   final double scale;
-  final double top;
+  final double zoom;
   final bool dark;
 
   // The design's day and night colours.
@@ -339,7 +426,7 @@ class _EuropePainter extends CustomPainter {
   Color get _visited =>
       dark ? const Color(0xFF24502A) : const Color(0xFFB9DFA3);
   static const _region = Color(0xFF4E9E33);
-  Color get _beenRegion => _EuropeColors.been(dark);
+  static const _beenRegion = _MapColors.been;
   Color get _cellLine =>
       dark ? const Color(0x29FFFFFF) : const Color(0xFFEADBB3);
   Color get _visitedCellLine =>
@@ -352,16 +439,20 @@ class _EuropePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     canvas
       ..save()
-      ..translate(0, top)
       ..scale(scale);
-    final stroke = Paint()..style = PaintingStyle.stroke;
+    // Strokes keep their on-screen width whatever the zoom.
+    final hairline = 1 / (scale * zoom);
     canvas.drawPath(
       map.graticule,
-      stroke
+      Paint()
+        ..style = PaintingStyle.stroke
         ..color = _graticule
-        ..strokeWidth = 0.8,
+        ..strokeWidth = 0.6 * hairline,
     );
     final fill = Paint();
+    final line = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.5 * hairline;
     for (final country in map.countries) {
       final visited = visit.countries.contains(country);
       canvas.drawPath(country.shape, fill..color = visited ? _visited : _land);
@@ -377,10 +468,7 @@ class _EuropePainter extends CustomPainter {
       for (final i in visit.been[country] ?? const <int>{}) {
         canvas.drawPath(country.regions[i], fill..color = _beenRegion);
       }
-      final line = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.6
-        ..color = visited ? _visitedCellLine : _cellLine;
+      line.color = visited ? _visitedCellLine : _cellLine;
       for (final cell in country.regions) {
         canvas.drawPath(cell, line);
       }
@@ -388,27 +476,97 @@ class _EuropePainter extends CustomPainter {
     }
     final border = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.9
-      ..strokeJoin = StrokeJoin.round
-      ..color = _border;
+      ..strokeWidth = 0.7 * hairline
+      ..strokeJoin = StrokeJoin.round;
     for (final country in map.countries) {
+      border.color = visit.countries.contains(country) ? _region : _border;
       canvas.drawPath(country.shape, border);
     }
     canvas.restore();
   }
 
   @override
-  bool shouldRepaint(_EuropePainter old) =>
+  bool shouldRepaint(_WorldPainter old) =>
       old.visit != visit ||
       old.scale != scale ||
-      old.top != top ||
+      old.zoom != zoom ||
       old.dark != dark ||
       old.map != map;
 }
 
-class _EuropeColors {
+/// Country names over the map, at the same size whatever the zoom; a name
+/// shows once its country is wide enough on screen and doesn't overlap a
+/// bigger country's name.
+class _NamesPainter extends CustomPainter {
+  _NamesPainter({
+    required this.map,
+    required this.zoom,
+    required this.scale,
+    required this.names,
+  }) : super(repaint: zoom);
+
+  final WorldMap map;
+  final TransformationController zoom;
+  final double scale;
+  final Map<String, TextPainter> names;
+
+  /// Biggest first, so they win a spot over their small neighbours.
+  late final List<MapCountry> _bySize = [...map.countries]
+    ..sort((a, b) => b.labelWidth.compareTo(a.labelWidth));
+
+  TextPainter _name(MapCountry country) => names[country.name] ??= TextPainter(
+    text: TextSpan(
+      text: country.name,
+      style: AppText.labelMedium(
+        color: AppColors.isDark
+            ? const Color(0xB3F3EED6)
+            : const Color(0xFF7A6A45),
+      ).copyWith(fontSize: 11, fontWeight: FontWeight.w600),
+    ),
+    textDirection: TextDirection.ltr,
+    maxLines: 1,
+  )..layout();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final matrix = zoom.value;
+    final k = matrix.getMaxScaleOnAxis() * scale;
+    final screen = Offset.zero & size;
+    final taken = <Rect>[];
+    for (final country in _bySize) {
+      final width = country.labelWidth * k;
+      if (width < 40) {
+        break;
+      }
+      final at = MatrixUtils.transformPoint(matrix, country.label * scale);
+      final name = _name(country);
+      if (name.width + 8 > width) {
+        continue;
+      }
+      final box = Rect.fromCenter(
+        center: at,
+        width: name.width + 6,
+        height: name.height + 2,
+      );
+      // Whole names only: none cut off by the screen's edge.
+      if (!screen.contains(box.topLeft) ||
+          !screen.contains(box.bottomRight) ||
+          taken.any(box.overlaps)) {
+        continue;
+      }
+      taken.add(box);
+      name.paint(canvas, at - Offset(name.width / 2, name.height / 2));
+    }
+  }
+
+  @override
+  bool shouldRepaint(_NamesPainter old) =>
+      old.map != map || old.scale != scale || old.names != names;
+}
+
+class _MapColors {
   /// Regions only been to: a lighter green than regions with a saved place.
-  static Color been(bool dark) => const Color(0xFF80C162);
+  static const been = Color(0xFF80C162);
 }
 
 BoxDecoration _frosted() => BoxDecoration(
@@ -429,13 +587,13 @@ BoxDecoration _frosted() => BoxDecoration(
 );
 
 class _Header extends StatelessWidget {
-  const _Header({required this.subtitle});
+  const _Header({required this.title, required this.subtitle});
 
+  final String title;
   final String subtitle;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     return Container(
       padding: const EdgeInsets.fromLTRB(10, 10, 16, 10),
       decoration: _frosted(),
@@ -443,7 +601,7 @@ class _Header extends StatelessWidget {
         children: [
           CircleIconButton(
             icon: AppIcon('back', color: AppColors.ink),
-            semanticLabel: l10n.back,
+            semanticLabel: context.l10n.back,
             background: AppColors.accentSoft,
             onPressed: () => Navigator.of(context).pop(),
           ),
@@ -453,7 +611,9 @@ class _Header extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  l10n.europeTitle,
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: AppText.heading().copyWith(fontSize: 24, height: 1.2),
                 ),
                 Text(
@@ -475,15 +635,15 @@ class _Header extends StatelessWidget {
 class _Progress extends StatelessWidget {
   const _Progress({required this.map, required this.visit});
 
-  final EuropeMap map;
+  final WorldMap map;
   final _Visit visit;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final total = map.regionCount;
-    final done = visit.regionCount;
-    final chips = visit.europeanCountries;
+    final total = map.total;
+    final chips = visit.codes;
+    final done = chips.length;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: _frosted(),
@@ -499,10 +659,10 @@ class _Progress extends StatelessWidget {
                 style: AppText.stat().copyWith(fontSize: 30, height: 1),
               ),
               const SizedBox(width: 8),
-              Text(l10n.regionsOf(total), style: AppText.bodyStrong()),
+              Text(l10n.countriesOf(total), style: AppText.bodyStrong()),
               const Spacer(),
               Text(
-                l10n.countriesAndPlaces(chips.length, visit.placesInEurope),
+                l10n.regionsAndPlaces(visit.regionCount, visit.pins.length),
                 style: AppText.labelMedium(color: AppColors.muted)
                     .copyWith(fontSize: 12),
               ),
@@ -523,7 +683,7 @@ class _Progress extends StatelessWidget {
                     ),
                   ),
                   FractionallySizedBox(
-                    widthFactor: total == 0 ? 0 : (done / total).clamp(0, 1),
+                    widthFactor: (done / total).clamp(0, 1),
                     child: const DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -536,24 +696,10 @@ class _Progress extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              _LegendDot(
-                color: const Color(0xFF4E9E33),
-                label: l10n.legendSaved,
-              ),
-              const SizedBox(width: 16),
-              _LegendDot(
-                color: _EuropeColors.been(AppColors.isDark),
-                label: l10n.legendBeen,
-              ),
-            ],
-          ),
           const SizedBox(height: 12),
           if (chips.isEmpty)
             Text(
-              l10n.europeEmpty,
+              l10n.worldEmpty,
               style: AppText.labelMedium(color: AppColors.muted),
             )
           else
@@ -561,29 +707,26 @@ class _Progress extends StatelessWidget {
               spacing: 6,
               runSpacing: 6,
               children: [
-                for (final country in chips)
-                  Tooltip(
-                    message: country.name,
-                    child: Container(
-                      height: 26,
-                      padding: const EdgeInsets.symmetric(horizontal: 9),
-                      decoration: BoxDecoration(
-                        color: AppColors.isDark
-                            ? const Color(0xFF233451)
-                            : AppColors.accentSoft,
-                        borderRadius: BorderRadius.circular(13),
-                      ),
-                      child: Center(
-                        widthFactor: 1,
-                        child: Text(
-                          country.code,
-                          style: AppText.labelMedium(color: AppColors.accent)
-                              .copyWith(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: .5,
-                              ),
-                        ),
+                for (final code in chips)
+                  Container(
+                    height: 26,
+                    padding: const EdgeInsets.symmetric(horizontal: 9),
+                    decoration: BoxDecoration(
+                      color: AppColors.isDark
+                          ? const Color(0xFF233451)
+                          : AppColors.accentSoft,
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                    child: Center(
+                      widthFactor: 1,
+                      child: Text(
+                        code,
+                        style: AppText.labelMedium(color: AppColors.accent)
+                            .copyWith(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: .5,
+                            ),
                       ),
                     ),
                   ),
@@ -595,37 +738,10 @@ class _Progress extends StatelessWidget {
   }
 }
 
-class _LegendDot extends StatelessWidget {
-  const _LegendDot({required this.color, required this.label});
-
-  final Color color;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 6),
-        Text(
-          label,
-          style: AppText.labelMedium(color: AppColors.muted)
-              .copyWith(fontSize: 12),
-        ),
-      ],
-    );
-  }
-}
-
-/// The way into someone's Europe map: a round map button beside their name
-/// in the account details.
-class EuropeMapButton extends StatelessWidget {
-  const EuropeMapButton({super.key, required this.uid});
+/// The way into someone's world map: the design's globe button beside their
+/// name in the account details.
+class WorldMapButton extends StatelessWidget {
+  const WorldMapButton({super.key, required this.uid});
 
   final String uid;
 
@@ -635,10 +751,10 @@ class EuropeMapButton extends StatelessWidget {
     // theme, green sea on the dark one.
     return Semantics(
       button: true,
-      label: context.l10n.europeMap,
+      label: context.l10n.worldMap,
       child: GestureDetector(
         onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (_) => EuropeMapScreen(uid: uid)),
+          MaterialPageRoute<void>(builder: (_) => WorldMapScreen(uid: uid)),
         ),
         child: DecoratedBox(
           decoration: const BoxDecoration(

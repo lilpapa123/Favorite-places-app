@@ -317,14 +317,13 @@
   "today": "Bugün",
   "yesterday": "Dün",
   "phoneLanguage": "Telefon",
-  "europeMap": "Avrupa haritası",
-  "europeTitle": "Avrupa",
-  "europeSubtitleMine": "Kıtadaki yerlerin",
-  "europeSubtitleOf": "{name} kişisinin kıtadaki yerleri",
-  "regionsOf": "/ {total} bölge",
-  "countriesAndPlaces": "{countries} ülke · {places} yer",
-  "europeEmpty": "Avrupa'da kaydedilen yerler bölgesini burada aydınlatır.",
   "newRegion": "{country} içinde yeni bölge! Haritanda artık yeşil.",
-  "legendSaved": "Yer kaydedildi",
-  "legendBeen": "Gidildi"
+  "worldMap": "Dünya haritası",
+  "worldTitle": "{name} haritası",
+  "worldTitleMine": "Haritan",
+  "worldSubtitleMine": "Dünyada kaydettiğin her yer",
+  "worldSubtitleOf": "Dünyada kaydettiği her yer",
+  "countriesOf": "/ {total} ülke",
+  "regionsAndPlaces": "{regions} bölge · {places} yer",
+  "worldEmpty": "Kaydettiğin yerler ülkesini burada aydınlatır."
 }

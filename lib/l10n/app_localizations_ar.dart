@@ -1076,40 +1076,37 @@ class AppLocalizationsAr extends AppLocalizations {
   String get phoneLanguage => 'الهاتف';
 
   @override
-  String get europeMap => 'خريطة أوروبا';
-
-  @override
-  String get europeTitle => 'أوروبا';
-
-  @override
-  String get europeSubtitleMine => 'أماكنك في أنحاء القارة';
-
-  @override
-  String europeSubtitleOf(String name) {
-    return 'أماكن $name في أنحاء القارة';
-  }
-
-  @override
-  String regionsOf(int total) {
-    return 'من $total منطقة';
-  }
-
-  @override
-  String countriesAndPlaces(int countries, int places) {
-    return '$countries دول · $places أماكن';
-  }
-
-  @override
-  String get europeEmpty => 'الأماكن المحفوظة في أوروبا تضيء منطقتها هنا.';
-
-  @override
   String newRegion(String country) {
     return 'منطقة جديدة في $country! أصبحت خضراء على خريطتك.';
   }
 
   @override
-  String get legendSaved => 'حفظت مكانًا';
+  String get worldMap => 'خريطة العالم';
 
   @override
-  String get legendBeen => 'زرتها';
+  String worldTitle(String name) {
+    return 'خريطة $name';
+  }
+
+  @override
+  String get worldTitleMine => 'خريطتك';
+
+  @override
+  String get worldSubtitleMine => 'كل مكان حفظته حول العالم';
+
+  @override
+  String get worldSubtitleOf => 'كل مكان حفظه حول العالم';
+
+  @override
+  String countriesOf(int total) {
+    return 'من $total دولة';
+  }
+
+  @override
+  String regionsAndPlaces(int regions, int places) {
+    return '$regions مناطق · $places أماكن';
+  }
+
+  @override
+  String get worldEmpty => 'الأماكن التي تحفظها تضيء دولتها هنا.';
 }

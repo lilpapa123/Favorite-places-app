@@ -4,7 +4,7 @@ import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/auth_provider.dart';
 import 'package:favorite_places/providers/chat_provider.dart';
 import 'package:favorite_places/providers/social_provider.dart';
-import 'package:favorite_places/screens/europe_map.dart';
+import 'package:favorite_places/screens/world_map.dart';
 import 'package:favorite_places/screens/chat.dart';
 import 'package:favorite_places/theme/app_theme.dart';
 import 'package:favorite_places/widgets/app_icon.dart';
@@ -92,7 +92,7 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: AppSpace.sm),
-                      EuropeMapButton(uid: uid),
+                      WorldMapButton(uid: uid),
                     ],
                   ),
                   if (profile != null && profile.bio.isNotEmpty) ...[

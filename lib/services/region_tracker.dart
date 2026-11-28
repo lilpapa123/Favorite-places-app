@@ -1,15 +1,15 @@
-import 'package:favorite_places/models/europe_map.dart';
+import 'package:favorite_places/models/world_map.dart';
 import 'package:favorite_places/providers/social_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
-/// Marks the Europe map region the phone is in as visited for [uid], and
+/// Marks the world map region the phone is in as visited for [uid], and
 /// returns its country when that region is new; null when it was already
 /// marked, the phone is outside the map, or location isn't available.
 /// Asks for location permission only when [ask] is true, so a check at
 /// launch never pops a prompt.
 Future<MapCountry?> markCurrentRegion({
-  required EuropeMap map,
+  required WorldMap map,
   required Social social,
   required String uid,
   required Set<String> known,

@@ -536,29 +536,38 @@
   "today": "Today",
   "yesterday": "Yesterday",
   "phoneLanguage": "Phone",
-  "europeMap": "Europe map",
-  "europeTitle": "Europe",
-  "europeSubtitleMine": "Your places across the continent",
-  "europeSubtitleOf": "{name}'s places across the continent",
-  "@europeSubtitleOf": {
+  "newRegion": "New region in {country}! It is green on your map now.",
+  "@newRegion": {
+    "placeholders": {
+      "country": {
+        "type": "String"
+      }
+    }
+  },
+  "worldMap": "World map",
+  "worldTitle": "{name}'s map",
+  "@worldTitle": {
     "placeholders": {
       "name": {
         "type": "String"
       }
     }
   },
-  "regionsOf": "of {total} regions",
-  "@regionsOf": {
+  "worldTitleMine": "Your map",
+  "worldSubtitleMine": "Every place you've saved, worldwide",
+  "worldSubtitleOf": "Every place they have saved, worldwide",
+  "countriesOf": "of {total} countries",
+  "@countriesOf": {
     "placeholders": {
       "total": {
         "type": "int"
       }
     }
   },
-  "countriesAndPlaces": "{countries, plural, =1{1 country} other{{countries} countries}} · {places, plural, =1{1 place} other{{places} places}}",
-  "@countriesAndPlaces": {
+  "regionsAndPlaces": "{regions, plural, =1{1 region} other{{regions} regions}} · {places, plural, =1{1 place} other{{places} places}}",
+  "@regionsAndPlaces": {
     "placeholders": {
-      "countries": {
+      "regions": {
         "type": "int"
       },
       "places": {
@@ -566,15 +575,5 @@
       }
     }
   },
-  "europeEmpty": "Places saved in Europe light up their region here.",
-  "newRegion": "New region in {country}! It is green on your map now.",
-  "legendSaved": "Saved a place",
-  "legendBeen": "Been there",
-  "@newRegion": {
-    "placeholders": {
-      "country": {
-        "type": "String"
-      }
-    }
-  }
+  "worldEmpty": "Places you save light up their country here."
 }

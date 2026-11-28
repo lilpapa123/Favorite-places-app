@@ -2002,65 +2002,59 @@ abstract class AppLocalizations {
   /// **'Phone'**
   String get phoneLanguage;
 
-  /// No description provided for @europeMap.
-  ///
-  /// In en, this message translates to:
-  /// **'Europe map'**
-  String get europeMap;
-
-  /// No description provided for @europeTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Europe'**
-  String get europeTitle;
-
-  /// No description provided for @europeSubtitleMine.
-  ///
-  /// In en, this message translates to:
-  /// **'Your places across the continent'**
-  String get europeSubtitleMine;
-
-  /// No description provided for @europeSubtitleOf.
-  ///
-  /// In en, this message translates to:
-  /// **'{name}\'s places across the continent'**
-  String europeSubtitleOf(String name);
-
-  /// No description provided for @regionsOf.
-  ///
-  /// In en, this message translates to:
-  /// **'of {total} regions'**
-  String regionsOf(int total);
-
-  /// No description provided for @countriesAndPlaces.
-  ///
-  /// In en, this message translates to:
-  /// **'{countries, plural, =1{1 country} other{{countries} countries}} · {places, plural, =1{1 place} other{{places} places}}'**
-  String countriesAndPlaces(int countries, int places);
-
-  /// No description provided for @europeEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'Places saved in Europe light up their region here.'**
-  String get europeEmpty;
-
   /// No description provided for @newRegion.
   ///
   /// In en, this message translates to:
   /// **'New region in {country}! It is green on your map now.'**
   String newRegion(String country);
 
-  /// No description provided for @legendSaved.
+  /// No description provided for @worldMap.
   ///
   /// In en, this message translates to:
-  /// **'Saved a place'**
-  String get legendSaved;
+  /// **'World map'**
+  String get worldMap;
 
-  /// No description provided for @legendBeen.
+  /// No description provided for @worldTitle.
   ///
   /// In en, this message translates to:
-  /// **'Been there'**
-  String get legendBeen;
+  /// **'{name}\'s map'**
+  String worldTitle(String name);
+
+  /// No description provided for @worldTitleMine.
+  ///
+  /// In en, this message translates to:
+  /// **'Your map'**
+  String get worldTitleMine;
+
+  /// No description provided for @worldSubtitleMine.
+  ///
+  /// In en, this message translates to:
+  /// **'Every place you\'ve saved, worldwide'**
+  String get worldSubtitleMine;
+
+  /// No description provided for @worldSubtitleOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Every place they have saved, worldwide'**
+  String get worldSubtitleOf;
+
+  /// No description provided for @countriesOf.
+  ///
+  /// In en, this message translates to:
+  /// **'of {total} countries'**
+  String countriesOf(int total);
+
+  /// No description provided for @regionsAndPlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'{regions, plural, =1{1 region} other{{regions} regions}} · {places, plural, =1{1 place} other{{places} places}}'**
+  String regionsAndPlaces(int regions, int places);
+
+  /// No description provided for @worldEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Places you save light up their country here.'**
+  String get worldEmpty;
 }
 
 class _AppLocalizationsDelegate
