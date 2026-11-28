@@ -162,6 +162,15 @@ const _profile = UserProfile(
 );
 
 void main() {
+  // The account's globe spins forever; with less motion it stays still, so
+  // pumpAndSettle can settle.
+  setUp(() {
+    TestWidgetsFlutterBinding.ensureInitialized()
+        .platformDispatcher
+        .accessibilityFeaturesTestValue = const FakeAccessibilityFeatures(
+      disableAnimations: true,
+    );
+  });
   group('Social.saveProfile', () {
     Future<(bool, _Tx)> save(
       Map<String, Map<String, dynamic>> docs, {

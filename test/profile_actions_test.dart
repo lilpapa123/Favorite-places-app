@@ -41,6 +41,15 @@ class _Empty extends Fake implements QuerySnapshot<Map<String, dynamic>> {
 }
 
 void main() {
+  // The account's globe spins forever; with less motion it stays still, so
+  // pumpAndSettle can settle.
+  setUp(() {
+    TestWidgetsFlutterBinding.ensureInitialized()
+        .platformDispatcher
+        .accessibilityFeaturesTestValue = const FakeAccessibilityFeatures(
+      disableAnimations: true,
+    );
+  });
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
   testWidgets('Follow adds a follower and Message opens a chat', (

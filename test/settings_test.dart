@@ -35,6 +35,15 @@ class _Auth extends Fake implements FirebaseAuth {
 }
 
 void main() {
+  // The account's globe spins forever; with less motion it stays still, so
+  // pumpAndSettle can settle.
+  setUp(() {
+    TestWidgetsFlutterBinding.ensureInitialized()
+        .platformDispatcher
+        .accessibilityFeaturesTestValue = const FakeAccessibilityFeatures(
+      disableAnimations: true,
+    );
+  });
   testWidgets('Sign out is in Settings and returns to the sign-in form', (
     tester,
   ) async {

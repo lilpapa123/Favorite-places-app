@@ -172,6 +172,12 @@ void main() {
 
     expect(find.text('SAVED'), findsOneWidget);
 
+    // The photo fills the screen; swipe the details card up to reach the note.
+    await tester.dragFrom(
+      tester.getCenter(find.text('Galata Tower view').last),
+      const Offset(0, -1500),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Edit place'));
     await tester.pumpAndSettle();
     // The first field on the edit form is the place name.
@@ -184,7 +190,7 @@ void main() {
     await tester.pump(const Duration(seconds: 5));
     await tester.pumpAndSettle();
 
-    // The big heart on the sheet's edge removes it.
+    // The big heart beside the title removes it.
     await tester.tap(find.byIcon(Icons.favorite_rounded));
     await tester.pumpAndSettle();
     expect(find.text('Galata at dusk'), findsNothing);

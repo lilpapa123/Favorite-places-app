@@ -19,9 +19,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// One saved place, in the design's story layout: the photo full-bleed, a
-/// cream sheet over it with quick facts, the note and where it is. Opens
-/// inside a tab, so the glass bar stays visible.
+/// One saved place: its photo fills the screen, with a card at the bottom
+/// showing what it is and where; swipe the card up for the quick facts, the
+/// note and the map. Opens inside a tab, so the glass bar stays visible.
 class PlacesDetailScreen extends ConsumerWidget {
   const PlacesDetailScreen({super.key, required this.placeId});
 
@@ -129,146 +129,168 @@ class PlacesDetailScreen extends ConsumerWidget {
     final me = ref.watch(authStateProvider).value?.uid;
     final location = place.location;
     final top = MediaQuery.paddingOf(context).top;
-    const heroHeight = 404.0;
-    // The sheet rises 28 px over the photo.
-    const sheetTop = heroHeight - 28;
+    // Above the glass bar, the card shows its handle, the category, the
+    // title and where it is; swiping it up shows the rest.
+    final peek = bottomBarClearance(context) + 52 + 62;
 
-    // Story layout from the design: the photo leads full-bleed, a cream
-    // sheet rises over it with quick facts, the note and where it is.
+    // The photo fills the screen; the details sit in a card at the bottom
+    // that swipes up over it.
     return Scaffold(
-      body: ListView(
-        padding: EdgeInsets.only(bottom: bottomBarClearance(context)),
-        children: [
-          Stack(
-            clipBehavior: Clip.none,
+      backgroundColor: Colors.black,
+      body: LayoutBuilder(
+        builder: (context, box) {
+          final min = (peek / box.maxHeight).clamp(0.1, 0.5);
+          // Opened all the way, it stops just under the buttons at the top.
+          final max = 1 - (top + 60) / box.maxHeight;
+          return Stack(
             children: [
-              Positioned(
+              Positioned.fill(
+                child: Hero(
+                  tag: 'photo-${place.id}',
+                  child: PlacePhotos(
+                    photos: place.photos,
+                    tint: AppColors.tintFor(place.id),
+                    iconSize: 40,
+                  ),
+                ),
+              ),
+              // Darker at the top, so the buttons read on any photo.
+              const Positioned(
                 left: 0,
                 right: 0,
                 top: 0,
-                height: heroHeight,
-                child: Stack(
-                  fit: StackFit.expand,
+                height: 140,
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0x610C1E08), Color(0x000C1E08)],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: AppSpace.lg,
+                right: AppSpace.lg,
+                top: top + 4,
+                child: Row(
                   children: [
-                    Hero(
-                      tag: 'photo-${place.id}',
-                      child: PlacePhotos(
-                        photos: place.photos,
-                        tint: AppColors.tintFor(place.id),
-                        iconSize: 40,
+                    _GlassButton(
+                      label: l10n.back,
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const AppIcon('back', color: _onGlass),
+                    ),
+                    const Spacer(),
+                    _GlassButton(
+                      label: l10n.share,
+                      onPressed: () => showShareSheet(context, me ?? '', place),
+                      child: const Icon(
+                        Icons.ios_share_rounded,
+                        size: 20,
+                        color: _onGlass,
                       ),
                     ),
-                    const IgnorePointer(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Color(0x610C1E08),
-                              Color(0x000C1E08),
-                              Color(0x000C1E08),
-                              Color(0xB80C1E08),
-                            ],
-                            stops: [0, 0.26, 0.46, 1],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: AppSpace.lg,
-                      right: AppSpace.lg,
-                      top: top + 4,
-                      child: Row(
-                        children: [
-                          _GlassButton(
-                            label: l10n.back,
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const AppIcon('back', color: _onGlass),
-                          ),
-                          const Spacer(),
-                          _GlassButton(
-                            label: l10n.share,
-                            onPressed: () =>
-                                showShareSheet(context, me ?? '', place),
-                            child: const Icon(
-                              Icons.ios_share_rounded,
-                              size: 20,
-                              color: _onGlass,
-                            ),
-                          ),
-                          const SizedBox(width: AppSpace.sm),
-                          _GlassButton(
-                            label: l10n.morePlaceActions,
-                            onPressed: () => _more(context, ref, place),
-                            child: const AppIcon('more', color: _onGlass),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Positioned(
-                      left: 20,
-                      right: 20,
-                      bottom: 48,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _CategoryChip(category: place.category),
-                          const SizedBox(height: 10),
-                          Text(
-                            place.title,
-                            style: AppText.display(color: Colors.white)
-                                .copyWith(
-                                  fontSize: 32,
-                                  height: 1.1,
-                                  letterSpacing: -0.8,
-                                ),
-                          ),
-                          if (location != null &&
-                              location.cityCountry.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            Row(
-                              children: [
-                                const AppIcon(
-                                  'pin_small',
-                                  size: 16,
-                                  color: Colors.white,
-                                ),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    location.cityCountry,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: AppText.body(
-                                      color: Colors.white.withValues(
-                                        alpha: .92,
-                                      ),
-                                    ).copyWith(fontSize: 14),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      ),
+                    const SizedBox(width: AppSpace.sm),
+                    _GlassButton(
+                      label: l10n.morePlaceActions,
+                      onPressed: () => _more(context, ref, place),
+                      child: const AppIcon('more', color: _onGlass),
                     ),
                   ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: sheetTop),
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              DraggableScrollableSheet(
+                initialChildSize: min,
+                minChildSize: min,
+                maxChildSize: max,
+                snap: true,
+                builder: (context, scroll) => DecoratedBox(
                   decoration: BoxDecoration(
                     color: AppColors.background,
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(28),
                     ),
+                    boxShadow: const [
+                      BoxShadow(color: Color(0x33000000), blurRadius: 24),
+                    ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                  child: ListView(
+                    controller: scroll,
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      10,
+                      20,
+                      bottomBarClearance(context) + 60,
+                    ),
                     children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: AppColors.muted.withValues(alpha: .35),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _CategoryChip(category: place.category),
+                                const SizedBox(height: 8),
+                                Text(
+                                  place.title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppText.display().copyWith(
+                                    fontSize: 28,
+                                    height: 1.1,
+                                    letterSpacing: -0.6,
+                                  ),
+                                ),
+                                if (location != null &&
+                                    location.cityCountry.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      AppIcon(
+                                        'pin_small',
+                                        size: 16,
+                                        color: AppColors.muted,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          location.cityCountry,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: AppText.meta().copyWith(
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: AppSpace.md),
+                          _SavedHeart(
+                            label: l10n.removeFromMyPlaces,
+                            onPressed: () => _remove(context, ref, place),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpace.xl),
                       Row(
                         children: [
                           Expanded(
@@ -325,17 +347,9 @@ class PlacesDetailScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              Positioned(
-                right: 20,
-                top: sheetTop - 28,
-                child: _SavedHeart(
-                  label: l10n.removeFromMyPlaces,
-                  onPressed: () => _remove(context, ref, place),
-                ),
-              ),
             ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }

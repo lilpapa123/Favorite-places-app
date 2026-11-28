@@ -767,10 +767,95 @@ class WorldMapButton extends StatelessWidget {
               ),
             ],
           ),
-          child: AppIcon(
-            AppColors.isDark ? 'globe_day' : 'globe_night',
-            size: 48,
-          ),
+          child: const _SpinningGlobe(size: 48),
+        ),
+      ),
+    );
+  }
+}
+
+/// The design's Globe icon, turning: its land slides past under the shading,
+/// mirrored every other turn so the seam never shows. Still when the phone
+/// asks for less motion. Colours swapped for contrast: navy sea on the light
+/// theme, green sea on the dark one.
+class _SpinningGlobe extends StatefulWidget {
+  const _SpinningGlobe({required this.size});
+
+  final double size;
+
+  @override
+  State<_SpinningGlobe> createState() => _SpinningGlobeState();
+}
+
+class _SpinningGlobeState extends State<_SpinningGlobe>
+    with SingleTickerProviderStateMixin {
+  // One turn is two widths of land (one plain, one mirrored).
+  late final AnimationController _turn = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 14),
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _turn.stop();
+    } else if (!_turn.isAnimating) {
+      _turn.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _turn.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = widget.size;
+    final dark = AppColors.isDark;
+    final land = AppIcon(
+      dark ? 'globe_land_day' : 'globe_land_night',
+      size: size,
+    );
+    final mirrored = Transform.flip(flipX: true, child: land);
+    return ClipOval(
+      child: SizedBox.square(
+        dimension: size,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: ColoredBox(
+                color: dark ? const Color(0xFF2A7C13) : const Color(0xFF1C3A5E),
+              ),
+            ),
+            AnimatedBuilder(
+              animation: _turn,
+              builder: (context, child) => Transform.translate(
+                offset: Offset(-_turn.value * 2 * size, 0),
+                child: child,
+              ),
+              child: OverflowBox(
+                alignment: Alignment.centerLeft,
+                maxWidth: size * 3,
+                child: Row(children: [land, mirrored, land]),
+              ),
+            ),
+            // The design's shading, darker towards the lower right.
+            const Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment(-0.24, -0.36),
+                    radius: 0.75,
+                    stops: [0.6, 1],
+                    colors: [Color(0x00000000), Color(0x2E000000)],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
